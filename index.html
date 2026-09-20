@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DEV·TV</title>
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0; min-height: 100vh; background: #050506;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 16px; font-family: -apple-system, 'Inter', sans-serif;
+  }
+  .mono { font-family: 'Courier New', monospace; }
+  @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  @keyframes identIn { 0% { opacity: 0; transform: scale(0.97); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes overlayIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+  button { font-family: inherit; }
+  .btn { transition: filter 0.12s ease, transform 0.12s ease; cursor: pointer; }
+  .btn:hover { filter: brightness(1.2); }
+  .btn:active { transform: translateY(1px) scale(0.98); }
+  a { color: inherit; }
+  #tv {
+    width: 100%; max-width: 780px;
+    background: linear-gradient(155deg, #2a2a2e 0%, #18181b 55%, #0e0e10 100%);
+    border-radius: 22px; padding: 22px 22px 30px;
+    box-shadow: 0 50px 100px -30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -2px 4px rgba(0,0,0,0.5);
+    border: 1px solid #333338; position: relative;
+  }
+  #bezel { background: #000; border-radius: 8px; padding: 10px; box-shadow: inset 0 0 0 2px #050505, inset 0 4px 20px rgba(0,0,0,0.8); }
+  #screen { aspect-ratio: 16/10; border-radius: 3px; overflow: hidden; position: relative; background: linear-gradient(180deg, #111114 0%, #09090b 100%); }
+  #screen.off { background: #000; box-shadow: none !important; }
+  #content { width: 100%; height: 100%; padding: 18px 22px; display: flex; flex-direction: column; justify-content: space-between; position: relative; transition: opacity 0.15s ease; }
+  .scanlines { position: absolute; inset: 0; pointer-events: none; z-index: 2; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px); }
+  .vignette { position: absolute; inset: 0; pointer-events: none; z-index: 2; box-shadow: inset 0 0 80px rgba(0,0,0,0.5); }
+  #ident { position: absolute; inset: 0; z-index: 5; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 6px; animation: identIn 0.15s ease; }
+  #settings-overlay { position: absolute; inset: 0; z-index: 10; background: rgba(5,5,6,0.96); backdrop-filter: blur(2px); display: none; flex-direction: column; padding: 20px 24px; animation: overlayIn 0.15s ease; overflow-y: auto; }
+  #reader-overlay { position: absolute; inset: 0; z-index: 12; background: #08080a; display: none; flex-direction: column; animation: overlayIn 0.15s ease; }
+  #reader-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid #1c1c20; flex-shrink: 0; }
+  #reader-body { flex: 1; overflow-y: auto; padding: 20px 22px 28px; }
+  #reader-body h1, #reader-body h2, #reader-body h3 { color: #f5f5f7; line-height: 1.3; margin: 18px 0 8px; }
+  #reader-body h1 { font-size: 20px; } #reader-body h2 { font-size: 17px; } #reader-body h3 { font-size: 15px; }
+  #reader-body p { color: #c8c8cc; font-size: 14px; line-height: 1.65; margin: 0 0 12px; }
+  #reader-body code { background: #1c1c20; padding: 1px 5px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 13px; color: #d8d8dc; }
+  #reader-body a { text-decoration: underline; }
+  #reader-footer { padding: 14px 22px; border-top: 1px solid #1c1c20; flex-shrink: 0; }
+  .reader-open-target { cursor: pointer; }
+  .reader-open-target:hover .story-title { text-decoration: underline; }
+  #no-signal { width: 100%; height: 100%; display: none; align-items: center; justify-content: center; font-family: 'Courier New', monospace; font-size: 11px; color: #333338; letter-spacing: 0.1em; }
+  #controls { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 20px; flex-wrap: wrap; }
+  .chbtn { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 74px; padding: 9px 3px; border-radius: 6px; border: 1px solid #000; border-top: 1px solid #3a3a40; background: linear-gradient(180deg, #232328, #17171a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); position: relative; }
+  .chbtn .num { font-family: 'Courier New', monospace; font-size: 10px; color: #6a6a72; }
+  .chbtn .name { font-size: 9px; font-weight: 600; color: #d8d8dc; letter-spacing: 0.01em; text-align: center; line-height: 1.15; }
+  .dot { position: absolute; top: 4px; right: 5px; width: 5px; height: 5px; border-radius: 50%; }
+  .round-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #000; border-top: 1px solid #3a3a40; background: linear-gradient(180deg, #232328, #17171a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color: #d8d8dc; font-size: 13px; }
+  .switch { width: 38px; height: 20px; border-radius: 10px; border: 1px solid #000; position: relative; cursor: pointer; transition: background 0.15s ease; }
+  .switch .knob { position: absolute; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: left 0.15s ease; }
+  .stand1 { width: 160px; height: 14px; background: linear-gradient(180deg, #222226, #0e0e10); border-radius: 0 0 8px 8px; margin-top: -2px; }
+  .stand2 { width: 220px; height: 6px; background: linear-gradient(180deg, #1a1a1d, #0a0a0b); border-radius: 3px; margin-top: 2px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
+</style>
+</head>
+<body>
+
+<div id="tv">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:0 4px;">
+    <span class="mono" style="font-size:18px; font-weight:700; color:#9a9aa2; letter-spacing:0.12em;">DEV·TV</span>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span id="onair" class="mono" style="font-size:10px; color:#ff5c5c; letter-spacing:0.1em; display:none;">● ON AIR</span>
+      <button id="gear" class="btn" style="background:none; border:none; padding:2px; color:#55555c; font-size:13px; line-height:1;">⚙</button>
+    </div>
+  </div>
+
+  <div id="bezel">
+    <div id="screen">
+      <div id="settings-overlay">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+          <span style="font-weight:700; font-size:15px; color:#f5f5f7;">Channels</span>
+          <button id="close-settings" style="background:none; border:none; color:#6a6a72; cursor:pointer; font-size:16px;">✕</button>
+        </div>
+        <div id="channel-toggles" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="mono" style="font-size:10px; color:#45454c; margin-top:16px;">Auto pilot cycles only through channels that are on.</div>
+      </div>
+
+      <div id="reader-overlay">
+        <div id="reader-top">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="reader-ch-dot" style="width:7px; height:7px; border-radius:50%;"></span>
+            <span id="reader-ch-name" class="mono" style="font-size:11px; letter-spacing:0.08em; color:#9a9aa2;"></span>
+          </div>
+          <button id="close-reader" style="background:none; border:none; color:#9a9aa2; cursor:pointer; font-size:16px;">✕</button>
+        </div>
+        <div id="reader-body">
+          <div id="reader-title" style="font-weight:700; font-size:20px; color:#f5f5f7; line-height:1.3; margin-bottom:6px;"></div>
+          <div id="reader-meta" class="mono" style="font-size:12px; margin-bottom:16px;"></div>
+          <div id="reader-status" style="display:none;"></div>
+          <div id="reader-content"></div>
+        </div>
+        <div id="reader-footer">
+          <a id="reader-source-link" href="#" target="_blank" rel="noopener noreferrer" class="mono" style="font-size:11px; color:#9a9aa2;">↗ Open original source</a>
+        </div>
+      </div>
+
+      <div id="ident">
+        <span class="mono" style="font-size:20px; font-weight:700; color:#8a8a92; letter-spacing:0.15em;">DEV·TV</span>
+        <span id="ident-num" class="mono" style="font-size:32px; letter-spacing:0.05em;"></span>
+        <span id="ident-name" style="font-size:16px; font-weight:700; color:#f5f5f7; letter-spacing:0.04em;"></span>
+        <span class="mono" style="font-size:10px; color:#ff5c5c; letter-spacing:0.1em; margin-top:4px;">● LIVE</span>
+      </div>
+
+      <canvas id="boot-static" style="position:absolute; inset:0; z-index:20; width:100%; height:100%; display:block;"></canvas>
+
+      <div id="content">
+        <div class="scanlines"></div>
+        <div class="vignette"></div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; z-index:1;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span id="live-dot" style="width:8px; height:8px; border-radius:50%;"></span>
+            <span id="live-text" class="mono" style="font-size:11px; letter-spacing:0.08em; color:#9a9aa2;"></span>
+            <span id="ch-num" class="mono" style="font-size:13px; color:#e8e8ea; margin-left:6px;"></span>
+            <span id="ch-name" style="font-weight:600; font-size:13px; color:#e8e8ea;"></span>
+            <span id="speed-badge" class="mono" style="font-size:10px; color:#6a6a72; margin-left:8px; padding:1px 6px; border:1px solid #2a2a2e; border-radius:8px;"></span>
+          </div>
+          <div id="story-dots" style="display:flex; gap:4px;"></div>
+        </div>
+
+        <div id="body-area" style="z-index:1;"></div>
+
+        <div id="now-next-later" style="display:none; flex-direction:column; gap:3px; padding-top:8px; border-top:1px solid #1c1c20; z-index:1;">
+          <div style="display:flex; gap:10px; font-size:11px;"><span class="mono" style="color:#e8e8ea; width:44px;">NOW</span><span id="now-text" style="color:#d0d0d4;"></span></div>
+          <div style="display:flex; gap:10px; font-size:11px;"><span class="mono" style="color:#55555c; width:44px;">NEXT</span><span id="next-text" style="color:#55555c;"></span></div>
+          <div style="display:flex; gap:10px; font-size:11px;"><span class="mono" style="color:#3a3a40; width:44px;">LATER</span><span id="later-text" style="color:#3a3a40;"></span></div>
+        </div>
+
+        <div style="height:2px; background:#1c1c20; z-index:1; margin-top:8px;">
+          <div id="progress-bar" style="height:100%; width:0%; transition:width 0.1s linear;"></div>
+        </div>
+
+        <div style="margin-top:8px; border-top:1px solid #1c1c20; padding-top:6px; overflow:hidden; white-space:nowrap; z-index:1;">
+          <div id="ticker" class="mono" style="display:inline-block; font-size:10px; color:#6a6a72; animation: tickerScroll 30s linear infinite;">loading ticker…</div>
+        </div>
+      </div>
+
+      <div id="no-signal">NO SIGNAL</div>
+    </div>
+  </div>
+
+  <div id="controls">
+    <button id="watch-btn" class="btn" style="display:flex; align-items:center; gap:6px; padding:9px 14px; border-radius:6px; border:1px solid #000; border-top:1px solid #3a3a40; background:linear-gradient(180deg, #232328, #17171a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color:#d8d8dc; font-size:11px; font-weight:600;">▶ WATCH</button>
+    <div id="channel-buttons" style="display:flex; gap:7px; flex-wrap:wrap;"></div>
+    <button id="speed-btn" class="btn mono" title="Playback speed" style="padding:9px 10px; border-radius:6px; border:1px solid #000; border-top:1px solid #3a3a40; background:linear-gradient(180deg, #232328, #17171a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color:#d8d8dc; font-size:11px; font-weight:600;">1×</button>
+    <button id="pause-btn" class="round-btn btn">❚❚</button>
+    <button id="power-btn" class="round-btn btn" title="Power">⏻</button>
+  </div>
+</div>
+
+<div class="stand1"></div>
+<div class="stand2"></div>
+
+<div class="mono" style="font-size:11px; color:#45454c; margin-top:22px; text-align:center;">
+  ← → or number keys to change channel · space to pause · click a story to read · esc to close · ⚙ for channel settings
+</div>
+
+<script>
+const STORY_SECONDS = 7;
+const IDENT_MS = 900;
+const REFRESH_MINUTES = 10;
+const SETTINGS_KEY = "devtv:enabled-channels";
+const SPEED_KEY = "devtv:speed";
+const SPEEDS = [1, 2, 3, 0.5]; // multiplier cycle: 1x -> 2x -> 3x -> 0.5x -> 1x...
+
+function timeAgo(dateInput) {
+  const diffMs = Date.now() - new Date(dateInput).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 60) return mins + "m ago";
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + "h ago";
+  return Math.floor(hrs / 24) + "d ago";
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str ?? "";
+  return div.innerHTML;
+}
+
+// Very small, deliberately limited markdown renderer. Input is escaped first
+// so nothing from a fetched README/article can inject real HTML — only the
+// few patterns below are turned back into tags.
+function mdLite(md) {
+  let text = escapeHtml(md || "");
+  text = text
+    .replace(/^### (.*)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.*)$/gm, "<h2>$1</h2>")
+    .replace(/^# (.*)$/gm, "<h1>$1</h1>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  return text.split(/\n{2,}/).filter(p => p.trim()).map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
+}
+
+async function fetchGithubStories() {
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const res = await fetch(`https://api.github.com/search/repositories?q=created:>${since}&sort=stars&order=desc&per_page=6`);
+  if (!res.ok) throw new Error("GitHub API " + res.status);
+  const data = await res.json();
+  return data.items.slice(0, 4).map(repo => ({
+    show: "RISING REPOSITORY",
+    title: repo.full_name,
+    line1: repo.stargazers_count.toLocaleString() + " stars · created " + timeAgo(repo.created_at),
+    line2: repo.description || "No description provided.",
+    url: repo.html_url,
+    fullName: repo.full_name,
+  }));
+}
+
+async function fetchHNStories() {
+  const idsRes = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json");
+  if (!idsRes.ok) throw new Error("HN API " + idsRes.status);
+  const ids = (await idsRes.json()).slice(0, 6);
+  const items = await Promise.all(ids.map(id => fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r => r.json())));
+  return items.filter(Boolean).slice(0, 4).map(item => ({
+    show: "FRONT PAGE",
+    title: item.title,
+    line1: (item.score ?? 0) + " points · " + (item.descendants ?? 0) + " comments",
+    line2: item.url ? new URL(item.url).hostname.replace("www.", "") : "news.ycombinator.com discussion",
+    url: item.url || `https://news.ycombinator.com/item?id=${item.id}`,
+    hnText: item.text || null,
+  }));
+}
+
+async function fetchDevToStories() {
+  const res = await fetch("https://dev.to/api/articles?top=7&per_page=6");
+  if (!res.ok) throw new Error("DEV.to API " + res.status);
+  const data = await res.json();
+  return data.slice(0, 4).map(a => ({
+    show: "TRENDING ARTICLE",
+    title: a.title,
+    line1: (a.positive_reactions_count ?? 0).toLocaleString() + " reactions · " + a.comments_count + " comments",
+    line2: a.description || (a.tag_list || []).map(t => "#" + t).join(" "),
+    url: a.url,
+    devtoId: a.id,
+  }));
+}
+
+async function fetchHuggingFaceStories() {
+  const res = await fetch("https://huggingface.co/api/models?sort=trendingScore&direction=-1&limit=6");
+  if (!res.ok) throw new Error("Hugging Face API " + res.status);
+  const data = await res.json();
+  return data.slice(0, 4).map(m => ({
+    show: "TRENDING MODEL",
+    title: m.id,
+    line1: (m.likes ?? 0).toLocaleString() + " likes · " + (m.downloads ?? 0).toLocaleString() + " downloads",
+    line2: m.pipeline_tag ? ("Task: " + m.pipeline_tag) : ((m.tags || []).slice(0, 3).join(", ") || "Model card on Hugging Face Hub"),
+    url: "https://huggingface.co/" + m.id,
+    hfId: m.id,
+  }));
+}
+
+const ALL_CHANNELS = [
+  { id: "github", name: "GITHUB", color: "#7c8cff", key: "1", fetcher: fetchGithubStories, tag: "GH" },
+  { id: "hn", name: "HACKER NEWS", color: "#ff6b47", key: "2", fetcher: fetchHNStories, tag: "HN" },
+  { id: "devto", name: "DEV", color: "#3dd6a3", key: "3", fetcher: fetchDevToStories, tag: "DEV" },
+  { id: "huggingface", name: "HUGGING FACE", color: "#ffcc4d", key: "4", fetcher: fetchHuggingFaceStories, tag: "HF" },
+];
+
+let enabledIds = loadEnabledIds();
+let dataByChannel = {};
+let channelIdx = 0, storyIdx = 0;
+let mode = "manual";
+let paused = false, power = true, progress = 0, showSettings = false;
+let readerOpen = false, readerLoading = false, readerStory = null, readerChannel = null, readerError = null;
+let tickInterval = null, identTimeout = null;
+let speed = loadSpeed();
+
+function loadSpeed() {
+  try {
+    const raw = localStorage.getItem(SPEED_KEY);
+    const val = parseFloat(raw);
+    if (SPEEDS.includes(val)) return val;
+  } catch (e) {}
+  return 1;
+}
+function cycleSpeed() {
+  const idx = SPEEDS.indexOf(speed);
+  speed = SPEEDS[(idx + 1) % SPEEDS.length];
+  try { localStorage.setItem(SPEED_KEY, String(speed)); } catch (e) {}
+  render();
+}
+
+function loadEnabledIds() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const valid = parsed.filter(id => ALL_CHANNELS.some(c => c.id === id));
+      if (valid.length > 0) return valid;
+    }
+  } catch (e) {}
+  return ALL_CHANNELS.map(c => c.id);
+}
+function persistEnabled() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(enabledIds)); } catch (e) {}
+}
+function getChannels() {
+  return ALL_CHANNELS.filter(c => enabledIds.includes(c.id)).map((c, i) => ({
+    ...c,
+    num: String(i + 1).padStart(2, "0"),
+    stories: dataByChannel[c.id]?.stories ?? [],
+    status: dataByChannel[c.id]?.status ?? "loading",
+    error: dataByChannel[c.id]?.error ?? null,
+  }));
+}
+
+async function loadChannel(def) {
+  dataByChannel[def.id] = { ...dataByChannel[def.id], status: "loading" };
+  render();
+  try {
+    const stories = await def.fetcher();
+    dataByChannel[def.id] = { stories, status: "ready", error: null };
+  } catch (err) {
+    dataByChannel[def.id] = { stories: dataByChannel[def.id]?.stories ?? [], status: "error", error: err.message };
+  }
+  render();
+}
+function loadAll() { ALL_CHANNELS.forEach(loadChannel); }
+
+function flashScreen() {
+  const el = document.getElementById("content");
+  el.style.opacity = "0.5";
+  setTimeout(() => { el.style.opacity = "1"; }, 220);
+}
+
+// Real per-pixel TV static, reused for boot and for every channel change.
+// A token guards against overlapping calls if the user mashes channel keys.
+// durationMs === null means "loop forever" — used at boot, where static
+// should sit there until the person actually picks a channel.
+let staticToken = 0;
+function playStatic(durationMs, onDone) {
+  const myToken = ++staticToken;
+  const canvas = document.getElementById("boot-static");
+  const screenEl = document.getElementById("screen");
+  const ctx = canvas.getContext("2d");
+  canvas.width = screenEl.clientWidth;
+  canvas.height = screenEl.clientHeight;
+  canvas.style.transition = "none";
+  canvas.style.opacity = "1";
+  canvas.style.display = "block";
+  const start = performance.now();
+
+  function drawFrame() {
+    if (myToken !== staticToken) return;
+    const w = canvas.width, h = canvas.height;
+    if (w === 0 || h === 0) { requestAnimationFrame(drawFrame); return; }
+    const imgData = ctx.createImageData(w, h);
+    const buf = imgData.data;
+    for (let i = 0; i < buf.length; i += 4) {
+      const v = Math.random() * 255;
+      buf[i] = v; buf[i + 1] = v; buf[i + 2] = v; buf[i + 3] = 255;
+    }
+    ctx.putImageData(imgData, 0, 0);
+    const elapsed = performance.now() - start;
+    if (durationMs === null || elapsed < durationMs) {
+      requestAnimationFrame(drawFrame);
+    } else {
+      canvas.style.transition = "opacity 0.2s ease";
+      canvas.style.opacity = "0";
+      setTimeout(() => {
+        if (myToken !== staticToken) return;
+        canvas.style.display = "none";
+        if (onDone) onDone();
+      }, 200);
+    }
+  }
+  requestAnimationFrame(drawFrame);
+}
+function stopStaticSilently() {
+  staticToken++;
+  const canvas = document.getElementById("boot-static");
+  canvas.style.transition = "opacity 0.2s ease";
+  canvas.style.opacity = "0";
+  setTimeout(() => { canvas.style.display = "none"; }, 200);
+}
+function showIdent() {
+  const channels = getChannels();
+  const ch = channels[channelIdx];
+  document.getElementById("ident-num").textContent = ch.num;
+  document.getElementById("ident-num").style.color = ch.color;
+  document.getElementById("ident-name").textContent = ch.name;
+  const identEl = document.getElementById("ident");
+  identEl.style.display = "flex";
+  clearTimeout(identTimeout);
+  identTimeout = setTimeout(() => { identEl.style.display = "none"; }, IDENT_MS);
+}
+
+function manualChangeChannel(idx) {
+  if (!power || readerOpen) return;
+  mode = "manual";
+  const channels = getChannels();
+  if (idx === channelIdx || idx >= channels.length) { render(); return; }
+  channelIdx = idx; storyIdx = 0; progress = 0;
+  render();
+  playStatic(420, showIdent);
+}
+
+function advance() {
+  if (readerOpen) return;
+  const channels = getChannels();
+  const cur = channels[channelIdx];
+  if (!cur) return;
+  const count = cur.stories.length || 1;
+  if (storyIdx + 1 < count) {
+    storyIdx += 1;
+  } else if (mode === "autopilot" && channels.length > 1) {
+    channelIdx = (channelIdx + 1) % channels.length;
+    storyIdx = 0;
+    playStatic(420, showIdent);
+  } else {
+    storyIdx = 0;
+  }
+  progress = 0;
+}
+
+function toggleAutoPilot() {
+  if (!power) return;
+  mode = mode === "autopilot" ? "manual" : "autopilot";
+  render();
+}
+
+function startTick() {
+  clearInterval(tickInterval);
+  tickInterval = setInterval(() => {
+    if (!power || paused || readerOpen) return;
+    const channels = getChannels();
+    const cur = channels[channelIdx];
+    const hasStories = cur && cur.status === "ready" && cur.stories.length > 0;
+    if (!hasStories) return;
+    progress += (100 / (STORY_SECONDS * 10)) * speed;
+    if (progress >= 100) { advance(); render(); }
+    else { document.getElementById("progress-bar").style.width = progress + "%"; }
+  }, 100);
+}
+
+function toggleChannel(id) {
+  const isEnabled = enabledIds.includes(id);
+  if (isEnabled && enabledIds.length === 1) return;
+  enabledIds = isEnabled ? enabledIds.filter(x => x !== id) : [...enabledIds, id];
+  persistEnabled();
+  if (channelIdx >= getChannels().length) { channelIdx = 0; storyIdx = 0; progress = 0; }
+  render();
+}
+
+// ---- Reader mode ----
+async function openReader(channel, story) {
+  readerOpen = true;
+  readerLoading = true;
+  readerStory = story;
+  readerChannel = channel;
+  readerError = null;
+  render();
+
+  try {
+    let html;
+    if (channel.id === "devto") {
+      const res = await fetch(`https://dev.to/api/articles/${story.devtoId}`);
+      if (!res.ok) throw new Error("Couldn't load the full article (" + res.status + ")");
+      const data = await res.json();
+      html = mdLite(data.body_markdown || story.line2);
+    } else if (channel.id === "github") {
+      const res = await fetch(`https://api.github.com/repos/${story.fullName}/readme`, {
+        headers: { Accept: "application/vnd.github.raw" },
+      });
+      if (!res.ok) throw new Error("This repository has no README, or it couldn't be loaded (" + res.status + ")");
+      const text = await res.text();
+      html = mdLite(text);
+    } else if (channel.id === "hn") {
+      if (story.hnText) {
+        html = story.hnText;
+      } else {
+        throw new Error("This is a link post — Hacker News itself has no article text for it. Use \u201cOpen original source\u201d below to read it.");
+      }
+    } else if (channel.id === "huggingface") {
+      const res = await fetch(`https://huggingface.co/${story.hfId}/raw/main/README.md`);
+      if (!res.ok) throw new Error("This model has no README, or it couldn't be loaded (" + res.status + ")");
+      const text = await res.text();
+      html = mdLite(text);
+    } else {
+      throw new Error("No in-app reader available for this source yet.");
+    }
+    readerLoading = false;
+    document.getElementById("reader-content").innerHTML = html;
+  } catch (err) {
+    readerLoading = false;
+    readerError = err.message;
+  }
+  render();
+}
+
+function closeReader() {
+  readerOpen = false;
+  readerStory = null;
+  readerChannel = null;
+  readerError = null;
+  render();
+}
+
+function render() {
+  const channels = getChannels();
+  if (channelIdx >= channels.length) { channelIdx = 0; storyIdx = 0; }
+  const channel = channels[channelIdx];
+
+  document.getElementById("onair").style.display = (mode === "autopilot" && power) ? "inline" : "none";
+  document.getElementById("gear").style.color = showSettings ? "#e8e8ea" : "#55555c";
+  document.getElementById("settings-overlay").style.display = showSettings ? "flex" : "none";
+  document.getElementById("reader-overlay").style.display = readerOpen ? "flex" : "none";
+  document.getElementById("screen").classList.toggle("off", !power);
+  document.getElementById("content").style.display = power ? "flex" : "none";
+  document.getElementById("no-signal").style.display = power ? "none" : "flex";
+  if (power && channel) {
+    document.getElementById("screen").style.boxShadow = `0 0 60px -10px ${channel.color}33`;
+  }
+
+  if (readerOpen && readerStory && readerChannel) {
+    document.getElementById("reader-ch-dot").style.background = readerChannel.color;
+    document.getElementById("reader-ch-name").textContent = readerChannel.num + " " + readerChannel.name;
+    document.getElementById("reader-title").textContent = readerStory.title;
+    document.getElementById("reader-meta").textContent = readerStory.line1;
+    document.getElementById("reader-meta").style.color = readerChannel.color;
+    document.getElementById("reader-source-link").href = readerStory.url;
+
+    const statusEl = document.getElementById("reader-status");
+    if (readerLoading) {
+      statusEl.style.display = "flex";
+      statusEl.style.cssText = "display:flex; align-items:center; gap:10px; margin:10px 0;";
+      statusEl.innerHTML = `<div style="width:14px; height:14px; border-radius:50%; border:2px solid ${readerChannel.color}33; border-top-color:${readerChannel.color}; animation: spin 0.8s linear infinite;"></div><span class="mono" style="font-size:12px; color:#6a6a72;">LOADING FULL STORY…</span>`;
+      document.getElementById("reader-content").innerHTML = "";
+    } else if (readerError) {
+      statusEl.style.display = "block";
+      statusEl.innerHTML = `<div style="font-size:14px; color:#9a9aa2; line-height:1.5; margin:10px 0;">${escapeHtml(readerError)}</div>`;
+    } else {
+      statusEl.style.display = "none";
+    }
+  }
+
+  const togglesEl = document.getElementById("channel-toggles");
+  togglesEl.innerHTML = "";
+  ALL_CHANNELS.forEach(c => {
+    const enabled = enabledIds.includes(c.id);
+    const isLastOn = enabled && enabledIds.length === 1;
+    const liveStatus = dataByChannel[c.id]?.status;
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:6px; border:1px solid #232328; background:#111114;";
+    row.innerHTML = `
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="width:7px; height:7px; border-radius:50%; background:${c.color};"></span>
+        <span style="font-size:13px; font-weight:600; color:#e8e8ea;">${c.name}</span>
+        ${liveStatus === "error" ? '<span class="mono" style="font-size:9px; color:#ff5c5c; letter-spacing:0.05em;">NO SIGNAL</span>' : ""}
+      </div>
+    `;
+    const sw = document.createElement("button");
+    sw.className = "switch";
+    sw.style.background = enabled ? c.color : "#2a2a2e";
+    sw.style.opacity = isLastOn ? "0.5" : "1";
+    sw.style.cursor = isLastOn ? "not-allowed" : "pointer";
+    sw.disabled = isLastOn;
+    sw.innerHTML = `<span class="knob" style="left:${enabled ? 20 : 2}px;"></span>`;
+    sw.onclick = () => toggleChannel(c.id);
+    row.appendChild(sw);
+    togglesEl.appendChild(row);
+  });
+
+  if (!channel) {
+    document.getElementById("body-area").innerHTML = '<span class="mono" style="color:#6a6a72;">No channels enabled.</span>';
+    return;
+  }
+
+  document.getElementById("live-dot").style.background = channel.color;
+  document.getElementById("live-dot").style.boxShadow = `0 0 8px ${channel.color}`;
+  document.getElementById("live-text").textContent = paused ? "PAUSED" : (mode === "autopilot" ? "ON AIR" : "LIVE");
+  document.getElementById("ch-num").textContent = channel.num;
+  document.getElementById("ch-name").textContent = channel.name;
+  document.getElementById("speed-badge").textContent = speed + "×";
+  document.getElementById("speed-badge").style.display = speed === 1 ? "none" : "inline";
+  document.getElementById("speed-btn").textContent = speed + "×";
+
+  const hasStories = channel.status === "ready" && channel.stories.length > 0;
+  const dotsEl = document.getElementById("story-dots");
+  dotsEl.innerHTML = "";
+  if (hasStories) {
+    channel.stories.forEach((_, i) => {
+      const d = document.createElement("div");
+      d.style.cssText = `width:${i === storyIdx ? 16 : 6}px; height:3px; border-radius:2px; background:${i === storyIdx ? channel.color : "#2a2a2e"}; transition: width 0.2s ease;`;
+      dotsEl.appendChild(d);
+    });
+  }
+
+  const bodyEl = document.getElementById("body-area");
+  document.getElementById("now-next-later").style.display = hasStories ? "flex" : "none";
+  document.getElementById("progress-bar").style.background = channel.color;
+  document.getElementById("progress-bar").style.width = progress + "%";
+
+  if (channel.status === "loading") {
+    bodyEl.innerHTML = `
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="width:14px; height:14px; border-radius:50%; border:2px solid ${channel.color}33; border-top-color:${channel.color}; animation: spin 0.8s linear infinite;"></div>
+        <span class="mono" style="font-size:12px; color:#6a6a72;">TUNING IN…</span>
+      </div>`;
+  } else if (channel.status === "error") {
+    bodyEl.innerHTML = `
+      <div>
+        <div class="mono" style="font-size:11px; color:#ff5c5c; letter-spacing:0.08em;">SIGNAL LOST</div>
+        <div style="font-size:13px; color:#9a9aa2; margin-top:4px;">Couldn't reach ${channel.name}. Retrying in ${REFRESH_MINUTES} min.</div>
+        ${channel.error ? `<div class="mono" style="font-size:10px; color:#4a4a50; margin-top:6px;">${escapeHtml(channel.error)}</div>` : ""}
+      </div>`;
+  } else if (hasStories) {
+    const story = channel.stories[storyIdx % channel.stories.length];
+    const nextStory = channel.stories[(storyIdx + 1) % channel.stories.length];
+    const laterStory = channel.stories[(storyIdx + 2) % channel.stories.length];
+    bodyEl.innerHTML = `
+      <div class="reader-open-target" id="story-open-target">
+        <div class="mono" style="font-size:11px; color:${channel.color}; letter-spacing:0.08em;">${story.show}</div>
+        <div class="story-title" style="font-weight:700; font-size:clamp(16px, 3.2vw, 25px); color:#f5f5f7; line-height:1.2; letter-spacing:-0.01em; margin-top:6px;">${escapeHtml(story.title)}</div>
+        <div class="mono" style="font-size:12px; color:${channel.color}; margin-top:6px;">${escapeHtml(story.line1)}</div>
+        <div style="font-size:13px; color:#9a9aa2; max-width:440px; line-height:1.4; margin-top:6px;">${escapeHtml(story.line2)}</div>
+        <div class="mono" style="font-size:10px; color:${channel.color}; margin-top:8px; opacity:0.8;">▸ click to read in DEV·TV</div>
+      </div>`;
+    document.getElementById("story-open-target").onclick = () => openReader(channel, story);
+    document.getElementById("now-text").textContent = story.title;
+    document.getElementById("next-text").textContent = nextStory.title;
+    document.getElementById("later-text").textContent = laterStory.title;
+  } else {
+    bodyEl.innerHTML = "";
+  }
+
+  const tickerItems = channels.flatMap(c => c.status === "ready" ? c.stories.slice(0, 2).map(s => ({ source: c.tag, text: s.title })) : []);
+  const tickerEl = document.getElementById("ticker");
+  tickerEl.textContent = tickerItems.length > 0
+    ? [...tickerItems, ...tickerItems].map(i => `${i.source}: ${i.text}`).join("   •   ") + "   •   "
+    : "loading ticker…";
+
+  const btnsEl = document.getElementById("channel-buttons");
+  btnsEl.innerHTML = "";
+  channels.forEach((c, idx) => {
+    const active = power && idx === channelIdx;
+    const btn = document.createElement("button");
+    btn.className = "chbtn btn";
+    btn.style.background = active ? `linear-gradient(180deg, ${c.color}33, ${c.color}11)` : "linear-gradient(180deg, #232328, #17171a)";
+    btn.style.boxShadow = active
+      ? `0 0 0 1px ${c.color}55, inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 4px rgba(0,0,0,0.4)`
+      : "inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4)";
+    btn.style.opacity = power ? "1" : "0.4";
+    btn.style.cursor = power ? "pointer" : "not-allowed";
+    btn.innerHTML = `<span class="num" style="color:${active ? c.color : "#6a6a72"};">${c.num}</span><span class="name">${c.name}</span>`;
+    if (c.status === "loading") btn.innerHTML += '<span class="dot" style="background:#6a6a72;"></span>';
+    if (c.status === "error") btn.innerHTML += '<span class="dot" style="background:#ff5c5c;"></span>';
+    btn.onclick = () => manualChangeChannel(idx);
+    btnsEl.appendChild(btn);
+  });
+
+  document.getElementById("watch-btn").innerHTML = mode === "autopilot" ? "❚❚ STOP" : "▶ WATCH";
+  document.getElementById("watch-btn").style.background = mode === "autopilot" ? "linear-gradient(180deg, #ff5c5c33, #ff5c5c11)" : "linear-gradient(180deg, #232328, #17171a)";
+  document.getElementById("watch-btn").style.color = mode === "autopilot" ? "#ff5c5c" : "#d8d8dc";
+  document.getElementById("watch-btn").style.opacity = power ? "1" : "0.4";
+  document.getElementById("pause-btn").textContent = paused ? "▶" : "❚❚";
+  document.getElementById("pause-btn").style.opacity = power ? "1" : "0.4";
+  document.getElementById("power-btn").style.background = power ? "linear-gradient(180deg, #5a2020, #3a1414)" : "linear-gradient(180deg, #232328, #17171a)";
+  document.getElementById("power-btn").style.boxShadow = power ? "0 0 10px rgba(255,80,80,0.4), inset 0 1px 0 rgba(255,255,255,0.08)" : "inset 0 1px 0 rgba(255,255,255,0.05)";
+  document.getElementById("power-btn").style.color = power ? "#ff9090" : "#6a6a72";
+}
+
+document.getElementById("gear").onclick = () => { showSettings = !showSettings; render(); };
+document.getElementById("close-settings").onclick = () => { showSettings = false; render(); };
+document.getElementById("close-reader").onclick = closeReader;
+document.getElementById("watch-btn").onclick = toggleAutoPilot;
+document.getElementById("speed-btn").onclick = cycleSpeed;
+document.getElementById("pause-btn").onclick = () => { if (power) { paused = !paused; render(); } };
+document.getElementById("power-btn").onclick = () => { power = !power; if (readerOpen) closeReader(); stopStaticSilently(); render(); };
+
+document.addEventListener("keydown", (e) => {
+  if (readerOpen) {
+    if (e.key === "Escape") closeReader();
+    return;
+  }
+  if (!power || showSettings) return;
+  const channels = getChannels();
+  if (e.key === "ArrowRight") manualChangeChannel((channelIdx + 1) % channels.length);
+  if (e.key === "ArrowLeft") manualChangeChannel((channelIdx - 1 + channels.length) % channels.length);
+  if (e.key === " ") { e.preventDefault(); paused = !paused; render(); }
+  const found = channels.findIndex(c => c.key === e.key);
+  if (found !== -1) manualChangeChannel(found);
+});
+
+loadAll();
+setInterval(loadAll, REFRESH_MINUTES * 60 * 1000);
+startTick();
+render();
+playStatic(null);
+</script>
+</body>
+</html>
