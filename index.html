@@ -191,7 +191,6 @@
     <button id="watch-btn" class="btn" style="display:flex; align-items:center; gap:6px; padding:9px 14px; border-radius:6px; border:1px solid #000; border-top:1px solid #3a3a40; background:linear-gradient(180deg, #232328, #17171a); color:#d8d8dc; font-size:11px; font-weight:600;">❚❚ STOP</button>
     <div id="channel-buttons" style="display:flex; gap:7px; flex-wrap:wrap;"></div>
     <button id="speed-btn" class="btn mono" title="Playback speed" style="padding:9px 10px; border-radius:6px; border:1px solid #000; border-top:1px solid #3a3a40; background:linear-gradient(180deg, #232328, #17171a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color:#d8d8dc; font-size:11px; font-weight:600;">1×</button>
-    <button id="pause-btn" class="round-btn btn">❚❚</button>
     <button id="power-btn" class="round-btn btn" title="Turn TV off">⏻</button>
   </div>
 </div>
@@ -200,7 +199,7 @@
 <div class="stand2"></div>
 
 <div class="mono desktop-hint" style="font-size:11px; color:#45454c; margin-top:22px; text-align:center;">
-  ← → or number keys to change channel · space to pause · click a story to read · esc to close · ⚙ for channel settings
+  ← → or number keys to change channel · space or WATCH/STOP to play or freeze · click a story to read · esc to close · ⚙ for channel settings
 </div>
 <div class="mono mobile-hint" style="font-size:11px; color:#45454c; margin-top:18px; text-align:center; padding:0 12px;">
   Tap a channel to switch · tap a story to read · ⚙ for channel settings
@@ -357,7 +356,7 @@ let enabledIds = loadEnabledIds();
 let dataByChannel = {};
 let channelIdx = 0, storyIdx = 0;
 let mode = "autopilot"; // default is playing, same as turning on a real TV; STOP freezes it
-let paused = false, power = true, progress = 0, showSettings = false;
+let power = true, progress = 0, showSettings = false;
 let readerOpen = false, readerLoading = false, readerStory = null, readerChannel = null, readerError = null;
 let tickInterval = null, identTimeout = null;
 let speed = loadSpeed();
@@ -565,7 +564,7 @@ function startTick() {
   tickInterval = setInterval(() => {
     // Manual mode is now a frozen preview: nothing advances on its own.
     // Auto Pilot is the only thing that moves stories or channels forward.
-    if (!power || paused || readerOpen || mode !== "autopilot") return;
+    if (!power || readerOpen || mode !== "autopilot") return;
     const channels = getChannels();
     const cur = channels[channelIdx];
     const hasStories = cur && cur.status === "ready" && cur.stories.length > 0;
@@ -723,7 +722,7 @@ function render() {
 
   document.getElementById("live-dot").style.background = channel.color;
   document.getElementById("live-dot").style.boxShadow = `0 0 8px ${channel.color}`;
-  document.getElementById("live-text").textContent = paused ? "PAUSED" : (mode === "autopilot" ? "ON AIR" : "LIVE");
+  document.getElementById("live-text").textContent = mode === "autopilot" ? "ON AIR" : "LIVE";
   document.getElementById("ch-num").textContent = channel.num;
   document.getElementById("ch-name").textContent = channel.name;
   document.getElementById("speed-badge").textContent = speed + "×";
@@ -808,8 +807,6 @@ function render() {
   document.getElementById("watch-btn").style.background = mode === "autopilot" ? "linear-gradient(180deg, #ff5c5c33, #ff5c5c11)" : "linear-gradient(180deg, #232328, #17171a)";
   document.getElementById("watch-btn").style.color = mode === "autopilot" ? "#ff5c5c" : "#d8d8dc";
   document.getElementById("watch-btn").style.opacity = power ? "1" : "0.4";
-  document.getElementById("pause-btn").textContent = paused ? "▶" : "❚❚";
-  document.getElementById("pause-btn").style.opacity = power ? "1" : "0.4";
   document.getElementById("power-btn").style.background = power ? "linear-gradient(180deg, #1f6b3a, #123d21)" : "linear-gradient(180deg, #232328, #17171a)";
   document.getElementById("power-btn").style.boxShadow = power ? "0 0 14px rgba(60,220,120,0.55), 0 0 0 1px rgba(60,220,120,0.4), inset 0 1px 0 rgba(255,255,255,0.1)" : "inset 0 1px 0 rgba(255,255,255,0.05)";
   document.getElementById("power-btn").style.color = power ? "#7dffb0" : "#6a6a72";
@@ -831,7 +828,6 @@ document.getElementById("close-settings").onclick = () => { showSettings = false
 document.getElementById("close-reader").onclick = closeReader;
 document.getElementById("watch-btn").onclick = toggleAutoPilot;
 document.getElementById("speed-btn").onclick = cycleSpeed;
-document.getElementById("pause-btn").onclick = () => { if (power) { paused = !paused; render(); playStatic(420, showIdent); } };
 document.getElementById("power-btn").onclick = togglePower;
 
 document.addEventListener("keydown", (e) => {
@@ -843,7 +839,7 @@ document.addEventListener("keydown", (e) => {
   const channels = getChannels();
   if (e.key === "ArrowRight") manualChangeChannel((channelIdx + 1) % channels.length);
   if (e.key === "ArrowLeft") manualChangeChannel((channelIdx - 1 + channels.length) % channels.length);
-  if (e.key === " ") { e.preventDefault(); paused = !paused; render(); }
+  if (e.key === " ") { e.preventDefault(); toggleAutoPilot(); }
   const found = channels.findIndex(c => c.key === e.key);
   if (found !== -1) manualChangeChannel(found);
 });
