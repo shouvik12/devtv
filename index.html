@@ -120,7 +120,7 @@
           <button id="close-settings" style="background:none; border:none; color:#6a6a72; cursor:pointer; font-size:16px;">✕</button>
         </div>
         <div id="channel-toggles" style="display:flex; flex-direction:column; gap:10px;"></div>
-        <div class="mono" style="font-size:10px; color:#45454c; margin-top:16px;">Auto pilot cycles only through channels that are on.</div>
+        <div class="mono" style="font-size:10px; color:#45454c; margin-top:16px;">WATCH/STOP only plays or freezes the current channel. Channels never change on their own.</div>
       </div>
 
       <div id="reader-overlay">
@@ -358,6 +358,7 @@ let channelIdx = 0, storyIdx = 0;
 let mode = "autopilot"; // default is playing, same as turning on a real TV; STOP freezes it
 let power = true, progress = 0, showSettings = false;
 let readerOpen = false, readerLoading = false, readerStory = null, readerChannel = null, readerError = null;
+let bootStaticShowing = true; // cleared the moment the shown channel has a real result
 let tickInterval = null, identTimeout = null;
 let speed = loadSpeed();
 
@@ -464,6 +465,7 @@ function playStatic(durationMs, onDone) {
 }
 function stopStaticSilently() {
   staticToken++;
+  bootStaticShowing = false;
   const canvas = document.getElementById("boot-static");
   canvas.style.transition = "opacity 0.2s ease";
   canvas.style.opacity = "0";
@@ -527,25 +529,21 @@ function manualChangeChannel(idx) {
   const channels = getChannels();
   if (idx === channelIdx || idx >= channels.length) { render(); return; }
   channelIdx = idx; storyIdx = 0; progress = 0;
+  bootStaticShowing = false;
   render();
   playStatic(420, showIdent);
 }
 
 function advance() {
+  // WATCH/STOP only controls whether stories cycle within the channel
+  // you're currently on. It never changes the channel itself — that's
+  // always your call, via a button, arrow key, or number key.
   if (readerOpen) return;
   const channels = getChannels();
   const cur = channels[channelIdx];
   if (!cur) return;
   const count = cur.stories.length || 1;
-  if (storyIdx + 1 < count) {
-    storyIdx += 1;
-  } else if (mode === "autopilot" && channels.length > 1) {
-    channelIdx = (channelIdx + 1) % channels.length;
-    storyIdx = 0;
-    playStatic(420, showIdent);
-  } else {
-    storyIdx = 0;
-  }
+  storyIdx = (storyIdx + 1) % count;
   progress = 0;
 }
 
@@ -553,6 +551,7 @@ function toggleAutoPilot() {
   if (!power) return;
   mode = mode === "autopilot" ? "manual" : "autopilot";
   render();
+  bootStaticShowing = false;
   // Also clears any still-looping boot static if this is the first click
   // the person makes — otherwise the mode flips correctly underneath but
   // the screen stays hidden behind static and it looks like nothing happened.
@@ -730,6 +729,16 @@ function render() {
   document.getElementById("speed-btn").textContent = speed + "×";
 
   const hasStories = channel.status === "ready" && channel.stories.length > 0;
+
+  // The boot static loops forever until something explicitly clears it.
+  // If nobody has clicked a channel yet, reveal it the moment the channel
+  // that's actually on screen has a real result (data or an error) —
+  // otherwise it could sit on static for up to a full story cycle before
+  // Auto Pilot happens to switch channels on its own.
+  if (bootStaticShowing && (hasStories || channel.status === "error")) {
+    bootStaticShowing = false;
+    playStatic(420, showIdent);
+  }
   const dotsEl = document.getElementById("story-dots");
   dotsEl.innerHTML = "";
   if (hasStories) {
