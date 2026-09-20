@@ -608,7 +608,15 @@ async function openReader(channel, story) {
       html = mdLite(text);
     } else if (channel.id === "hn") {
       if (story.hnText) {
-        html = story.hnText;
+        // HN's API documents `text` as containing raw HTML. Never inject
+        // that directly — strip the tags to plain text first, then run it
+        // through the same escape-then-format pipeline as every other
+        // source, so it can't carry a script/onerror payload into the page.
+        const plainText = story.hnText
+          .replace(/<p>/gi, "\n\n")
+          .replace(/<br\s*\/?>/gi, "\n")
+          .replace(/<[^>]*>/g, "");
+        html = mdLite(plainText);
       } else {
         throw new Error("This is a link post — Hacker News itself has no article text for it. Use \u201cOpen original source\u201d below to read it.");
       }
