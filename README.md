@@ -90,9 +90,15 @@ Static (real per-pixel noise, not a CSS texture) plays continuously on first loa
 
 The layout is responsive below 640px: channel buttons resize to fit three per row, the WATCH/STOP button takes its own full-width row, round buttons grow to a 44px minimum touch target, and the footer hint swaps from keyboard shortcuts to tap instructions. Nothing here has been tested on a real device by an AI, though. If something looks cramped on your phone, it's worth a closer look.
 
-## 🚀 Running it
+## 🚀 Getting it running
 
-This is one HTML file. No install, no dependencies.
+This is one HTML file. No install, no dependencies, no account.
+
+### On desktop (Chrome, Safari, Firefox, Edge, any browser)
+
+1. **Download `index.html`**: on this repo's GitHub page, click the green **Code** button → **Download ZIP** (or just open [index.html](./index.html) and use the "Download raw file" button).
+2. Find it in your Downloads folder.
+3. **Open it**: double-click it, or drag it straight into an open browser window, or right-click it → **Open with** → your browser of choice.
 
 ```bash
 open index.html        # macOS
@@ -100,7 +106,16 @@ start index.html        # Windows
 xdg-open index.html     # Linux
 ```
 
-Or just double-click it in a file browser.
+That's it. It runs entirely in the browser, nothing to install.
+
+### On mobile
+
+Opening a local HTML file on a phone isn't really practical the way double-clicking it is on desktop, phones don't give you the same drag-and-drop file access. The easy path on mobile is to open a **hosted** version instead of a local file:
+
+- If it's already deployed (see **Deploying it** below), just open that link in Chrome or Safari on your phone like any normal website.
+- If it isn't deployed yet, **[Netlify Drop](https://app.netlify.com/drop)** takes about 10 seconds from a laptop and gives you a real URL you can then open on your phone.
+
+The app itself is responsive and touch-friendly below 640px wide, so once it's loaded from a real URL, it works the same as on desktop.
 
 ### ⚠️ Why it has to run as a real page, not inside a sandboxed preview
 
