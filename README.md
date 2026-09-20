@@ -20,29 +20,9 @@ A full-screen "TV" for the developer internet. Instead of checking GitHub, Hacke
 
 ### 🖼️ Screenshot
 
-> _Drop a real screenshot or GIF of your running instance at `assets/screenshot.png` and it'll render here automatically: `![DEV·TV screenshot](./assets/screenshot.png)`._
+![DEV·TV screenshot](./assets/screenshot.png)
 
-Until then, here's what's actually on screen. Note it's playing by default, the way a real TV already has something on when you turn it on:
-
-```
-┌──────────────────────────────────────────────────────────┐
-│  ● ON AIR  01  GITHUB                          ▪▪▪▪       │
-│                                                             │
-│  RISING REPOSITORY                                         │
-│  browser-use/jev-ultrafast                                 │
-│  10,584 stars · created 3d ago                              │
-│  i. am. speed.                                              │
-│  ▸ click to read in DEV·TV                                  │
-│                                                             │
-│  NOW    browser-use/jev-ultrafast                          │
-│  NEXT   tamaratran/fast-jev-compaction                     │
-│  LATER  robbietilton/Compositor                            │
-│                                                             │
-│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
-│  HF: prism-ml/Ternary-Bonsai  •  REL: React v19.2.0  •  …  │
-└──────────────────────────────────────────────────────────┘
-[❚❚ STOP] [01 GH][02 HN][03 DEV][04 HF][05 REL] [1×][⏻ green]
-```
+_Real capture: headless Chromium loaded `index.html`, tuned to the GitHub channel, and this is what came back live. GitHub is the channel shown here because it's the only one this particular capture environment could reach; the other four render identically in layout, just with each channel's own color and data._
 
 ---
 
@@ -72,6 +52,10 @@ Every story links to its real source. Click a story and it opens in an in-app re
 
 Markdown from fetched content renders through a small, deliberately limited converter (headers, bold, italic, inline code, links). Input is HTML-escaped before any markup is reapplied, so nothing fetched from an external source can inject real HTML into the page.
 
+![In-app reader](./assets/screenshot-reader.png)
+
+_Real capture of the reader opening a GitHub README. It happened to hit a live rate limit (`403`) from this repo's own testing volume when the screenshot was taken, which is actually a decent look at the app's real error handling: a clear message plus a working "Open original source" fallback, rather than a broken page._
+
 ## 🎛️ Controls
 
 | Key / Button | Action |
@@ -86,9 +70,17 @@ Markdown from fetched content renders through a small, deliberately limited conv
 
 Static (real per-pixel noise, not a CSS texture) plays continuously on first load until you pick a channel, and briefly on every channel change afterward, like actually tuning a signal.
 
+![Channel settings panel](./assets/screenshot-settings.png)
+
+_The ⚙ panel: real ON/OFF labels per channel, plus live NO SIGNAL indicators for whichever channels this particular capture environment couldn't reach._
+
 ## 📱 Mobile
 
-The layout is responsive below 640px: channel buttons resize to fit three per row, the WATCH/STOP button takes its own full-width row, round buttons grow to a 44px minimum touch target, and the footer hint swaps from keyboard shortcuts to tap instructions. Nothing here has been tested on a real device by an AI, though. If something looks cramped on your phone, it's worth a closer look.
+The layout is responsive below 640px: channel buttons resize to fit three per row, the WATCH/STOP button takes its own full-width row, round buttons grow to a 44px minimum touch target, and the footer hint swaps from keyboard shortcuts to tap instructions.
+
+![Mobile layout](./assets/screenshot-mobile.png)
+
+_Real capture at a 390×844 viewport, the same headless run as above._
 
 ## 🚀 Getting it running
 
