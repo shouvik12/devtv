@@ -55,15 +55,24 @@
   .scanlines { position: absolute; inset: 0; pointer-events: none; z-index: 2; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px); }
   .vignette { position: absolute; inset: 0; pointer-events: none; z-index: 2; box-shadow: inset 0 0 80px rgba(0,0,0,0.5); }
   #ident { position: absolute; inset: 0; z-index: 5; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 6px; animation: identIn 0.15s ease; }
-  #settings-overlay { position: absolute; inset: 0; z-index: 10; background: rgba(5,5,6,0.96); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); display: none; flex-direction: column; padding: 20px 24px; animation: overlayIn 0.15s ease; overflow-y: auto; }
+  #settings-overlay { position: absolute; inset: 0; z-index: 10; background: rgba(5,5,6,0.96); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); display: none; flex-direction: column; padding: 20px 24px; animation: overlayIn 0.15s ease; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   #reader-overlay { position: absolute; inset: 0; z-index: 12; background: #08080a; display: none; flex-direction: column; animation: overlayIn 0.15s ease; }
   #reader-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid #1c1c20; flex-shrink: 0; }
-  #reader-body { flex: 1; overflow-y: auto; padding: 20px 22px 28px; }
+  #reader-body { flex: 1; overflow-y: auto; padding: 20px 22px 28px; -webkit-overflow-scrolling: touch; }
   #reader-body h1, #reader-body h2, #reader-body h3 { color: #f5f5f7; line-height: 1.3; margin: 18px 0 8px; }
   #reader-body h1 { font-size: 20px; } #reader-body h2 { font-size: 17px; } #reader-body h3 { font-size: 15px; }
   #reader-body p { color: #c8c8cc; font-size: 14px; line-height: 1.65; margin: 0 0 12px; }
   #reader-body code { background: #1c1c20; padding: 1px 5px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 13px; color: #d8d8dc; }
   #reader-body a { text-decoration: underline; }
+  #reader-body pre { background: #111114; border: 1px solid #232328; border-radius: 6px; padding: 12px 14px; overflow-x: auto; margin: 0 0 14px; -webkit-overflow-scrolling: touch; }
+  #reader-body pre code { background: none; padding: 0; font-size: 12.5px; line-height: 1.5; white-space: pre; }
+  #reader-body ul, #reader-body ol { color: #c8c8cc; font-size: 14px; line-height: 1.65; margin: 0 0 14px; padding-left: 22px; }
+  #reader-body li { margin-bottom: 4px; }
+  #reader-body table { width: 100%; border-collapse: collapse; margin: 0 0 16px; font-size: 13px; }
+  #reader-body th, #reader-body td { border: 1px solid #232328; padding: 6px 10px; text-align: left; color: #c8c8cc; }
+  #reader-body th { background: #16161a; color: #e8e8ea; font-weight: 600; }
+  #reader-body hr { border: none; border-top: 1px solid #232328; margin: 18px 0; }
+  #reader-body img { max-width: 100%; height: auto; border-radius: 6px; display: block; margin: 4px 0 14px; }
   #reader-footer { padding: 14px 22px; border-top: 1px solid #1c1c20; flex-shrink: 0; }
   .reader-open-target { cursor: pointer; }
   .reader-open-target:hover .story-title { text-decoration: underline; }
@@ -191,7 +200,7 @@
         </div>
 
         <div style="margin-top:8px; border-top:1px solid #1c1c20; padding-top:6px; overflow:hidden; white-space:nowrap; z-index:1;">
-          <div id="ticker" class="mono" style="display:inline-block; font-size:10px; color:#6a6a72; animation: tickerScroll 30s linear infinite;">loading ticker…</div>
+          <div id="ticker" class="mono" style="display:inline-block; font-size:12px; color:#8a8a92; animation: tickerScroll 46s linear infinite;">loading ticker…</div>
         </div>
       </div>
 
@@ -244,16 +253,109 @@ function escapeHtml(str) {
 // so nothing from a fetched README/article can inject real HTML — only the
 // few patterns below are turned back into tags.
 function mdLite(md) {
-  let text = escapeHtml(md || "");
-  text = text
-    .replace(/^### (.*)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.*)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.*)$/gm, "<h1>$1</h1>")
+  const raw = md || "";
+
+  // Fenced code blocks are extracted first, before anything else touches
+  // the text, so nothing inside them (```, *, |, numbers) can be
+  // misinterpreted as bold/italic/table/list syntax. Content is escaped
+  // once here and never re-escaped.
+  const codeBlocks = [];
+  let text = raw.replace(/```[a-zA-Z0-9]*\n?([\s\S]*?)```/g, (match, code) => {
+    codeBlocks.push(escapeHtml(code.replace(/\n$/, "")));
+    return `\u0000CODEBLOCK${codeBlocks.length - 1}\u0000`;
+  });
+
+  text = escapeHtml(text);
+
+  const inlineFormat = (s) => s
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-  return text.split(/\n{2,}/).filter(p => p.trim()).map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
+    .replace(/!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g, '<img src="$2" alt="$1" loading="lazy">')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+  const isTableSeparator = (line) => /^\s*\|?[\s:|-]+\|[\s:|-]*\|?\s*$/.test(line) && line.includes("-");
+  const splitRow = (line) => {
+    const cells = line.split("|").map((c) => c.trim());
+    if (cells[0] === "") cells.shift();
+    if (cells[cells.length - 1] === "") cells.pop();
+    return cells;
+  };
+
+  const lines = text.split("\n");
+  const out = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    const codeMatch = line.match(/^\u0000CODEBLOCK(\d+)\u0000$/);
+    if (codeMatch) {
+      out.push(`<pre><code>${codeBlocks[parseInt(codeMatch[1], 10)]}</code></pre>`);
+      i++;
+      continue;
+    }
+
+    if (line.trim() === "") { i++; continue; }
+
+    // Table: a row with | immediately followed by a --- separator row
+    if (line.includes("|") && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
+      const headerCells = splitRow(line);
+      i += 2;
+      const bodyRows = [];
+      while (i < lines.length && lines[i].includes("|") && lines[i].trim() !== "") {
+        bodyRows.push(splitRow(lines[i]));
+        i++;
+      }
+      let html = "<table><thead><tr>" + headerCells.map((c) => `<th>${inlineFormat(c)}</th>`).join("") + "</tr></thead><tbody>";
+      bodyRows.forEach((cells) => {
+        html += "<tr>" + cells.map((c) => `<td>${inlineFormat(c)}</td>`).join("") + "</tr>";
+      });
+      out.push(html + "</tbody></table>");
+      continue;
+    }
+
+    if (/^\s*[-*+]\s+/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i])) {
+        items.push(lines[i].replace(/^\s*[-*+]\s+/, ""));
+        i++;
+      }
+      out.push("<ul>" + items.map((it) => `<li>${inlineFormat(it)}</li>`).join("") + "</ul>");
+      continue;
+    }
+
+    if (/^\s*\d+\.\s+/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) {
+        items.push(lines[i].replace(/^\s*\d+\.\s+/, ""));
+        i++;
+      }
+      out.push("<ol>" + items.map((it) => `<li>${inlineFormat(it)}</li>`).join("") + "</ol>");
+      continue;
+    }
+
+    let m;
+    if ((m = line.match(/^### (.*)$/))) { out.push(`<h3>${inlineFormat(m[1])}</h3>`); i++; continue; }
+    if ((m = line.match(/^## (.*)$/))) { out.push(`<h2>${inlineFormat(m[1])}</h2>`); i++; continue; }
+    if ((m = line.match(/^# (.*)$/))) { out.push(`<h1>${inlineFormat(m[1])}</h1>`); i++; continue; }
+
+    if (/^\s*(---+|\*\*\*+)\s*$/.test(line)) { out.push("<hr>"); i++; continue; }
+
+    const paraLines = [];
+    while (
+      i < lines.length && lines[i].trim() !== "" &&
+      !/^\s*[-*+]\s+/.test(lines[i]) && !/^\s*\d+\.\s+/.test(lines[i]) &&
+      !/^#{1,3}\s/.test(lines[i]) && !/^\u0000CODEBLOCK\d+\u0000$/.test(lines[i]) &&
+      !(lines[i].includes("|") && i + 1 < lines.length && isTableSeparator(lines[i + 1]))
+    ) {
+      paraLines.push(lines[i]);
+      i++;
+    }
+    if (paraLines.length) out.push(`<p>${paraLines.map(inlineFormat).join("<br>")}</p>`);
+  }
+
+  return out.join("");
 }
 
 async function fetchGithubStories() {
@@ -341,7 +443,7 @@ async function fetchAIPapersStories() {
       show: "AI PAPER",
       title,
       line1: upvotes.toLocaleString() + " upvotes" + (authorNames.length ? " · " + authorNames.slice(0, 2).join(", ") + (authorNames.length > 2 ? " et al." : "") : ""),
-      line2: summary.slice(0, 160) + (summary.length > 160 ? "…" : ""),
+      line2: summary.slice(0, 260) + (summary.length > 260 ? "…" : ""),
       url: id ? "https://huggingface.co/papers/" + id : "https://huggingface.co/papers",
       fullText: summary || "No abstract provided.",
     };
@@ -569,10 +671,14 @@ function showIdent() {
 }
 
 function manualChangeChannel(idx) {
-  if (!power || readerOpen) return;
+  if (!power) return;
   // Switching channels no longer forces a stop — it just changes what's
   // showing, exactly like a real remote. Playback state (playing or
-  // stopped) carries over to whatever channel you land on.
+  // stopped) carries over to whatever channel you land on. Picking a new
+  // channel while the reader is open closes the reader first — you're
+  // tuning away from that article, so it wouldn't make sense to keep it
+  // open on screen.
+  if (readerOpen) closeReader();
   const channels = getChannels();
   if (idx === channelIdx || idx >= channels.length) { render(); return; }
   channelIdx = idx; storyIdx = 0; progress = 0;
@@ -833,7 +939,7 @@ function render() {
         <div class="mono" style="font-size:11px; color:${channel.color}; letter-spacing:0.08em;">${story.show}</div>
         <div class="story-title" style="font-weight:700; font-size:clamp(16px, 3.2vw, 28px); color:#f5f5f7; line-height:1.2; letter-spacing:-0.01em; margin-top:6px;">${escapeHtml(story.title)}</div>
         <div class="mono" style="font-size:12px; color:${channel.color}; margin-top:6px;">${escapeHtml(story.line1)}</div>
-        <div style="font-size:13px; color:#9a9aa2; max-width:440px; line-height:1.4; margin-top:6px;">${escapeHtml(story.line2)}</div>
+        <div style="font-size:13px; color:#9a9aa2; max-width:640px; line-height:1.4; margin-top:6px;">${escapeHtml(story.line2)}</div>
         <div class="mono" style="font-size:10px; color:${channel.color}; margin-top:8px; opacity:0.8;">▸ click to read in DEV·TV</div>
       </div>`;
     document.getElementById("story-open-target").onclick = () => openReader(channel, story);
@@ -849,6 +955,10 @@ function render() {
   tickerEl.textContent = tickerItems.length > 0
     ? [...tickerItems, ...tickerItems].map(i => `${i.source}: ${i.text}`).join("   •   ") + "   •   "
     : "loading ticker…";
+  // The overlay sits visually on top, but the ticker's animation keeps
+  // compositing every frame underneath it unless explicitly paused — that's
+  // wasted GPU work competing with a scroll gesture inside the overlay.
+  tickerEl.style.animationPlayState = (readerOpen || showSettings) ? "paused" : "running";
 
   const btnsEl = document.getElementById("channel-buttons");
   btnsEl.innerHTML = "";
@@ -920,15 +1030,14 @@ document.getElementById("speed-btn").onclick = cycleSpeed;
 document.getElementById("power-btn").onclick = togglePower;
 
 document.addEventListener("keydown", (e) => {
-  if (readerOpen) {
-    if (e.key === "Escape") closeReader();
-    return;
-  }
+  if (readerOpen && e.key === "Escape") { closeReader(); return; }
   if (!power || showSettings) return;
   const channels = getChannels();
   if (e.key === "ArrowRight") manualChangeChannel((channelIdx + 1) % channels.length);
   if (e.key === "ArrowLeft") manualChangeChannel((channelIdx - 1 + channels.length) % channels.length);
-  if (e.key === " ") { e.preventDefault(); toggleAutoPilot(); }
+  // Space toggles playback only outside the reader — inside it, space
+  // should do its normal browser job of scrolling the article.
+  if (e.key === " " && !readerOpen) { e.preventDefault(); toggleAutoPilot(); }
   const found = channels.findIndex(c => c.key === e.key);
   if (found !== -1) manualChangeChannel(found);
 });
