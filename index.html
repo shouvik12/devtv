@@ -73,6 +73,7 @@
   #reader-body th { background: #16161a; color: #e8e8ea; font-weight: 600; }
   #reader-body hr { border: none; border-top: 1px solid #232328; margin: 18px 0; }
   #reader-body img { max-width: 100%; height: auto; border-radius: 6px; display: block; margin: 4px auto 14px; }
+  #reader-body figcaption { color: #6a6a72; font-size: 12px; font-style: italic; text-align: center; margin: -8px 0 16px; }
   #reader-footer { padding: 14px 22px; border-top: 1px solid #1c1c20; flex-shrink: 0; }
   .reader-open-target { cursor: pointer; }
   .reader-open-target:hover .story-title { text-decoration: underline; }
@@ -249,6 +250,22 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+// GitHub returns 403 both for genuine access problems and for rate limiting,
+// but the rate-limit headers it sends back tell you which one for certain —
+// no need to guess from the status code alone.
+function githubErrorMessage(res, whatFailed) {
+  if (res.status === 403) {
+    const remaining = res.headers.get("x-ratelimit-remaining");
+    const resetHeader = res.headers.get("x-ratelimit-reset");
+    if (remaining === "0" && resetHeader) {
+      const resetDate = new Date(parseInt(resetHeader, 10) * 1000);
+      const mins = Math.max(1, Math.round((resetDate.getTime() - Date.now()) / 60000));
+      return `GitHub rate limit reached. Resets in about ${mins} min.`;
+    }
+  }
+  return `${whatFailed} (${res.status})`;
+}
+
 // Very small, deliberately limited markdown renderer. Input is escaped first
 // so nothing from a fetched README/article can inject real HTML — only the
 // few patterns below are turned back into tags.
@@ -273,6 +290,15 @@ function mdLite(md) {
     return `\u0000CODEBLOCK${codeBlocks.length - 1}\u0000`;
   });
 
+  // Decode a deliberately narrow set of pre-existing HTML entities so they
+  // display as intended (a literal "&amp;" in source should show as "&",
+  // not the visible text "&amp;"). This explicitly excludes &lt;/&gt; and
+  // any numeric entity that could resolve to < or > — decoding those would
+  // let an attacker smuggle a fake tag past the whitelist below by
+  // entity-encoding it first (e.g. "&lt;img onerror=...&gt;"), which would
+  // then look like genuine raw HTML by the time the whitelist regexes run.
+  text = text.replace(/&nbsp;/gi, "\u00A0").replace(/&amp;/gi, "&");
+
   // Some READMEs use raw HTML <img> tags instead of markdown image syntax
   // (often wrapped in <p align="center">...</p> for centering). Only a
   // narrow, explicitly whitelisted subset is honored here: the tag must be
@@ -293,12 +319,43 @@ function mdLite(md) {
     // the same way the centering wrappers are.
     .replace(/<\/?picture\s*>/gi, "")
     .replace(/<source\b[^>]*>/gi, "")
+    // <figure> is a pure layout wrapper, dropped the same way. <figcaption>
+    // holds real content (an image caption) so it's kept, along with bare
+    // <em>/<strong> tags some READMEs use instead of markdown */**. All
+    // four patterns match zero attributes, so nothing (onclick, style,
+    // etc.) can ride along even if a real README's markup carried one.
+    .replace(/<\/?figure\s*>/gi, "")
+    // Known limitation, not a security issue: if an opening <em>/<strong>
+    // tag is blocked here for carrying an attribute (e.g. onclick), its
+    // matching closing tag still passes through, since closing tags never
+    // carry attributes and this function doesn't track open/close pairing.
+    // Worst case is a stray closing tag the browser ignores, or rarely an
+    // earlier real <em> ending a few words early — never code execution,
+    // since a bare closing tag has no attribute surface to exploit.
+    .replace(/<figcaption>/gi, "\u0000FIGCAP_OPEN\u0000")
+    .replace(/<\/figcaption>/gi, "\u0000FIGCAP_CLOSE\u0000")
+    .replace(/<em>/gi, "\u0000EM_OPEN\u0000")
+    .replace(/<\/em>/gi, "\u0000EM_CLOSE\u0000")
+    .replace(/<strong>/gi, "\u0000STRONG_OPEN\u0000")
+    .replace(/<\/strong>/gi, "\u0000STRONG_CLOSE\u0000")
+    .replace(/<b>/gi, "\u0000B_OPEN\u0000")
+    .replace(/<\/b>/gi, "\u0000B_CLOSE\u0000")
+    .replace(/<i>/gi, "\u0000I_OPEN\u0000")
+    .replace(/<\/i>/gi, "\u0000I_CLOSE\u0000")
     .replace(/<img\b[^>]*>/gi, (tag) => {
       const srcMatch = tag.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
-      if (!srcMatch || !/^https?:\/\//i.test(srcMatch[1])) return "";
       const altMatch = tag.match(/\balt\s*=\s*["']([^"']*)["']/i);
-      const src = escapeHtml(srcMatch[1]);
       const alt = altMatch ? escapeHtml(altMatch[1]) : "";
+      if (!srcMatch || !/^https?:\/\//i.test(srcMatch[1])) {
+        // A relative path (./assets/logo.svg) can't be resolved to a real
+        // URL here — there's no reliable base to resolve it against for
+        // every source type this reader handles. Show the alt text as a
+        // plain placeholder instead of silently showing nothing.
+        if (!alt) return "";
+        rawImages.push(`<span style="color:#6a6a72; font-style:italic;">[image: ${alt}]</span>`);
+        return `\u0000RAWIMG${rawImages.length - 1}\u0000`;
+      }
+      const src = escapeHtml(srcMatch[1]);
       rawImages.push(`<img src="${src}" alt="${alt}" loading="lazy">`);
       return `\u0000RAWIMG${rawImages.length - 1}\u0000`;
     })
@@ -404,13 +461,24 @@ function mdLite(md) {
     if (paraLines.length) out.push(`<p>${paraLines.map(inlineFormat).join("<br>")}</p>`);
   }
 
-  return out.join("").replace(/\u0000RAWIMG(\d+)\u0000/g, (m, idx) => rawImages[parseInt(idx, 10)]);
+  return out.join("")
+    .replace(/\u0000RAWIMG(\d+)\u0000/g, (m, idx) => rawImages[parseInt(idx, 10)])
+    .replace(/\u0000FIGCAP_OPEN\u0000/g, "<figcaption>")
+    .replace(/\u0000FIGCAP_CLOSE\u0000/g, "</figcaption>")
+    .replace(/\u0000EM_OPEN\u0000/g, "<em>")
+    .replace(/\u0000EM_CLOSE\u0000/g, "</em>")
+    .replace(/\u0000STRONG_OPEN\u0000/g, "<strong>")
+    .replace(/\u0000STRONG_CLOSE\u0000/g, "</strong>")
+    .replace(/\u0000B_OPEN\u0000/g, "<b>")
+    .replace(/\u0000B_CLOSE\u0000/g, "</b>")
+    .replace(/\u0000I_OPEN\u0000/g, "<i>")
+    .replace(/\u0000I_CLOSE\u0000/g, "</i>");
 }
 
 async function fetchGithubStories() {
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const res = await fetch(`https://api.github.com/search/repositories?q=created:>${since}&sort=stars&order=desc&per_page=6`);
-  if (!res.ok) throw new Error("GitHub API " + res.status);
+  if (!res.ok) throw new Error(githubErrorMessage(res, "GitHub API request failed"));
   const data = await res.json();
   return data.items.slice(0, 4).map(repo => ({
     show: "RISING REPOSITORY",
@@ -426,7 +494,12 @@ async function fetchHNStories() {
   const idsRes = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json");
   if (!idsRes.ok) throw new Error("HN API " + idsRes.status);
   const ids = (await idsRes.json()).slice(0, 6);
-  const items = await Promise.all(ids.map(id => fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r => r.json())));
+  const items = await Promise.all(ids.map(id =>
+    fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r => {
+      if (!r.ok) throw new Error("HN item " + r.status);
+      return r.json();
+    })
+  ));
   return items.filter(Boolean).slice(0, 4).map(item => ({
     show: "FRONT PAGE",
     title: item.title,
@@ -434,6 +507,7 @@ async function fetchHNStories() {
     line2: item.url ? new URL(item.url).hostname.replace("www.", "") : "news.ycombinator.com discussion",
     url: item.url || `https://news.ycombinator.com/item?id=${item.id}`,
     hnText: item.text || null,
+    hnKids: item.kids || null,
   }));
 }
 
@@ -515,7 +589,7 @@ async function fetchReleasesStories() {
   const settled = await Promise.allSettled(
     TRACKED.map(async ({ name, repo }) => {
       const res = await fetch(`https://api.github.com/repos/${repo}/releases/latest`);
-      if (!res.ok) throw new Error(`${repo} ${res.status}`);
+      if (!res.ok) throw new Error(githubErrorMessage(res, `${repo} request failed`));
       const data = await res.json();
       return {
         name,
@@ -805,22 +879,41 @@ async function openReader(channel, story) {
       const res = await fetch(`https://api.github.com/repos/${story.fullName}/readme`, {
         headers: { Accept: "application/vnd.github.raw" },
       });
-      if (!res.ok) throw new Error("This repository has no README, or it couldn't be loaded (" + res.status + ")");
+      if (!res.ok) throw new Error(githubErrorMessage(res, "This repository has no README, or it couldn't be loaded"));
       const text = await res.text();
       html = mdLite(text);
     } else if (channel.id === "hn") {
+      // HN's API documents both story `text` and comment `text` as raw
+      // HTML. Never inject either directly — strip tags to plain text
+      // first, then run through the same escape-then-format pipeline as
+      // every other source, so nothing can carry a script/onerror payload.
+      const stripHnHtml = (rawHtml) => (rawHtml || "")
+        .replace(/<p>/gi, "\n\n")
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<[^>]*>/g, "");
+
       if (story.hnText) {
-        // HN's API documents `text` as containing raw HTML. Never inject
-        // that directly — strip the tags to plain text first, then run it
-        // through the same escape-then-format pipeline as every other
-        // source, so it can't carry a script/onerror payload into the page.
-        const plainText = story.hnText
-          .replace(/<p>/gi, "\n\n")
-          .replace(/<br\s*\/?>/gi, "\n")
-          .replace(/<[^>]*>/g, "");
-        html = mdLite(plainText);
+        html = mdLite(stripHnHtml(story.hnText));
+      } else if (story.hnKids && story.hnKids.length > 0) {
+        // Link posts have no article text on HN itself, but the discussion
+        // usually exists and is often the more valuable thing to read —
+        // fetch the top-level comments instead of dead-ending here.
+        const topKids = story.hnKids.slice(0, 8);
+        const results = await Promise.all(topKids.map(id =>
+          fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`)
+            .then(r => (r.ok ? r.json() : null))
+            .catch(() => null)
+        ));
+        const validComments = results.filter(c => c && c.text && !c.deleted && !c.dead);
+        if (validComments.length === 0) {
+          throw new Error("Couldn't load the discussion for this story. Use \u201cOpen original source\u201d below to read it on Hacker News.");
+        }
+        const commentsMarkdown = validComments
+          .map(c => `**${c.by || "unknown"}**\n\n${stripHnHtml(c.text)}`)
+          .join("\n\n---\n\n");
+        html = mdLite("*Top comments from Hacker News:*\n\n" + commentsMarkdown);
       } else {
-        throw new Error("This is a link post — Hacker News itself has no article text for it. Use \u201cOpen original source\u201d below to read it.");
+        throw new Error("No discussion yet on Hacker News for this story. Use \u201cOpen original source\u201d below to read it.");
       }
     } else if (channel.id === "huggingface") {
       const res = await fetch(`https://huggingface.co/${story.hfId}/raw/main/README.md`);
