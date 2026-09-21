@@ -72,7 +72,7 @@
   #reader-body th, #reader-body td { border: 1px solid #232328; padding: 6px 10px; text-align: left; color: #c8c8cc; }
   #reader-body th { background: #16161a; color: #e8e8ea; font-weight: 600; }
   #reader-body hr { border: none; border-top: 1px solid #232328; margin: 18px 0; }
-  #reader-body img { max-width: 100%; height: auto; border-radius: 6px; display: block; margin: 4px 0 14px; }
+  #reader-body img { max-width: 100%; height: auto; border-radius: 6px; display: block; margin: 4px auto 14px; }
   #reader-footer { padding: 14px 22px; border-top: 1px solid #1c1c20; flex-shrink: 0; }
   .reader-open-target { cursor: pointer; }
   .reader-open-target:hover .story-title { text-decoration: underline; }
@@ -253,7 +253,15 @@ function escapeHtml(str) {
 // so nothing from a fetched README/article can inject real HTML — only the
 // few patterns below are turned back into tags.
 function mdLite(md) {
-  const raw = md || "";
+  // Hugging Face model cards (and some GitHub READMEs) open with a YAML
+  // metadata block delimited by --- lines — that's platform metadata meant
+  // to be parsed, not content meant to be read, so it's stripped before
+  // anything else runs.
+  const stripFrontmatter = (s) => {
+    const m = s.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*\r?\n?/);
+    return m ? s.slice(m[0].length) : s;
+  };
+  const raw = stripFrontmatter(md || "");
 
   // Fenced code blocks are extracted first, before anything else touches
   // the text, so nothing inside them (```, *, |, numbers) can be
@@ -264,6 +272,47 @@ function mdLite(md) {
     codeBlocks.push(escapeHtml(code.replace(/\n$/, "")));
     return `\u0000CODEBLOCK${codeBlocks.length - 1}\u0000`;
   });
+
+  // Some READMEs use raw HTML <img> tags instead of markdown image syntax
+  // (often wrapped in <p align="center">...</p> for centering). Only a
+  // narrow, explicitly whitelisted subset is honored here: the tag must be
+  // a real <img> with an http(s) src, and only src + alt are pulled out —
+  // nothing else about the original tag survives, so an attacker-controlled
+  // attribute like onerror or a javascript: URL has nowhere to land. The
+  // centering wrapper tags themselves are dropped as harmless no-ops, since
+  // the reader centers images with its own CSS instead.
+  const rawImages = [];
+  text = text
+    .replace(/<p\s+align=["']center["']\s*>/gi, "")
+    .replace(/<div\s+align=["']center["']\s*>/gi, "")
+    .replace(/<\/p>/gi, "")
+    .replace(/<\/div>/gi, "")
+    // <picture>/<source> are pure variant-selection wrappers (e.g. light/dark
+    // mode logos) with no visible content of their own — the real <img>
+    // fallback inside is what actually gets rendered, so these are dropped
+    // the same way the centering wrappers are.
+    .replace(/<\/?picture\s*>/gi, "")
+    .replace(/<source\b[^>]*>/gi, "")
+    .replace(/<img\b[^>]*>/gi, (tag) => {
+      const srcMatch = tag.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
+      if (!srcMatch || !/^https?:\/\//i.test(srcMatch[1])) return "";
+      const altMatch = tag.match(/\balt\s*=\s*["']([^"']*)["']/i);
+      const src = escapeHtml(srcMatch[1]);
+      const alt = altMatch ? escapeHtml(altMatch[1]) : "";
+      rawImages.push(`<img src="${src}" alt="${alt}" loading="lazy">`);
+      return `\u0000RAWIMG${rawImages.length - 1}\u0000`;
+    })
+    // Raw HTML <a href="...">text</a> tags, same treatment as <img>: only
+    // href and the inner text survive, nothing else about the original tag
+    // (onclick, style, etc.) makes it through. A non-http(s) href (a
+    // relative link to another file in the repo, which this reader has no
+    // way to resolve or fetch) is unwrapped to plain text instead of being
+    // turned into a broken or unsafe link.
+    .replace(/<a\s+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (tag, href, inner) => {
+      if (!/^https?:\/\//i.test(href)) return inner;
+      rawImages.push(`<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(inner)}</a>`);
+      return `\u0000RAWIMG${rawImages.length - 1}\u0000`;
+    });
 
   text = escapeHtml(text);
 
@@ -355,7 +404,7 @@ function mdLite(md) {
     if (paraLines.length) out.push(`<p>${paraLines.map(inlineFormat).join("<br>")}</p>`);
   }
 
-  return out.join("");
+  return out.join("").replace(/\u0000RAWIMG(\d+)\u0000/g, (m, idx) => rawImages[parseInt(idx, 10)]);
 }
 
 async function fetchGithubStories() {
