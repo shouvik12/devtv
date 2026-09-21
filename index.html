@@ -13,7 +13,8 @@
   *, *::before, *::after { box-sizing: inherit; }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   body {
-    margin: 0; min-height: 100vh; min-height: 100dvh; background: #050506;
+    margin: 0; min-height: 100vh; min-height: 100dvh;
+    background: radial-gradient(ellipse 900px 700px at 50% 42%, #171310 0%, #0a0908 40%, #050506 75%);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 24px 16px; font-family: -apple-system, 'Inter', sans-serif;
   }
@@ -31,8 +32,8 @@
     width: 100%; max-width: 1020px;
     background: linear-gradient(155deg, #2a2a2e 0%, #18181b 55%, #0e0e10 100%);
     border-radius: 22px; padding: 22px 22px 30px;
-    box-shadow: 0 50px 100px -30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -2px 4px rgba(0,0,0,0.5);
-    border: 1px solid #333338; position: relative;
+    box-shadow: 0 50px 100px -30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -2px 4px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(232,200,136,0.12);
+    border: 2px solid #a67c3d; position: relative;
   }
   #bezel { background: #000; border-radius: 8px; padding: 10px; box-shadow: inset 0 0 0 2px #050505, inset 0 4px 20px rgba(0,0,0,0.8); }
   #screen { aspect-ratio: 16/10; border-radius: 3px; overflow: hidden; position: relative; background: linear-gradient(180deg, #111114 0%, #09090b 100%); transform-origin: center center; }
@@ -77,6 +78,11 @@
   .switch .knob { position: absolute; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: left 0.15s ease; }
   .stand1 { width: 160px; height: 14px; background: linear-gradient(180deg, #222226, #0e0e10); border-radius: 0 0 8px 8px; margin-top: -2px; }
   .stand2 { width: 220px; height: 6px; background: linear-gradient(180deg, #1a1a1d, #0a0a0b); border-radius: 3px; margin-top: 2px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
+  .antenna { position: relative; width: 40px; height: 70px; margin: 0 auto -10px; z-index: 1; }
+  .antenna-base { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(145deg, #e8c888, #8b6d3f); box-shadow: 0 1px 3px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.3); }
+  .antenna-arm { position: absolute; bottom: 6px; left: 50%; width: 3px; height: 64px; background: linear-gradient(180deg, #f0d8a0, #8b6d3f); border-radius: 2px; transform-origin: bottom center; box-shadow: 1px 0 3px rgba(0,0,0,0.4); }
+  .antenna-left { transform: translateX(-50%) rotate(-27deg); }
+  .antenna-right { transform: translateX(-50%) rotate(27deg); }
 
   /* ---- Mobile ---- */
   @media (max-width: 640px) {
@@ -103,6 +109,11 @@
 </head>
 <body>
 
+<div class="antenna">
+  <div class="antenna-arm antenna-left"></div>
+  <div class="antenna-arm antenna-right"></div>
+  <div class="antenna-base"></div>
+</div>
 <div id="tv">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:0 4px;">
     <span class="mono" style="font-size:18px; font-weight:700; color:#9a9aa2; letter-spacing:0.12em;">DEV·TV</span>
@@ -303,6 +314,40 @@ async function fetchHuggingFaceStories() {
   }));
 }
 
+// AI research papers the Hugging Face community is upvoting today, a
+// different content type from the models channel above (papers vs models),
+// same huggingface.co host already proven to allow browser fetch(). The
+// exact response shape isn't independently confirmed from this sandbox, so
+// this reads defensively across a couple of likely field-name variants
+// rather than assuming one exact structure.
+async function fetchAIPapersStories() {
+  const today = new Date().toISOString().slice(0, 10);
+  const res = await fetch(`https://huggingface.co/api/daily_papers?date=${today}`);
+  if (!res.ok) throw new Error("Hugging Face Papers API " + res.status);
+  const data = await res.json();
+  if (!Array.isArray(data) || data.length === 0) throw new Error("No papers returned for today");
+
+  return data.slice(0, 4).map(item => {
+    const p = item.paper || item;
+    const title = p.title || item.title || "Untitled paper";
+    const summary = p.summary || p.abstract || item.summary || "";
+    const upvotes = p.upvotes ?? item.upvotes ?? item.numUpvotes ?? 0;
+    const authorsRaw = p.authors || item.authors || [];
+    const authorNames = authorsRaw
+      .map(a => (typeof a === "string" ? a : a.name))
+      .filter(Boolean);
+    const id = p.id || item.id || "";
+    return {
+      show: "AI PAPER",
+      title,
+      line1: upvotes.toLocaleString() + " upvotes" + (authorNames.length ? " · " + authorNames.slice(0, 2).join(", ") + (authorNames.length > 2 ? " et al." : "") : ""),
+      line2: summary.slice(0, 160) + (summary.length > 160 ? "…" : ""),
+      url: id ? "https://huggingface.co/papers/" + id : "https://huggingface.co/papers",
+      fullText: summary || "No abstract provided.",
+    };
+  });
+}
+
 // Tracks real version releases for the stacks people actually google to stay
 // current on — not a firehose of every GitHub release, a curated shortlist.
 // One call per repo (github.com/{repo}/releases/latest), all on the same
@@ -351,6 +396,7 @@ const ALL_CHANNELS = [
   { id: "devto", name: "DEV", color: "#3dd6a3", key: "3", fetcher: fetchDevToStories, tag: "DEV" },
   { id: "huggingface", name: "HUGGING FACE", color: "#ffcc4d", key: "4", fetcher: fetchHuggingFaceStories, tag: "HF" },
   { id: "releases", name: "RELEASES", color: "#22c55e", key: "5", fetcher: fetchReleasesStories, tag: "REL" },
+  { id: "aipapers", name: "AI PAPERS", color: "#a78bfa", key: "6", fetcher: fetchAIPapersStories, tag: "PAP" },
 ];
 
 let enabledIds = loadEnabledIds();
@@ -627,6 +673,8 @@ async function openReader(channel, story) {
       const text = await res.text();
       html = mdLite(text);
     } else if (channel.id === "releases") {
+      html = mdLite(story.fullText || story.line2);
+    } else if (channel.id === "aipapers") {
       html = mdLite(story.fullText || story.line2);
     } else {
       throw new Error("No in-app reader available for this source yet.");
