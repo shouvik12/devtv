@@ -476,11 +476,17 @@ function mdLite(md) {
 }
 
 async function fetchGithubStories() {
-  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const res = await fetch(`https://api.github.com/search/repositories?q=created:>${since}&sort=stars&order=desc&per_page=6`);
+  // A TV should show today's news, not whatever's been biggest all week.
+  // sort=stars is cumulative, not "gained recently" (GitHub's Search API
+  // doesn't expose that), so a viral repo can dominate this query for its
+  // entire eligibility window. Narrowing the creation-date filter itself
+  // forces genuinely new repos into contention — an old one drops out
+  // regardless of its star count, rather than just getting outranked.
+  const since = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const res = await fetch(`https://api.github.com/search/repositories?q=created:>${since}&sort=stars&order=desc&per_page=12`, { cache: "no-store" });
   if (!res.ok) throw new Error(githubErrorMessage(res, "GitHub API request failed"));
   const data = await res.json();
-  return data.items.slice(0, 4).map(repo => ({
+  return data.items.slice(0, 10).map(repo => ({
     show: "RISING REPOSITORY",
     title: repo.full_name,
     line1: repo.stargazers_count.toLocaleString() + " stars · created " + timeAgo(repo.created_at),
@@ -491,16 +497,16 @@ async function fetchGithubStories() {
 }
 
 async function fetchHNStories() {
-  const idsRes = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json");
+  const idsRes = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json", { cache: "no-store" });
   if (!idsRes.ok) throw new Error("HN API " + idsRes.status);
-  const ids = (await idsRes.json()).slice(0, 6);
+  const ids = (await idsRes.json()).slice(0, 14);
   const items = await Promise.all(ids.map(id =>
-    fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r => {
+    fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, { cache: "no-store" }).then(r => {
       if (!r.ok) throw new Error("HN item " + r.status);
       return r.json();
     })
   ));
-  return items.filter(Boolean).slice(0, 4).map(item => ({
+  return items.filter(Boolean).slice(0, 10).map(item => ({
     show: "FRONT PAGE",
     title: item.title,
     line1: (item.score ?? 0) + " points · " + (item.descendants ?? 0) + " comments",
@@ -512,10 +518,12 @@ async function fetchHNStories() {
 }
 
 async function fetchDevToStories() {
-  const res = await fetch("https://dev.to/api/articles?top=7&per_page=6");
+  // top=1 = today's top articles specifically, not this week's, for the
+  // same reason as the GitHub window above.
+  const res = await fetch("https://dev.to/api/articles?top=1&per_page=12", { cache: "no-store" });
   if (!res.ok) throw new Error("DEV.to API " + res.status);
   const data = await res.json();
-  return data.slice(0, 4).map(a => ({
+  return data.slice(0, 10).map(a => ({
     show: "TRENDING ARTICLE",
     title: a.title,
     line1: (a.positive_reactions_count ?? 0).toLocaleString() + " reactions · " + a.comments_count + " comments",
@@ -526,10 +534,10 @@ async function fetchDevToStories() {
 }
 
 async function fetchHuggingFaceStories() {
-  const res = await fetch("https://huggingface.co/api/models?sort=trendingScore&direction=-1&limit=6");
+  const res = await fetch("https://huggingface.co/api/models?sort=trendingScore&direction=-1&limit=12", { cache: "no-store" });
   if (!res.ok) throw new Error("Hugging Face API " + res.status);
   const data = await res.json();
-  return data.slice(0, 4).map(m => ({
+  return data.slice(0, 10).map(m => ({
     show: "TRENDING MODEL",
     title: m.id,
     line1: (m.likes ?? 0).toLocaleString() + " likes · " + (m.downloads ?? 0).toLocaleString() + " downloads",
@@ -547,12 +555,12 @@ async function fetchHuggingFaceStories() {
 // rather than assuming one exact structure.
 async function fetchAIPapersStories() {
   const today = new Date().toISOString().slice(0, 10);
-  const res = await fetch(`https://huggingface.co/api/daily_papers?date=${today}`);
+  const res = await fetch(`https://huggingface.co/api/daily_papers?date=${today}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Hugging Face Papers API " + res.status);
   const data = await res.json();
   if (!Array.isArray(data) || data.length === 0) throw new Error("No papers returned for today");
 
-  return data.slice(0, 4).map(item => {
+  return data.slice(0, 10).map(item => {
     const p = item.paper || item;
     const title = p.title || item.title || "Untitled paper";
     const summary = p.summary || p.abstract || item.summary || "";
@@ -588,7 +596,7 @@ async function fetchReleasesStories() {
   ];
   const settled = await Promise.allSettled(
     TRACKED.map(async ({ name, repo }) => {
-      const res = await fetch(`https://api.github.com/repos/${repo}/releases/latest`);
+      const res = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, { cache: "no-store" });
       if (!res.ok) throw new Error(githubErrorMessage(res, `${repo} request failed`));
       const data = await res.json();
       return {
@@ -602,9 +610,19 @@ async function fetchReleasesStories() {
     })
   );
   const releases = settled.filter(r => r.status === "fulfilled").map(r => r.value);
-  if (releases.length === 0) throw new Error("Couldn't load release data for any tracked project");
+  if (releases.length === 0) {
+    // Surface the real reason all six failed — most often this is the same
+    // shared GitHub rate limit hitting every request at once, in which case
+    // the individual fetch's message already has the exact reset time.
+    const rejectionMessages = settled.filter(r => r.status === "rejected").map(r => r.reason?.message || "");
+    const rateLimitMsg = rejectionMessages.find(msg => msg.includes("rate limit"));
+    throw new Error(rateLimitMsg || "Couldn't load release data for any tracked project");
+  }
   releases.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-  return releases.slice(0, 4).map(r => ({
+  // Capped at 6 by definition, not by choice — that's the entire tracked
+  // list (React, Vue, TypeScript, Node, Python, Rust). Nothing to raise
+  // here the way the other channels' limits could be.
+  return releases.slice(0, 6).map(r => ({
     show: "NEW RELEASE",
     title: `${r.name} ${r.tag}`,
     line1: `released ${timeAgo(r.publishedAt)}`,
@@ -684,7 +702,11 @@ async function loadChannel(def) {
   }
   render();
 }
-function loadAll() { ALL_CHANNELS.forEach(loadChannel); }
+let lastLoadAllTime = 0;
+function loadAll() {
+  lastLoadAllTime = Date.now();
+  ALL_CHANNELS.forEach(loadChannel);
+}
 
 function flashScreen() {
   const el = document.getElementById("content");
@@ -871,13 +893,14 @@ async function openReader(channel, story) {
   try {
     let html;
     if (channel.id === "devto") {
-      const res = await fetch(`https://dev.to/api/articles/${story.devtoId}`);
+      const res = await fetch(`https://dev.to/api/articles/${story.devtoId}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Couldn't load the full article (" + res.status + ")");
       const data = await res.json();
       html = mdLite(data.body_markdown || story.line2);
     } else if (channel.id === "github") {
       const res = await fetch(`https://api.github.com/repos/${story.fullName}/readme`, {
         headers: { Accept: "application/vnd.github.raw" },
+        cache: "no-store",
       });
       if (!res.ok) throw new Error(githubErrorMessage(res, "This repository has no README, or it couldn't be loaded"));
       const text = await res.text();
@@ -900,7 +923,7 @@ async function openReader(channel, story) {
         // fetch the top-level comments instead of dead-ending here.
         const topKids = story.hnKids.slice(0, 8);
         const results = await Promise.all(topKids.map(id =>
-          fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`)
+          fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, { cache: "no-store" })
             .then(r => (r.ok ? r.json() : null))
             .catch(() => null)
         ));
@@ -916,7 +939,7 @@ async function openReader(channel, story) {
         throw new Error("No discussion yet on Hacker News for this story. Use \u201cOpen original source\u201d below to read it.");
       }
     } else if (channel.id === "huggingface") {
-      const res = await fetch(`https://huggingface.co/${story.hfId}/raw/main/README.md`);
+      const res = await fetch(`https://huggingface.co/${story.hfId}/raw/main/README.md`, { cache: "no-store" });
       if (!res.ok) throw new Error("This model has no README, or it couldn't be loaded (" + res.status + ")");
       const text = await res.text();
       html = mdLite(text);
@@ -1189,6 +1212,27 @@ setInterval(loadAll, REFRESH_MINUTES * 60 * 1000);
 startTick();
 render();
 playStatic(null);
+
+// Background tabs get their timers throttled by the browser to save
+// battery, so the interval above may not have actually fired on schedule
+// while this tab sat unfocused. Refresh immediately whenever the tab
+// becomes visible again, as long as it's genuinely been a while — this
+// matches "check in on it now and then" usage much better than waiting
+// for a background timer that might have been paused the whole time.
+const MIN_REFRESH_GAP_MS = 2 * 60 * 1000; // don't refetch on rapid tab-flipping
+function maybeRefreshOnReturn() {
+  if (Date.now() - lastLoadAllTime > MIN_REFRESH_GAP_MS) loadAll();
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") maybeRefreshOnReturn();
+});
+// visibilitychange alone isn't fully reliable across every browser/OS
+// combo (switching to a different app, not just a different tab, doesn't
+// always fire it consistently) — window focus is a second, independent
+// signal that catches cases the Visibility API misses. Both share the
+// same time-gated guard, so it's harmless if both happen to fire close
+// together.
+window.addEventListener("focus", maybeRefreshOnReturn);
 </script>
 </body>
 </html>
