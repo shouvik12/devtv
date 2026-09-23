@@ -138,6 +138,7 @@
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:0 4px;">
     <span class="mono" style="font-size:18px; font-weight:700; color:#9a9aa2; letter-spacing:0.12em;">DEV·TV</span>
     <div style="display:flex; align-items:center; gap:12px;">
+      <span id="clock" class="mono" style="font-size:11px; color:#6a6a72; letter-spacing:0.05em;"></span>
       <span id="onair" class="mono" style="font-size:10px; color:#ff5c5c; letter-spacing:0.1em; display:none;">● ON AIR</span>
       <button id="fullscreen-btn" class="btn" title="Fullscreen" style="background:none; border:none; padding:2px; color:#55555c; font-size:13px; line-height:1;">⛶</button>
       <button id="gear" class="btn" style="background:none; border:none; padding:2px; color:#55555c; font-size:13px; line-height:1;">⚙</button>
@@ -943,8 +944,17 @@ function toggleAutoPilot() {
   playStatic(420, showIdent);
 }
 
+// Real, live local time, matching the news-broadcast overlay convention.
+// Uses the browser's own clock, no API call, zero-backend stays intact.
+function updateClock() {
+  const el = document.getElementById("clock");
+  if (el) el.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
 function startTick() {
   clearInterval(tickInterval);
+  updateClock();
+  setInterval(updateClock, 1000);
   tickInterval = setInterval(() => {
     // Manual mode is now a frozen preview: nothing advances on its own.
     // Auto Pilot is the only thing that moves stories or channels forward.
