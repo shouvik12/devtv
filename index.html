@@ -668,6 +668,45 @@ async function fetchLatestPapersStories() {
   });
 }
 
+// Recently published CVEs. First attempt used cveawg.mitre.org's
+// /api/cve-id endpoint and got a 400 — turned out that endpoint is part of
+// MITRE's CVE ID Reservation service, built for CNAs managing their own
+// reserved ID pools, not a public "browse recent CVEs" tool at all, wrong
+// endpoint for this entirely, not just a bad parameter. The 400 itself was
+// actually a good sign: it meant the request reached the server and got a
+// real response back, so CORS was never the problem here.
+// NVD's own CVE API is the actual purpose-built tool for this, with a real
+// documented parameter set for searching/browsing. Reads defensively
+// across likely field-name variants since this specific request shape was
+// still never independently confirmed from a browser before this.
+async function fetchCVEStories() {
+  const url = "https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=10&startIndex=0";
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error("NVD API " + res.status);
+  const data = await res.json();
+  const vulns = data.vulnerabilities || data.result?.CVE_Items || [];
+  if (!Array.isArray(vulns) || vulns.length === 0) throw new Error("No CVE records returned");
+
+  return vulns.slice(0, 10).map(v => {
+    const cve = v.cve || v;
+    const cveId = cve.id || cve.CVE_data_meta?.ID || "Unknown CVE";
+    const descriptions = cve.descriptions || cve.description?.description_data || [];
+    const enDesc = descriptions.find(d => (d.lang || d.lang_value) === "en") || descriptions[0];
+    const description = (enDesc && (enDesc.value || enDesc.value)) || "";
+    const published = cve.published || cve.publishedDate || "";
+    const metrics = cve.metrics?.cvssMetricV31?.[0] || cve.metrics?.cvssMetricV30?.[0] || cve.metrics?.cvssMetricV2?.[0];
+    const severity = metrics?.cvssData?.baseSeverity || metrics?.baseSeverity || "";
+    return {
+      show: "CVE · NVD",
+      title: cveId,
+      line1: (severity ? severity + " severity" : "severity unknown") + (published ? " · " + published.slice(0, 10) : ""),
+      line2: description.slice(0, 220) + (description.length > 220 ? "…" : "") || "No description available yet.",
+      url: `https://nvd.nist.gov/vuln/detail/${cveId}`,
+      fullText: description || "No description provided.",
+    };
+  });
+}
+
 // Tracks real version releases for the stacks people actually google to stay
 // current on — not a firehose of every GitHub release, a curated shortlist.
 // One call per repo (github.com/{repo}/releases/latest), all on the same
@@ -728,6 +767,7 @@ const ALL_CHANNELS = [
   { id: "releases", name: "RELEASES", color: "#22c55e", key: "5", fetcher: fetchReleasesStories, tag: "REL" },
   { id: "aipapers", name: "AI PAPERS", color: "#a78bfa", key: "6", fetcher: fetchAIPapersStories, tag: "PAP" },
   { id: "latestpapers", name: "LATEST PAPERS", color: "#f472b6", key: "7", fetcher: fetchLatestPapersStories, tag: "NEW" },
+  { id: "cve", name: "CVE", color: "#ef4444", key: "8", fetcher: fetchCVEStories, tag: "CVE" },
 ];
 
 let enabledIds = loadEnabledIds();
@@ -1045,6 +1085,8 @@ async function openReader(channel, story) {
     } else if (channel.id === "aipapers") {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "latestpapers") {
+      html = mdLite(story.fullText || story.line2);
+    } else if (channel.id === "cve") {
       html = mdLite(story.fullText || story.line2);
     } else {
       throw new Error("No in-app reader available for this source yet.");
