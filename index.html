@@ -35,8 +35,10 @@
     box-shadow: 0 50px 100px -30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -2px 4px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(232,200,136,0.12);
     border: 2px solid #a67c3d; position: relative;
   }
+  #tv.reading { padding: 12px 12px 20px; }
   #bezel { background: #000; border-radius: 8px; padding: 10px; box-shadow: inset 0 0 0 2px #050505, inset 0 4px 20px rgba(0,0,0,0.8); }
   #screen { aspect-ratio: 16/10; border-radius: 3px; overflow: hidden; position: relative; background: linear-gradient(180deg, #111114 0%, #09090b 100%); transform-origin: center center; }
+  #screen.reading { aspect-ratio: unset; min-height: 62vh; }
   #screen.off { background: #000; box-shadow: none !important; }
   @keyframes crtPowerOff {
     0% { transform: scale(1, 1); filter: brightness(1) contrast(1); opacity: 1; }
@@ -119,7 +121,7 @@
 </head>
 <body>
 
-<div class="antenna">
+<div class="antenna" id="antenna">
   <div class="antenna-arm antenna-left"></div>
   <div class="antenna-arm antenna-right"></div>
   <div class="antenna-base"></div>
@@ -1055,6 +1057,18 @@ function render() {
   document.getElementById("gear").style.color = showSettings ? "#e8e8ea" : "#55555c";
   document.getElementById("settings-overlay").style.display = showSettings ? "flex" : "none";
   document.getElementById("reader-overlay").style.display = readerOpen ? "flex" : "none";
+  // The antenna is purely decorative and costs real vertical space,
+  // especially on mobile where every pixel of reading room matters.
+  // Hiding it while reading is free: no functional loss, since it's just
+  // ornamental, unlike the control deck below (which stays, so channel
+  // switching remains available while reading).
+  document.getElementById("antenna").style.display = readerOpen ? "none" : "block";
+  // The outer frame's own padding and the screen's fixed 16:10 aspect
+  // ratio both relax while reading — the ratio in particular was capping
+  // the screen's height well below what's actually available on a tall
+  // mobile viewport, wasting real reading room for no functional reason.
+  document.getElementById("tv").classList.toggle("reading", readerOpen);
+  document.getElementById("screen").classList.toggle("reading", readerOpen);
   document.getElementById("screen").classList.toggle("off", !power);
   document.getElementById("content").style.display = power ? "flex" : "none";
   document.getElementById("no-signal").style.display = power ? "none" : "flex";
