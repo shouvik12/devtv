@@ -7,12 +7,14 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![No backend](https://img.shields.io/badge/backend-none-brightgreen)]()
 [![Single file](https://img.shields.io/badge/build%20step-none-brightgreen)]()
-[![Channels](https://img.shields.io/badge/channels-5%20live-orange)]()
+[![Channels](https://img.shields.io/badge/channels-7%20live-orange)]()
 [![Mobile friendly](https://img.shields.io/badge/mobile-friendly-blue)]()
 
 A full-screen "TV" for the developer internet. Instead of checking GitHub, Hacker News, DEV, Hugging Face, and release notes separately, open one channel-surfable broadcast and let it run.
 
 **Keep coding. Keep an eye on the developer world.**
+
+**[▶ Live demo](https://shouvik12.github.io/devtv/)** · **[View source](https://github.com/shouvik12/devtv)**
 
 </div>
 
@@ -22,7 +24,7 @@ A full-screen "TV" for the developer internet. Instead of checking GitHub, Hacke
 
 ![DEV·TV screenshot](./assets/screenshot.png)
 
-_Real capture: headless Chromium loaded `index.html`, tuned to the GitHub channel, and this is what came back live. GitHub is the channel shown here because it's the only one this particular capture environment could reach; the other four render identically in layout, just with each channel's own color and data._
+_Real capture: headless Chromium loaded `index.html`, tuned to the AI Papers channel, mid-broadcast. Every channel shows its source right in the small label above the headline, "AI PAPER · HUGGING FACE" here, since not every channel's name makes its underlying source as obvious as GitHub or Hugging Face's own model channel does._
 
 ---
 
@@ -36,11 +38,25 @@ It is **not** a dashboard and **not** another feed aggregator. It shows a few cu
 
 | # | Channel | Source | What it shows |
 |---|---------|--------|----------------|
-| 01 | **GitHub** | `api.github.com` | Repositories created in the last 7 days, sorted by stars. A "rising repository" heuristic, since GitHub's Trending page has no official API |
+| 01 | **GitHub** | `api.github.com` | Repositories created in the last 2 days, sorted by stars. A "rising repository" heuristic, since GitHub's Trending page has no official API |
 | 02 | **Hacker News** | `hacker-news.firebaseio.com` | Current front-page stories |
-| 03 | **DEV** | `dev.to/api` | Top articles from the last 7 days |
+| 03 | **DEV** | `dev.to/api` | Today's top articles |
 | 04 | **Hugging Face** | `huggingface.co/api` | Trending models, ranked by Hugging Face's own momentum score |
 | 05 | **Releases** | `api.github.com` | Real version releases for the stacks people actually google to stay current: React, Vue, TypeScript, Node.js, Python, Rust |
+
+### 📄 Papers (channels 06 and 07)
+
+Two separate channels, both about research, built on two different philosophies:
+
+| # | Channel | Source | What it shows |
+|---|---------|--------|----------------|
+| 06 | **AI Papers** | `huggingface.co/api` | Papers the Hugging Face community is discussing and upvoting *today*, a popularity filter |
+| 07 | **Latest Papers** | `api.openalex.org` | Papers sorted strictly by publication date, no popularity filter at all |
+
+- **AI Papers** shows what the AI research community is already excited about, someone has to have shared and upvoted it on Hugging Face first. That's a real signal of quality, but it means a paper from several days ago can still show up here if people are still discussing it.
+- **Latest Papers** applies zero editorial judgment, it's whatever was published most recently, full stop, pulled from OpenAlex's much broader academic index rather than just what's shared on Hugging Face. A paper published an hour ago with nobody having looked at it yet can appear here.
+
+Same tradeoff as the GitHub channel's own design: proven interest versus raw freshness. Neither is "better", they answer different questions.
 
 Every story links to its real source. Click a story and it opens in an in-app reader right on the TV, no new tab:
 
@@ -48,9 +64,10 @@ Every story links to its real source. Click a story and it opens in an in-app re
 - **GitHub**: the repo's actual README
 - **Hugging Face**: the model's README / model card
 - **Releases**: the real release notes, already fetched, no extra request
-- **Hacker News**: full text for self-posts (Ask HN / Show HN); link posts have no article text on HN itself, so those show a short note plus a link out instead of faking content
+- **AI Papers** / **Latest Papers**: the paper's abstract
+- **Hacker News**: full text for self-posts (Ask HN / Show HN); link posts show the top-level discussion comments instead, fetched live; if neither exists, a short note plus a link out instead of faking content
 
-Markdown from fetched content renders through a small, deliberately limited converter (headers, bold, italic, inline code, links). Input is HTML-escaped before any markup is reapplied, so nothing fetched from an external source can inject real HTML into the page.
+Markdown from fetched content renders through a hand-rolled converter: everything is escaped first, then a narrow, explicitly whitelisted set of patterns (headers, bold, italic, code, tables, fenced code blocks, links, and images, including raw HTML `<img>`/`<a>` tags, validated to http/https only) is turned back into real markup. Nothing fetched from an external source can inject real HTML into the page.
 
 ![In-app reader](./assets/screenshot-reader.png)
 
