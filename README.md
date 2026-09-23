@@ -10,7 +10,7 @@
 [![Channels](https://img.shields.io/badge/channels-7%20live-orange)]()
 [![Mobile friendly](https://img.shields.io/badge/mobile-friendly-blue)]()
 
-A full-screen "TV" for the developer internet. Instead of checking GitHub, Hacker News, DEV, Hugging Face, and release notes separately, open one channel-surfable broadcast and let it run.
+Five tabs, checked out of habit, half-read, closed again. That's most people's relationship with GitHub, Hacker News, DEV.to, and Hugging Face. DEV·TV turns it into a TV instead: pick a channel, it plays.
 
 **Keep coding. Keep an eye on the developer world.**
 
@@ -30,9 +30,9 @@ _Real capture: headless Chromium loaded `index.html`, tuned to the AI Papers cha
 
 ## What it is
 
-DEV·TV is a single self-contained HTML page. No build step, no server, no backend, no accounts. It pulls live data straight from public APIs in your own browser and presents it as a real TV broadcast: one story on screen at a time, auto-rotating, with NOW/NEXT/LATER, a channel ident on every switch, a ticker, real per-pixel static on power-on and every channel change, and a CRT-style collapse/expand animation when you power it off and on.
+One HTML file. Nothing else. No build step, no server, no login screen, no cookie banner. Open it and it's already running, static crackling across the screen until the first channel locks in. Then it just plays: stories rotate on their own, NOW/NEXT/LATER ticking along above the headline, a ticker scrolling every channel's titles underneath, real per-pixel noise (`Math.random()` per pixel, not a repeating CSS texture) on every channel change, and a genuine CRT power-down when you're done, the screen actually squishes to a line, then a dot, then dark.
 
-It is **not** a dashboard and **not** another feed aggregator. It shows a few curated items per channel and moves on, the way a TV station programs a schedule instead of dumping every wire story on screen at once.
+It is **not** a dashboard. A dashboard wants your full attention, wants you to digest everything and make a decision. DEV·TV wants the opposite: glance, catch one thing, get back to your editor. That's the entire bet the project is built on, not proven, just genuinely believed in enough to build.
 
 ## 📡 Channels
 
