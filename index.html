@@ -534,10 +534,25 @@ async function fetchDevToStories() {
 }
 
 async function fetchHuggingFaceStories() {
-  const res = await fetch("https://huggingface.co/api/models?sort=trendingScore&direction=-1&limit=12", { cache: "no-store" });
+  // Fetch a larger pool than we need, then filter to models created within
+  // the last 14 days before ranking by trendingScore — same idea as the
+  // GitHub channel's fix: narrow the candidate pool by recency first, then
+  // let quality/momentum decide the order within it. Unlike GitHub's API,
+  // Hugging Face has no server-side "created after date X" filter, so this
+  // is done client-side against the createdAt field each model returns.
+  const res = await fetch("https://huggingface.co/api/models?sort=trendingScore&direction=-1&limit=30", { cache: "no-store" });
   if (!res.ok) throw new Error("Hugging Face API " + res.status);
   const data = await res.json();
-  return data.slice(0, 10).map(m => ({
+
+  const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+  const recent = data.filter(m => m.createdAt && new Date(m.createdAt).getTime() >= fourteenDaysAgo);
+  // Graceful fallback: if literally nothing trending was created in the
+  // last 14 days (unlikely, but not impossible), fall back to the
+  // unfiltered list rather than show SIGNAL LOST for something that isn't
+  // actually a fetch failure.
+  const pool = recent.length > 0 ? recent : data;
+
+  return pool.slice(0, 10).map(m => ({
     show: "TRENDING MODEL",
     title: m.id,
     line1: (m.likes ?? 0).toLocaleString() + " likes · " + (m.downloads ?? 0).toLocaleString() + " downloads",
@@ -571,12 +586,73 @@ async function fetchAIPapersStories() {
       .filter(Boolean);
     const id = p.id || item.id || "";
     return {
-      show: "AI PAPER",
+      show: "AI PAPER · HUGGING FACE",
       title,
       line1: upvotes.toLocaleString() + " upvotes" + (authorNames.length ? " · " + authorNames.slice(0, 2).join(", ") + (authorNames.length > 2 ? " et al." : "") : ""),
       line2: summary.slice(0, 260) + (summary.length > 260 ? "…" : ""),
       url: id ? "https://huggingface.co/papers/" + id : "https://huggingface.co/papers",
       fullText: summary || "No abstract provided.",
+    };
+  });
+}
+
+// Genuinely newest papers, sorted strictly by submission date rather than
+// community trending — a different behavior from AI PAPERS above, which
+// shows what's popular today, not necessarily what's newest. Semantic
+// Scholar was tried first and confirmed CORS-blocked via a live test.
+// OpenAlex is the second attempt: a fully open academic API, explicitly
+// confirmed elsewhere to support browser-side CORS in a real, deployed,
+// zero-backend app. OpenAlex returns abstracts as an "inverted index"
+// (word -> position map) rather than plain text, reconstructed here
+// defensively — if that shape doesn't match, it falls back gracefully
+// rather than crashing.
+async function fetchLatestPapersStories() {
+  const today = new Date().toISOString().slice(0, 10);
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const url = "https://api.openalex.org/works"
+    + "?search=artificial+intelligence+OR+machine+learning"
+    + "&sort=publication_date:desc"
+    // type:article|preprint excludes dissertations, book chapters, and
+    // other non-paper academic works — a dissertation matching the search
+    // terms was showing up here, a different content type than intended.
+    // The date window is a defensive safety net against bad metadata (one
+    // dissertation had a 2028 publication date, over a year in the future)
+    // rather than trusting sort order alone to mean "actually recent."
+    + `&filter=type:article|preprint,from_publication_date:${weekAgo},to_publication_date:${today}`
+    + "&per_page=10";
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error("OpenAlex API " + res.status);
+  const data = await res.json();
+  const works = data.results || [];
+  if (!Array.isArray(works) || works.length === 0) throw new Error("No papers returned");
+
+  return works.slice(0, 10).map(w => {
+    const title = w.title || w.display_name || "Untitled paper";
+    const date = w.publication_date || "";
+    const authorsRaw = (w.authorships || []).map(a => a.author && a.author.display_name).filter(Boolean);
+    const venue = (w.primary_location && w.primary_location.source && w.primary_location.source.display_name) || "";
+
+    let abstract = "";
+    try {
+      const inv = w.abstract_inverted_index;
+      if (inv) {
+        const positions = [];
+        for (const [word, idxArr] of Object.entries(inv)) {
+          idxArr.forEach(i => { positions[i] = word; });
+        }
+        abstract = positions.join(" ").trim();
+      }
+    } catch (e) { abstract = ""; }
+
+    const doiUrl = w.doi ? `https://doi.org/${w.doi.replace(/^https?:\/\/doi\.org\//, "")}` : (w.id || "https://openalex.org");
+
+    return {
+      show: "JUST PUBLISHED · OPENALEX",
+      title,
+      line1: (date || "date unknown") + (authorsRaw.length ? " · " + authorsRaw.slice(0, 2).join(", ") + (authorsRaw.length > 2 ? " et al." : "") : ""),
+      line2: (venue ? venue + " — " : "") + (abstract ? abstract.slice(0, 220) + (abstract.length > 220 ? "…" : "") : "No abstract available."),
+      url: doiUrl,
+      fullText: abstract || "No abstract provided.",
     };
   });
 }
@@ -640,6 +716,7 @@ const ALL_CHANNELS = [
   { id: "huggingface", name: "HUGGING FACE", color: "#ffcc4d", key: "4", fetcher: fetchHuggingFaceStories, tag: "HF" },
   { id: "releases", name: "RELEASES", color: "#22c55e", key: "5", fetcher: fetchReleasesStories, tag: "REL" },
   { id: "aipapers", name: "AI PAPERS", color: "#a78bfa", key: "6", fetcher: fetchAIPapersStories, tag: "PAP" },
+  { id: "latestpapers", name: "LATEST PAPERS", color: "#f472b6", key: "7", fetcher: fetchLatestPapersStories, tag: "NEW" },
 ];
 
 let enabledIds = loadEnabledIds();
@@ -946,6 +1023,8 @@ async function openReader(channel, story) {
     } else if (channel.id === "releases") {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "aipapers") {
+      html = mdLite(story.fullText || story.line2);
+    } else if (channel.id === "latestpapers") {
       html = mdLite(story.fullText || story.line2);
     } else {
       throw new Error("No in-app reader available for this source yet.");
