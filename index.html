@@ -3,6 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Best-effort request not to cache the page aggressively. Not a
+     guarantee: real HTTP cache-control headers set by GitHub Pages'
+     server take precedence over this, and this can't be changed without
+     a custom domain/host that allows setting response headers. A hard
+     refresh (Cmd+Shift+R) is still the reliable way to force a genuinely
+     current copy if a stale one is being served. -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <title>DEV·TV</title>
 <style>
   :root {
