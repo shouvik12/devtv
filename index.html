@@ -175,6 +175,16 @@
         </div>
       </div>
 
+      <div id="ad-break" style="display:none; position:absolute; inset:0; z-index:15; background:#0a0a0c; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px;">
+        <div class="mono" style="font-size:10px; letter-spacing:0.15em; color:#6a6a72; margin-bottom:18px;">● WE'LL BE RIGHT BACK</div>
+        <div id="ad-break-headline" style="font-size:26px; font-weight:700; color:#f5f5f7; margin-bottom:10px; max-width:520px;"></div>
+        <div id="ad-break-body" class="mono" style="font-size:12px; color:#8a8a92; max-width:440px; line-height:1.6;"></div>
+        <div class="mono" style="font-size:9px; letter-spacing:0.1em; color:#45454c; margin-top:26px;">this is not a real advertisement</div>
+        <div style="width:160px; height:2px; background:#232328; margin-top:18px; overflow:hidden;">
+          <div id="ad-break-progress" style="height:100%; width:0%; background:#6a6a72;"></div>
+        </div>
+      </div>
+
       <div id="ident">
         <span class="mono" style="font-size:20px; font-weight:700; color:#8a8a92; letter-spacing:0.15em;">DEV·TV</span>
         <span id="ident-num" class="mono" style="font-size:32px; letter-spacing:0.05em;"></span>
@@ -680,7 +690,16 @@ async function fetchLatestPapersStories() {
 // across likely field-name variants since this specific request shape was
 // still never independently confirmed from a browser before this.
 async function fetchCVEStories() {
-  const url = "https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=10&startIndex=0";
+  // Without a date range, NVD returns results in whatever its default
+  // order is (CVE-ID ascending, it turned out) — a live test showed a CVE
+  // from 1988 at the top, the opposite of "recent." pubStartDate/
+  // pubEndDate genuinely scope results to a real window; NVD caps the
+  // span between them at 120 days, this uses 7 to stay comfortably inside
+  // that and match "recent" in spirit.
+  const formatNVD = (d) => d.toISOString().slice(0, 23);
+  const pubEndDate = formatNVD(new Date());
+  const pubStartDate = formatNVD(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
+  const url = `https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=10&startIndex=0&pubStartDate=${pubStartDate}&pubEndDate=${pubEndDate}`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error("NVD API " + res.status);
   const data = await res.json();
@@ -779,6 +798,15 @@ let readerOpen = false, readerLoading = false, readerStory = null, readerChannel
 let bootStaticShowing = true; // cleared the moment the shown channel has a real result
 let tickInterval = null, identTimeout = null;
 let speed = loadSpeed();
+let storiesSinceAdBreak = 0, adBreakActive = false;
+const AD_BREAK_EVERY = 6; // trigger a fake commercial break every N stories
+const AD_BREAKS = [
+  { headline: "STACKOVERFLOW PREMIUM™", body: "Now with 50% more \u201cmarked as duplicate.\u201d Ask a question, get closed in record time." },
+  { headline: "SEMICOLON INSURANCE CO.", body: "Never lose a build to a missing semicolon again. Terms, conditions, and linters apply." },
+  { headline: "COFFEE++", body: "Regular coffee fixes tiredness. Ours claims to fix production bugs too. Results not guaranteed, or tested, or real." },
+  { headline: "REGEX UNDERSTANDING, LLC", body: "For when you write a regex today and can't explain it to yourself tomorrow. We can't help either, but we sell mugs about it." },
+  { headline: "THE INFINITE SCROLLBAR CO.", body: "Buy one scrollbar, get an infinite number more, whether you wanted them or not." },
+];
 
 function loadSpeed() {
   try {
@@ -952,6 +980,10 @@ function manualChangeChannel(idx) {
   // tuning away from that article, so it wouldn't make sense to keep it
   // open on screen.
   if (readerOpen) closeReader();
+  // Same idea as flipping the channel during a real commercial break —
+  // switching channels escapes the ad instead of forcing you to sit
+  // through it.
+  if (adBreakActive) { adBreakActive = false; document.getElementById("ad-break").style.display = "none"; }
   const channels = getChannels();
   if (idx === channelIdx || idx >= channels.length) { render(); return; }
   channelIdx = idx; storyIdx = 0; progress = 0;
@@ -964,13 +996,50 @@ function advance() {
   // WATCH/STOP only controls whether stories cycle within the channel
   // you're currently on. It never changes the channel itself — that's
   // always your call, via a button, arrow key, or number key.
-  if (readerOpen) return;
+  if (readerOpen || adBreakActive) return;
   const channels = getChannels();
   const cur = channels[channelIdx];
   if (!cur) return;
   const count = cur.stories.length || 1;
   storyIdx = (storyIdx + 1) % count;
   progress = 0;
+
+  storiesSinceAdBreak++;
+  if (storiesSinceAdBreak >= AD_BREAK_EVERY) {
+    storiesSinceAdBreak = 0;
+    showAdBreak();
+  }
+}
+
+const AD_BREAK_SECONDS = 6;
+function showAdBreak() {
+  adBreakActive = true;
+  const ad = AD_BREAKS[Math.floor(Math.random() * AD_BREAKS.length)];
+  document.getElementById("ad-break-headline").textContent = ad.headline;
+  document.getElementById("ad-break-body").textContent = ad.body;
+  const progressEl = document.getElementById("ad-break-progress");
+  progressEl.style.width = "0%";
+  playStatic(420, () => {
+    document.getElementById("ad-break").style.display = "flex";
+    const start = Date.now();
+    const tick = () => {
+      if (!adBreakActive) return;
+      const elapsed = (Date.now() - start) / 1000;
+      const pct = Math.min(100, (elapsed / AD_BREAK_SECONDS) * 100);
+      progressEl.style.width = pct + "%";
+      if (elapsed >= AD_BREAK_SECONDS) {
+        endAdBreak();
+      } else {
+        requestAnimationFrame(tick);
+      }
+    };
+    requestAnimationFrame(tick);
+  });
+}
+function endAdBreak() {
+  adBreakActive = false;
+  document.getElementById("ad-break").style.display = "none";
+  playStatic(420, showIdent);
 }
 
 function toggleAutoPilot() {
@@ -998,7 +1067,7 @@ function startTick() {
   tickInterval = setInterval(() => {
     // Manual mode is now a frozen preview: nothing advances on its own.
     // Auto Pilot is the only thing that moves stories or channels forward.
-    if (!power || readerOpen || mode !== "autopilot") return;
+    if (!power || readerOpen || adBreakActive || mode !== "autopilot") return;
     const channels = getChannels();
     const cur = channels[channelIdx];
     const hasStories = cur && cur.status === "ready" && cur.stories.length > 0;
