@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![No backend](https://img.shields.io/badge/backend-none-brightgreen)]()
 [![Single file](https://img.shields.io/badge/build%20step-none-brightgreen)]()
-[![Channels](https://img.shields.io/badge/channels-7%20live-orange)]()
+[![Channels](https://img.shields.io/badge/channels-9%20live-orange)]()
 [![Mobile friendly](https://img.shields.io/badge/mobile-friendly-blue)]()
 
 Five tabs, checked out of habit, half-read, closed again. That's most people's relationship with GitHub, Hacker News, DEV.to, and Hugging Face. DEV·TV turns it into a TV instead: pick a channel, it plays.
@@ -58,6 +58,24 @@ Two separate channels, both about research, built on two different philosophies:
 
 Same tradeoff as the GitHub channel's own design: proven interest versus raw freshness. Neither is "better", they answer different questions.
 
+### 🛡️ Security and video (channels 08 and 09)
+
+| # | Channel | Source | What it shows |
+|---|---------|--------|----------------|
+| 08 | **CVE** | `services.nvd.nist.gov` | Vulnerabilities published in the last 7 days, with severity, from NIST's National Vulnerability Database |
+| 09 | **HN Video** | `hn.algolia.com` | YouTube videos the Hacker News community upvoted in the last 2 weeks, sorted by points, playable right on the TV |
+
+### 🎬 HN Video (channel 09)
+
+Conference talks, deep dives, and demos, chosen by Hacker News votes rather than a recommendation algorithm. The channel finds recent HN stories that link to YouTube (at least 10 points), skips channel and playlist links, removes duplicates, and plays the video inside the TV using YouTube's privacy-enhanced embed player (`youtube-nocookie.com`). No YouTube API key is involved: the player is a standard embed, not a data request. A link to the HN discussion sits under every video.
+
+Things worth knowing:
+
+- **In-TV playback needs the live site.** YouTube refuses to start its player on a page that has no web address to verify (you'd see "Error 153"). That happens when `index.html` is opened as a local file, including a copy opened from a phone's file manager. In that case the channel shows the video's thumbnail instead, and tapping it opens the video on YouTube. Open the [live demo](https://shouvik12.github.io/devtv/) and it plays on the TV, on desktop and on phones.
+- **Phones may need one tap.** Mobile browsers block videos from starting with sound on their own.
+- **Some uploaders disable embedding.** Those videos show YouTube's own error inside the player; "Open original source" still works.
+- **Closing the reader stops the video.** The player is removed, not just hidden, so nothing keeps playing behind the TV.
+
 Every story links to its real source. Click a story and it opens in an in-app reader right on the TV, no new tab:
 
 - **DEV.to**: the full article body
@@ -65,6 +83,8 @@ Every story links to its real source. Click a story and it opens in an in-app re
 - **Hugging Face**: the model's README / model card
 - **Releases**: the real release notes, already fetched, no extra request
 - **AI Papers** / **Latest Papers**: the paper's abstract
+- **CVE**: the full vulnerability description
+- **HN Video**: the video itself, playing on the TV (see above)
 - **Hacker News**: full text for self-posts (Ask HN / Show HN); link posts show the top-level discussion comments instead, fetched live; if neither exists, a short note plus a link out instead of faking content
 
 Markdown from fetched content renders through a hand-rolled converter: everything is escaped first, then a narrow, explicitly whitelisted set of patterns (headers, bold, italic, code, tables, fenced code blocks, links, and images, including raw HTML `<img>`/`<a>` tags, validated to http/https only) is turned back into real markup. Nothing fetched from an external source can inject real HTML into the page.
@@ -77,7 +97,7 @@ _Real capture of the reader opening a GitHub README. It happened to hit a live r
 
 | Key / Button | Action |
 |---|---|
-| `←` `→` or `1`–`5` | Change channel. Doesn't interrupt playback either way |
+| `←` `→` or `1`–`9` | Change channel. Doesn't interrupt playback either way |
 | `❚❚ STOP` / `▶ WATCH` | Playing is the default, like turning on a real TV. STOP freezes on whatever story is currently showing; WATCH resumes from there |
 | `⚙` | Toggle channels on/off. Each shows an explicit **ON** / **OFF** label, not just a switch position (at least one channel must stay on) |
 | Speed button | `1×` `2×` `3×` `0.5×`, how long each story stays on screen |
@@ -86,6 +106,8 @@ _Real capture of the reader opening a GitHub README. It happened to hit a live r
 | `Esc` | Close the in-app reader |
 
 Static (real per-pixel noise, not a CSS texture) plays continuously on first load until you pick a channel, and briefly on every channel change afterward, like actually tuning a signal.
+
+A few more broadcast touches: a live clock sits in the header next to ON AIR, and every 6 stories the TV cuts to a short fake commercial break ("this is not a real advertisement" is printed right on it). It lasts 6 seconds, and changing the channel skips it, just like a real remote.
 
 ![Channel settings panel](./assets/screenshot-settings.png)
 
@@ -124,7 +146,7 @@ Opening a local HTML file on a phone isn't really practical the way double-click
 - If it's already deployed (see **Deploying it** below), just open that link in Chrome or Safari on your phone like any normal website.
 - If it isn't deployed yet, **[Netlify Drop](https://app.netlify.com/drop)** takes about 10 seconds from a laptop and gives you a real URL you can then open on your phone.
 
-The app itself is responsive and touch-friendly below 640px wide, so once it's loaded from a real URL, it works the same as on desktop.
+The app itself is responsive and touch-friendly below 640px wide, so once it's loaded from a real URL, it works the same as on desktop. That includes HN Video: in-TV playback works on phones from the live site, but not from a downloaded copy of the file (see the HN Video section).
 
 ### ⚠️ Why it has to run as a real page, not inside a sandboxed preview
 
@@ -144,6 +166,7 @@ It's a static file, so any static host works. No config needed.
 - All state (enabled channels, playback speed) lives in `localStorage`, scoped per browser/origin.
 - Each channel refreshes independently every 10 minutes, regardless of playback state. A channel that fails shows `SIGNAL LOST` with the underlying error, without affecting the others.
 - The `RELEASES` channel makes 6 requests per refresh (one per tracked project) against `api.github.com`, same host as the `GITHUB` channel. Combined, the GitHub-backed channels use 7 requests per 10-minute refresh cycle, which is 42 requests/hour at the default rate. GitHub's unauthenticated core API allows 60 requests/hour/IP, so that leaves roughly 18/hour of headroom for interactive README reads before the shared limit is hit. If it is hit, the affected channel or reader shows a clear error rather than breaking the rest of the app. Note that this limit is tied to the originating IP, so multiple people behind the same public IP (an office, a shared network) share the same budget.
+- `CVE` makes one request per refresh to NVD, well inside its keyless limit. `HN Video` makes one request per refresh to HN's Algolia search API. Neither touches the GitHub budget above.
 - The power-on/off transition is a real CSS keyframe animation (`scale` + `filter: brightness/contrast`) on the screen element, not a fade. It genuinely collapses to a line and a dot, CRT-style.
 
 ## 🚫 What's deliberately not here yet
@@ -154,7 +177,7 @@ Kept out of scope for the same reason a v1 TV network doesn't launch with 40 cha
 - AI-generated summaries: every story is real source data, not a rewrite
 - A backend of any kind (several candidate sources, Reddit, Product Hunt, X, LinkedIn, Discord, were evaluated and ruled out specifically because they require one; see below)
 - Community-created channels
-- More than a handful of channels total
+- Dozens of channels: nine is already a lot of TV
 
 ## 🔍 Sources considered and ruled out
 
@@ -163,12 +186,16 @@ For transparency, since this took real investigation to confirm:
 | Source | Status |
 |---|---|
 | **Reddit** | Public JSON endpoints are being locked down; real OAuth exists but its token-exchange step has no CORS support (confirmed against `ssl.reddit.com/api/v1/access_token`). Would need a backend to hold the exchange server-side |
-| **Product Hunt** | GraphQL API requires an OAuth token that can't safely live in client-side code |
+| **Product Hunt** | Even read-only API access requires exchanging a `client_id` plus a `client_secret` for a token. A secret can't live in public client-side code |
 | **X / Twitter** | No free tier that can read data at all as of the 2026 pricing overhaul. Pay-per-request from the first call |
 | **LinkedIn** | Real API access is partner-gated (manual approval, months-long, often rejected). No path for an individual developer |
 | **Medium** | Official API discontinued. No path to credentials, free or paid |
 | **Discord** | OAuth/bot-token required for everything; no global "trending" concept even with a token; CORS explicitly unsupported |
 | **arXiv** | Tested live: API is real and keyless, but `export.arxiv.org` does not appear to support CORS for browser `fetch()`. Removed after confirming `Failed to fetch` while every other channel succeeded in the same session |
+| **Semantic Scholar** | Tested live: blocked by CORS in the browser. Replaced by OpenAlex for the Latest Papers channel |
+| **Lobsters** | Tested live: the public JSON API is real and used by many server-side tools, but it doesn't allow browser requests (`Failed to fetch`). Being usable from a server is not the same as being usable from a browser |
+| **Noozra** (general news) | Tested live: `Failed to fetch`. The only mention of it anywhere online was a single directory listing marked "status unknown", so it may not exist as a working API at all |
+| **YouTube Data API** | Needs an API key in public code, and its free daily quota is shared by every visitor (a single search costs 100 of 10,000 units). HN Video avoids it entirely by finding videos through Hacker News and using the standard embed player |
 
 ## 📄 License
 
