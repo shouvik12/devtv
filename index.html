@@ -125,6 +125,8 @@
     #close-settings, #close-reader { padding: 10px !important; font-size: 18px !important; }
   }
   .mobile-hint { display: none; }
+  .video-frame { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 4px; overflow: hidden; }
+  .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 </style>
 </head>
 <body>
@@ -726,6 +728,68 @@ async function fetchCVEStories() {
   });
 }
 
+// General breaking news, not tech-specific like HN or DEV.to — aggregated
+// from 200+ curated RSS sources. A third-party directory (API Bouncer)
+// lists this as auth: none, CORS: yes, but that's a directory listing,
+// not a first-party guarantee — same "worth a live test" category as
+// several other channels were before they were proven working (or not).
+// Reads defensively across likely field-name variants for that reason.
+// Developer videos the HN community actually upvoted: recent HN stories
+// linking to YouTube, found via HN's Algolia search API (documented
+// endpoints, CORS not explicitly documented, so this is a live test).
+// Playback uses YouTube's standard privacy-enhanced embed player, an
+// iframe rather than a data fetch, so no YouTube API key is needed.
+// Video IDs are validated against YouTube's strict 11-character format
+// before ever reaching an iframe src.
+function extractYouTubeId(url) {
+  if (!url) return null;
+  let u;
+  try { u = new URL(url); } catch (e) { return null; }
+  // Check the real hostname, not a substring match, so a link that only
+  // mentions youtube.com somewhere in its query string isn't a video.
+  const host = u.hostname.replace(/^(www|m)\./, "");
+  const valid = (id) => (id && /^[A-Za-z0-9_-]{11}$/.test(id)) ? id : null;
+  if (host === "youtu.be") return valid(u.pathname.slice(1).split("/")[0]);
+  if (host !== "youtube.com") return null;
+  if (u.pathname === "/watch") return valid(u.searchParams.get("v"));
+  const m = u.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)/);
+  return m ? valid(m[1]) : null;
+}
+
+async function fetchHNVideoStories() {
+  const since = Math.floor(Date.now() / 1000) - 14 * 24 * 60 * 60;
+  const url = "https://hn.algolia.com/api/v1/search_by_date"
+    + "?tags=story&query=youtube&restrictSearchableAttributes=url"
+    + `&numericFilters=points>=10,created_at_i>${since}&hitsPerPage=50`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error("HN Algolia API " + res.status);
+  const data = await res.json();
+  const seen = new Set();
+  const videos = [];
+  for (const h of (data.hits || [])) {
+    const videoId = extractYouTubeId(h.url);
+    if (!videoId || seen.has(videoId)) continue;
+    seen.add(videoId);
+    videos.push(h);
+  }
+  if (videos.length === 0) throw new Error("No recent upvoted videos found");
+  videos.sort((a, b) => (b.points || 0) - (a.points || 0));
+
+  return videos.slice(0, 10).map(h => {
+    const videoId = extractYouTubeId(h.url);
+    const age = h.created_at_i ? Math.max(1, Math.round((Date.now() / 1000 - h.created_at_i) / 3600)) : null;
+    return {
+      show: "VIDEO · HACKER NEWS",
+      title: (h.title || "Untitled video").replace(/\s*\[video\]\s*/i, " ").trim(),
+      line1: (h.points || 0) + " points · " + (h.num_comments || 0) + " comments" + (age ? " · " + (age < 48 ? age + "h ago" : Math.round(age / 24) + "d ago") : ""),
+      line2: "Click to watch on the TV",
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+      videoId,
+      hnId: h.objectID,
+    };
+  });
+}
+
 // Tracks real version releases for the stacks people actually google to stay
 // current on — not a firehose of every GitHub release, a curated shortlist.
 // One call per repo (github.com/{repo}/releases/latest), all on the same
@@ -787,6 +851,7 @@ const ALL_CHANNELS = [
   { id: "aipapers", name: "AI PAPERS", color: "#a78bfa", key: "6", fetcher: fetchAIPapersStories, tag: "PAP" },
   { id: "latestpapers", name: "LATEST PAPERS", color: "#f472b6", key: "7", fetcher: fetchLatestPapersStories, tag: "NEW" },
   { id: "cve", name: "CVE", color: "#ef4444", key: "8", fetcher: fetchCVEStories, tag: "CVE" },
+  { id: "hnvideo", name: "HN VIDEO", color: "#fb923c", key: "9", fetcher: fetchHNVideoStories, tag: "VID" },
 ];
 
 let enabledIds = loadEnabledIds();
@@ -1157,6 +1222,26 @@ async function openReader(channel, story) {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "cve") {
       html = mdLite(story.fullText || story.line2);
+    } else if (channel.id === "hnvideo") {
+      // Re-validate the ID right before it touches an iframe src, even
+      // though the fetcher already did, so nothing unexpected can ever
+      // be injected here.
+      if (!/^[A-Za-z0-9_-]{11}$/.test(story.videoId || "")) throw new Error("Invalid video reference.");
+      const discuss = /^\d+$/.test(story.hnId || "") ? `https://news.ycombinator.com/item?id=${story.hnId}` : null;
+      // YouTube refuses to play embeds when the page has no web origin to
+      // send as a referrer (Error 153), which is exactly what happens when
+      // index.html is opened as a local file or from a phone's file viewer
+      // (file://, content://). In that case show a thumbnail that opens
+      // the video on YouTube instead of a player that's guaranteed to fail.
+      const ytUrl = `https://www.youtube.com/watch?v=${story.videoId}`;
+      if (/^https?:$/.test(location.protocol)) {
+        html = `<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${story.videoId}?autoplay=1&rel=0" title="Video player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`
+          + `<p style="color:#8a8a92; font-size:12px; margin-top:12px;">If the player shows an error, the video may block embedding. "Open original source" below always works.</p>`;
+      } else {
+        html = `<a class="video-frame" href="${ytUrl}" target="_blank" rel="noopener noreferrer" style="display:block;"><img src="https://i.ytimg.com/vi/${story.videoId}/hqdefault.jpg" alt="Video thumbnail" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; margin:0;"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:44px; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,0.8);">▶</span></a>`
+          + `<p style="color:#8a8a92; font-size:12px; margin-top:12px;">In-TV playback needs the live site (YouTube blocks players on pages opened as local files). Tap the thumbnail to watch on YouTube.</p>`;
+      }
+      html += (discuss ? `<p style="font-size:12px;"><a href="${discuss}" target="_blank" rel="noopener noreferrer">Read the Hacker News discussion</a></p>` : "");
     } else {
       throw new Error("No in-app reader available for this source yet.");
     }
@@ -1170,6 +1255,10 @@ async function openReader(channel, story) {
 }
 
 function closeReader() {
+  // Actually empty the reader, not just hide it: a hidden YouTube iframe
+  // keeps playing audio behind the TV. Every close path (the X button,
+  // Esc, switching channels, powering off) comes through here.
+  document.getElementById("reader-content").innerHTML = "";
   readerOpen = false;
   readerStory = null;
   readerChannel = null;
