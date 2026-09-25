@@ -1281,10 +1281,21 @@ async function openReader(channel, story) {
       // HTML. Never inject either directly — strip tags to plain text
       // first, then run through the same escape-then-format pipeline as
       // every other source, so nothing can carry a script/onerror payload.
-      const stripHnHtml = (rawHtml) => (rawHtml || "")
+      // HN also writes characters as codes (&#x27; for an apostrophe,
+      // &quot;, &gt;, &#x2F;). After stripping the real tags, decode those
+      // codes into plain characters with a <textarea>, which decodes text
+      // without ever creating elements or running anything. Every "<" in
+      // the result is typed text, so it's shielded from the markdown
+      // converter (which treats <img>/<a> as real HTML) and restored as a
+      // visible "<" afterward.
+      const HN_LT = "\u0000LT\u0000";
+      const decodeEntities = (str) => { const t = document.createElement("textarea"); t.innerHTML = str; return t.value; };
+      const stripHnHtml = (rawHtml) => decodeEntities((rawHtml || "")
         .replace(/<p>/gi, "\n\n")
         .replace(/<br\s*\/?>/gi, "\n")
-        .replace(/<[^>]*>/g, "");
+        .replace(/<[^>]*>/g, ""))
+        .replace(/</g, HN_LT);
+      const hnMd = (text) => mdLite(text).split(HN_LT).join("&lt;");
 
       // Link posts point at an article on another website. Say so clearly
       // at the top, with the article link right there, so nobody wonders
@@ -1301,7 +1312,7 @@ async function openReader(channel, story) {
       const discussionNote = (msg) => articleBanner + `<p class="hn-discussion-note">${msg}</p>`;
 
       if (story.hnText) {
-        html = articleBanner + mdLite(stripHnHtml(story.hnText));
+        html = articleBanner + hnMd(stripHnHtml(story.hnText));
       } else if (story.hnKids && story.hnKids.length > 0) {
         // Link posts have no article text on HN itself, but the discussion
         // usually exists and is often the more valuable thing to read —
@@ -1321,7 +1332,7 @@ async function openReader(channel, story) {
           .map(c => `**${c.by || "unknown"}**\n\n${stripHnHtml(c.text)}`)
           .join("\n\n---\n\n");
         if (validComments.length > 0) {
-          html = (articleBanner ? discussionNote("Discussion on Hacker News \u00b7 top comments") : mdLite("*Top comments from Hacker News:*")) + mdLite(commentsMarkdown);
+          html = (articleBanner ? discussionNote("Discussion on Hacker News \u00b7 top comments") : mdLite("*Top comments from Hacker News:*")) + hnMd(commentsMarkdown);
         }
       } else if (articleBanner) {
         html = discussionNote("No discussion on Hacker News yet.");
