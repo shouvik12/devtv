@@ -23,6 +23,7 @@ Five tabs, checked out of habit, half-read, closed again. That's most people's r
 ### 🖼️ Screenshot
 
 ![DEV·TV screenshot](./assets/Screenshot-video.png)
+
 ![DEV·TV screenshot](./assets/screenshot.png)
 
 _Real capture: headless Chromium loaded `index.html`, tuned to the AI Papers channel, mid-broadcast. Every channel shows its source right in the small label above the headline, "AI PAPER · HUGGING FACE" here, since not every channel's name makes its underlying source as obvious as GitHub or Hugging Face's own model channel does._
