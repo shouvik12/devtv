@@ -997,17 +997,79 @@ function getChannels() {
     stories: dataByChannel[c.id]?.stories ?? [],
     status: dataByChannel[c.id]?.status ?? "loading",
     error: dataByChannel[c.id]?.error ?? null,
+    staleSince: dataByChannel[c.id]?.staleSince ?? null,
   }));
 }
 
+// Each channel's stories are remembered in this browser for just under
+// one refresh interval. Reloading the page (or coming back to the tab)
+// reuses them instead of spending requests again. That matters most for
+// GitHub, which allows only 60 requests an hour per internet address,
+// often shared by everyone on the same mobile carrier or office network.
+// It never makes anything staler than before: the TV refreshes every
+// REFRESH_MINUTES anyway. If a fetch fails, the last good stories (up to
+// a day old) stay on screen with a note saying how old they are.
+const CACHE_PREFIX = "devtv-cache:";
+const CACHE_FRESH_MS = REFRESH_MINUTES * 60 * 1000 - 30 * 1000;
+const CACHE_KEEP_MS = 24 * 60 * 60 * 1000;
+function readCache(key) {
+  try {
+    const raw = localStorage.getItem(CACHE_PREFIX + key);
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    if (!o || typeof o.t !== "number" || o.data == null) return null;
+    if (Date.now() - o.t > CACHE_KEEP_MS) { localStorage.removeItem(CACHE_PREFIX + key); return null; }
+    return o;
+  } catch (e) { return null; }
+}
+function writeCache(key, data) {
+  try { localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({ t: Date.now(), data })); return true; }
+  catch (e) { return false; } // storage full or blocked: caching is optional
+}
+
+const README_CACHE_LIMIT = 25;
+function cacheReadme(key, text) {
+  if (typeof text !== "string" || text.length > 400000) return; // skip giant READMEs
+  const prefix = CACHE_PREFIX + "readme:";
+  const entries = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(prefix) && k !== CACHE_PREFIX + key) {
+        let t = 0; try { t = JSON.parse(localStorage.getItem(k)).t || 0; } catch (e) {}
+        entries.push([k, t]);
+      }
+    }
+    entries.sort((a, b) => a[1] - b[1]);
+    while (entries.length >= README_CACHE_LIMIT) localStorage.removeItem(entries.shift()[0]);
+  } catch (e) {}
+  if (!writeCache(key, text)) {
+    // Storage full: drop the oldest cached READMEs and try once more.
+    entries.slice(0, 10).forEach(([k]) => { try { localStorage.removeItem(k); } catch (e) {} });
+    writeCache(key, text);
+  }
+}
+
 async function loadChannel(def) {
+  const cached = readCache("ch:" + def.id);
+  if (cached && Date.now() - cached.t < CACHE_FRESH_MS && Array.isArray(cached.data) && cached.data.length > 0) {
+    dataByChannel[def.id] = { stories: cached.data, status: "ready", error: null, staleSince: null };
+    render();
+    return;
+  }
   dataByChannel[def.id] = { ...dataByChannel[def.id], status: "loading" };
   render();
   try {
     const stories = await def.fetcher();
-    dataByChannel[def.id] = { stories, status: "ready", error: null };
+    writeCache("ch:" + def.id, stories);
+    dataByChannel[def.id] = { stories, status: "ready", error: null, staleSince: null };
   } catch (err) {
-    dataByChannel[def.id] = { stories: dataByChannel[def.id]?.stories ?? [], status: "error", error: err.message };
+    const fallback = cached && Array.isArray(cached.data) && cached.data.length > 0 ? cached : null;
+    if (fallback) {
+      dataByChannel[def.id] = { stories: fallback.data, status: "ready", error: err.message, staleSince: fallback.t };
+    } else {
+      dataByChannel[def.id] = { stories: dataByChannel[def.id]?.stories ?? [], status: "error", error: err.message, staleSince: null };
+    }
   }
   render();
 }
@@ -1269,12 +1331,28 @@ async function openReader(channel, story) {
       const data = await res.json();
       html = mdLite(data.body_markdown || story.line2);
     } else if (channel.id === "github") {
-      const res = await fetch(`https://api.github.com/repos/${story.fullName}/readme`, {
-        headers: { Accept: "application/vnd.github.raw" },
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error(githubErrorMessage(res, "This repository has no README, or it couldn't be loaded"));
-      const text = await res.text();
+      // READMEs you've already opened are reused for an hour instead of
+      // spending another GitHub request, and kept up to a day as a
+      // fallback if GitHub says no.
+      const readmeKey = "readme:" + story.fullName;
+      const cachedReadme = readCache(readmeKey);
+      let text = null;
+      if (cachedReadme && Date.now() - cachedReadme.t < 60 * 60 * 1000) {
+        text = cachedReadme.data;
+      } else {
+        const res = await fetch(`https://api.github.com/repos/${story.fullName}/readme`, {
+          headers: { Accept: "application/vnd.github.raw" },
+          cache: "no-store",
+        });
+        if (res.ok) {
+          text = await res.text();
+          cacheReadme(readmeKey, text);
+        } else if (cachedReadme) {
+          text = cachedReadme.data;
+        } else {
+          throw new Error(githubErrorMessage(res, "This repository has no README, or it couldn't be loaded"));
+        }
+      }
       html = mdLite(text);
     } else if (channel.id === "hn") {
       // HN's API documents both story `text` and comment `text` as raw
@@ -1571,6 +1649,7 @@ function render() {
     bodyEl.innerHTML = `
       <div class="reader-open-target" id="story-open-target">
         <div class="mono" style="font-size:11px; color:${channel.color}; letter-spacing:0.08em;">${story.show}</div>
+        ${channel.staleSince ? `<div class="mono" style="font-size:10px; color:#8a8a92; letter-spacing:0.05em; margin-top:4px;">Showing stories from ${Math.max(1, Math.round((Date.now() - channel.staleSince) / 60000))} min ago \u00b7 couldn't refresh, will retry</div>` : ""}
         <div class="story-title" style="font-weight:700; font-size:clamp(16px, 3.2vw, 28px); color:#f5f5f7; line-height:1.2; letter-spacing:-0.01em; margin-top:6px;">${escapeHtml(story.title)}</div>
         <div class="mono" style="font-size:12px; color:${channel.color}; margin-top:6px;">${escapeHtml(story.line1)}</div>
         <div style="font-size:13px; color:#9a9aa2; max-width:640px; line-height:1.4; margin-top:6px;">${escapeHtml(story.line2)}</div>
