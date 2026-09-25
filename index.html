@@ -89,7 +89,7 @@
   .reader-open-target:hover .story-title { text-decoration: underline; }
   #no-signal { width: 100%; height: 100%; display: none; align-items: center; justify-content: center; font-family: 'Courier New', monospace; font-size: 11px; color: #333338; letter-spacing: 0.1em; }
   #controls { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 20px; flex-wrap: wrap; }
-  .chbtn { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 74px; padding: 9px 3px; border-radius: 6px; border: 1px solid #000; border-top: 1px solid #3a3a40; background: linear-gradient(180deg, #232328, #17171a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); position: relative; }
+  .chbtn { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 66px; padding: 9px 3px; border-radius: 6px; border: 1px solid #000; border-top: 1px solid #3a3a40; background: linear-gradient(180deg, #232328, #17171a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); position: relative; }
   .chbtn .num { font-family: 'Courier New', monospace; font-size: 10px; color: #6a6a72; }
   .chbtn .name { font-size: 9px; font-weight: 600; color: #d8d8dc; letter-spacing: 0.01em; text-align: center; line-height: 1.15; }
   .dot { position: absolute; top: 4px; right: 5px; width: 5px; height: 5px; border-radius: 50%; }
@@ -121,12 +121,16 @@
     .desktop-hint { display: none; }
     .mobile-hint { display: block !important; }
     /* Bigger, thumb-friendly tap targets for the small icon buttons */
-    #fullscreen-btn, #gear { padding: 8px !important; font-size: 16px !important; }
+    #fullscreen-btn, #gear, #star-link { padding: 8px !important; font-size: 16px !important; }
     #close-settings, #close-reader { padding: 10px !important; font-size: 18px !important; }
   }
   .mobile-hint { display: none; }
   .video-frame { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 4px; overflow: hidden; }
   .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  #star-link:hover, #star-link:focus-visible { color: #e8c170 !important; }
+  @media (max-width: 400px) { #clock { font-size: 10px !important; letter-spacing: 0 !important; } #tv-logo { font-size: 15px !important; letter-spacing: 0.08em !important; } }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  @media (max-width: 340px) { #tv-logo { font-size: 13px !important; letter-spacing: 0.04em !important; } #fullscreen-btn { display: none !important; } }
 </style>
 </head>
 <body>
@@ -138,10 +142,11 @@
 </div>
 <div id="tv">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:0 4px;">
-    <span class="mono" style="font-size:18px; font-weight:700; color:#9a9aa2; letter-spacing:0.12em;">DEV·TV</span>
+    <span id="tv-logo" class="mono" style="font-size:18px; font-weight:700; color:#9a9aa2; letter-spacing:0.12em;">DEV·TV</span>
     <div style="display:flex; align-items:center; gap:12px;">
-      <span id="clock" class="mono" style="font-size:11px; color:#6a6a72; letter-spacing:0.05em;"></span>
-      <span id="onair" class="mono" style="font-size:10px; color:#ff5c5c; letter-spacing:0.1em; display:none;">● ON AIR</span>
+      <span id="clock" class="mono" style="font-size:11px; color:#6a6a72; letter-spacing:0.05em; white-space:nowrap; flex-shrink:0;"></span>
+      <span id="onair" class="mono" style="font-size:10px; color:#ff5c5c; letter-spacing:0.1em; display:none; white-space:nowrap;">● ON AIR</span>
+      <a id="star-link" href="https://github.com/shouvik12/devtv" target="_blank" rel="noopener noreferrer" title="Star DEV·TV on GitHub" aria-label="Star DEV·TV on GitHub" class="mono" style="color:#a67c3d; font-size:14px; line-height:1; text-decoration:none; padding:2px;">★</a>
       <button id="fullscreen-btn" class="btn" title="Fullscreen" style="background:none; border:none; padding:2px; color:#55555c; font-size:13px; line-height:1;">⛶</button>
       <button id="gear" class="btn" style="background:none; border:none; padding:2px; color:#55555c; font-size:13px; line-height:1;">⚙</button>
     </div>
@@ -234,7 +239,7 @@
 
   <div id="controls">
     <button id="watch-btn" class="btn" style="display:flex; align-items:center; gap:6px; padding:9px 14px; border-radius:6px; border:1px solid #000; border-top:1px solid #3a3a40; background:linear-gradient(180deg, #232328, #17171a); color:#d8d8dc; font-size:11px; font-weight:600;">❚❚ STOP</button>
-    <div id="channel-buttons" style="display:flex; gap:7px; flex-wrap:wrap;"></div>
+    <div id="channel-buttons" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
     <button id="speed-btn" class="btn mono" title="Playback speed" style="padding:9px 10px; border-radius:6px; border:1px solid #000; border-top:1px solid #3a3a40; background:linear-gradient(180deg, #232328, #17171a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color:#d8d8dc; font-size:11px; font-weight:600;">1×</button>
     <button id="power-btn" class="round-btn btn" title="Turn TV off">⏻</button>
   </div>
@@ -756,11 +761,13 @@ function extractYouTubeId(url) {
   return m ? valid(m[1]) : null;
 }
 
-async function fetchHNVideoStories() {
-  const since = Math.floor(Date.now() / 1000) - 14 * 24 * 60 * 60;
+// Shared by HN VIDEO and AI VIDEO: recent HN stories linking to YouTube,
+// deduplicated by video and sorted by points.
+async function fetchHNYouTubeHits(days, minPoints, hitsPerPage) {
+  const since = Math.floor(Date.now() / 1000) - days * 24 * 60 * 60;
   const url = "https://hn.algolia.com/api/v1/search_by_date"
     + "?tags=story&query=youtube&restrictSearchableAttributes=url"
-    + `&numericFilters=points>=10,created_at_i>${since}&hitsPerPage=50`;
+    + `&numericFilters=points>=${minPoints},created_at_i>${since}&hitsPerPage=${hitsPerPage}`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error("HN Algolia API " + res.status);
   const data = await res.json();
@@ -770,24 +777,42 @@ async function fetchHNVideoStories() {
     const videoId = extractYouTubeId(h.url);
     if (!videoId || seen.has(videoId)) continue;
     seen.add(videoId);
-    videos.push(h);
+    videos.push({ ...h, videoId });
   }
-  if (videos.length === 0) throw new Error("No recent upvoted videos found");
   videos.sort((a, b) => (b.points || 0) - (a.points || 0));
+  return videos;
+}
 
-  return videos.slice(0, 10).map(h => {
-    const videoId = extractYouTubeId(h.url);
-    const age = h.created_at_i ? Math.max(1, Math.round((Date.now() / 1000 - h.created_at_i) / 3600)) : null;
-    return {
-      show: "VIDEO · HACKER NEWS",
-      title: (h.title || "Untitled video").replace(/\s*\[video\]\s*/i, " ").trim(),
-      line1: (h.points || 0) + " points · " + (h.num_comments || 0) + " comments" + (age ? " · " + (age < 48 ? age + "h ago" : Math.round(age / 24) + "d ago") : ""),
-      line2: "Click to watch on the TV",
-      url: `https://www.youtube.com/watch?v=${videoId}`,
-      videoId,
-      hnId: h.objectID,
-    };
-  });
+function hnVideoToStory(h, show) {
+  const age = h.created_at_i ? Math.max(1, Math.round((Date.now() / 1000 - h.created_at_i) / 3600)) : null;
+  return {
+    show,
+    title: (h.title || "Untitled video").replace(/\s*\[video\]\s*/i, " ").trim(),
+    line1: (h.points || 0) + " points · " + (h.num_comments || 0) + " comments" + (age ? " · " + (age < 48 ? age + "h ago" : Math.round(age / 24) + "d ago") : ""),
+    line2: "Click to watch on the TV",
+    url: `https://www.youtube.com/watch?v=${h.videoId}`,
+    videoId: h.videoId,
+    hnId: h.objectID,
+  };
+}
+
+async function fetchHNVideoStories() {
+  const videos = await fetchHNYouTubeHits(14, 10, 50);
+  if (videos.length === 0) throw new Error("No recent upvoted videos found");
+  return videos.slice(0, 10).map(h => hnVideoToStory(h, "VIDEO · HACKER NEWS"));
+}
+
+// AI-focused subset of the same source: a wider 30-day window, then only
+// videos whose titles look AI-related. Keyword matching is imperfect by
+// nature (it misses plainly titled AI videos), so words that are too
+// generic on their own, like "model" or "agent", are left out on purpose
+// to keep off-topic videos from slipping in.
+const AI_TITLE_PATTERN = /\b(AI|A\.I\.|AGI|LLMs?|GPT[-\w.]*|ChatGPT|OpenAI|Anthropic|Claude|Gemini|DeepMind|Llama|Mistral|Qwen|DeepSeek|Hugging ?Face|machine learning|deep learning|neural net(work)?s?|transformers?|diffusion|agentic|RAG|fine[- ]?tun(e|ed|ing)|embeddings?|reinforcement learning|computer vision|Copilot|Stable Diffusion|Midjourney|Sora)\b/i;
+
+async function fetchAIVideoStories() {
+  const videos = (await fetchHNYouTubeHits(30, 5, 300)).filter(h => AI_TITLE_PATTERN.test(h.title || ""));
+  if (videos.length === 0) throw new Error("No recent AI videos found on Hacker News");
+  return videos.slice(0, 10).map(h => hnVideoToStory(h, "AI VIDEO · HACKER NEWS"));
 }
 
 // Tracks real version releases for the stacks people actually google to stay
@@ -852,6 +877,7 @@ const ALL_CHANNELS = [
   { id: "latestpapers", name: "LATEST PAPERS", color: "#f472b6", key: "7", fetcher: fetchLatestPapersStories, tag: "NEW" },
   { id: "cve", name: "CVE", color: "#ef4444", key: "8", fetcher: fetchCVEStories, tag: "CVE" },
   { id: "hnvideo", name: "HN VIDEO", color: "#fb923c", key: "9", fetcher: fetchHNVideoStories, tag: "VID" },
+  { id: "aivideo", name: "AI VIDEO", color: "#38bdf8", key: "0", fetcher: fetchAIVideoStories, tag: "AIV" },
 ];
 
 let enabledIds = loadEnabledIds();
@@ -1122,7 +1148,10 @@ function toggleAutoPilot() {
 // Uses the browser's own clock, no API call, zero-backend stays intact.
 function updateClock() {
   const el = document.getElementById("clock");
-  if (el) el.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  // Small phones drop the seconds so the clock fits next to ON AIR.
+  const narrow = window.matchMedia("(max-width: 400px)").matches;
+  const opts = narrow ? { hour: "2-digit", minute: "2-digit" } : { hour: "2-digit", minute: "2-digit", second: "2-digit" };
+  if (el) el.textContent = new Date().toLocaleTimeString([], opts);
 }
 
 function startTick() {
@@ -1222,7 +1251,7 @@ async function openReader(channel, story) {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "cve") {
       html = mdLite(story.fullText || story.line2);
-    } else if (channel.id === "hnvideo") {
+    } else if (channel.id === "hnvideo" || channel.id === "aivideo") {
       // Re-validate the ID right before it touches an iframe src, even
       // though the fetcher already did, so nothing unexpected can ever
       // be injected here.
@@ -1235,7 +1264,7 @@ async function openReader(channel, story) {
       // the video on YouTube instead of a player that's guaranteed to fail.
       const ytUrl = `https://www.youtube.com/watch?v=${story.videoId}`;
       if (/^https?:$/.test(location.protocol)) {
-        html = `<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${story.videoId}?autoplay=1&rel=0" title="Video player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`
+        html = `<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${story.videoId}?autoplay=1&rel=0&playsinline=1" title="Video player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`
           + `<p style="color:#8a8a92; font-size:12px; margin-top:12px;">If the player shows an error, the video may block embedding. "Open original source" below always works.</p>`;
       } else {
         html = `<a class="video-frame" href="${ytUrl}" target="_blank" rel="noopener noreferrer" style="display:block;"><img src="https://i.ytimg.com/vi/${story.videoId}/hqdefault.jpg" alt="Video thumbnail" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; margin:0;"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:44px; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,0.8);">▶</span></a>`
