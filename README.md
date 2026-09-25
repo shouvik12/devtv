@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![No backend](https://img.shields.io/badge/backend-none-brightgreen)]()
 [![Single file](https://img.shields.io/badge/build%20step-none-brightgreen)]()
-[![Channels](https://img.shields.io/badge/channels-9%20live-orange)]()
+[![Channels](https://img.shields.io/badge/channels-10%20live-orange)]()
 [![Mobile friendly](https://img.shields.io/badge/mobile-friendly-blue)]()
 
 Five tabs, checked out of habit, half-read, closed again. That's most people's relationship with GitHub, Hacker News, DEV.to, and Hugging Face. DEV·TV turns it into a TV instead: pick a channel, it plays.
@@ -58,14 +58,15 @@ Two separate channels, both about research, built on two different philosophies:
 
 Same tradeoff as the GitHub channel's own design: proven interest versus raw freshness. Neither is "better", they answer different questions.
 
-### 🛡️ Security and video (channels 08 and 09)
+### 🛡️ Security and video (channels 08 to 10)
 
 | # | Channel | Source | What it shows |
 |---|---------|--------|----------------|
 | 08 | **CVE** | `services.nvd.nist.gov` | Vulnerabilities published in the last 7 days, with severity, from NIST's National Vulnerability Database |
 | 09 | **HN Video** | `hn.algolia.com` | YouTube videos the Hacker News community upvoted in the last 2 weeks, sorted by points, playable right on the TV |
+| 10 | **AI Video** | `hn.algolia.com` | The AI-focused slice of the same source: HN-upvoted YouTube videos from the last 30 days whose titles are about AI |
 
-### 🎬 HN Video (channel 09)
+### 🎬 HN Video and AI Video (channels 09 and 10)
 
 Conference talks, deep dives, and demos, chosen by Hacker News votes rather than a recommendation algorithm. The channel finds recent HN stories that link to YouTube (at least 10 points), skips channel and playlist links, removes duplicates, and plays the video inside the TV using YouTube's privacy-enhanced embed player (`youtube-nocookie.com`). No YouTube API key is involved: the player is a standard embed, not a data request. A link to the HN discussion sits under every video.
 
@@ -75,6 +76,9 @@ Things worth knowing:
 - **Phones may need one tap.** Mobile browsers block videos from starting with sound on their own.
 - **Some uploaders disable embedding.** Those videos show YouTube's own error inside the player; "Open original source" still works.
 - **Closing the reader stops the video.** The player is removed, not just hidden, so nothing keeps playing behind the TV.
+- **iPhones play videos inside the TV** rather than jumping to full-screen.
+
+**AI Video** uses the same source and the same player, but looks back 30 days instead of 14 and keeps only videos whose titles are clearly about AI: LLMs, GPT, Claude, Gemini, DeepSeek, diffusion, fine-tuning, agentic, and similar. Words that are too generic on their own, like "model" or "agent", are left out on purpose, so "Model trains at the museum" doesn't sneak in. The honest tradeoff of keyword matching: it misses AI videos with plain titles, and some weeks the channel is thinner than HN Video.
 
 Every story links to its real source. Click a story and it opens in an in-app reader right on the TV, no new tab:
 
@@ -84,8 +88,8 @@ Every story links to its real source. Click a story and it opens in an in-app re
 - **Releases**: the real release notes, already fetched, no extra request
 - **AI Papers** / **Latest Papers**: the paper's abstract
 - **CVE**: the full vulnerability description
-- **HN Video**: the video itself, playing on the TV (see above)
-- **Hacker News**: full text for self-posts (Ask HN / Show HN); link posts show the top-level discussion comments instead, fetched live; if neither exists, a short note plus a link out instead of faking content
+- **HN Video** / **AI Video**: the video itself, playing on the TV (see above)
+- **Hacker News**: full text for self-posts (Ask HN / Show HN). Most front-page stories link to an article on another website, which Hacker News doesn't host, so for those the reader opens with a clear banner ("This story links to an article on example.com") and a **Read the article ↗** link, followed by the top discussion comments, fetched live. If there's no discussion yet, you still get the banner and the link, never a dead end
 
 Markdown from fetched content renders through a hand-rolled converter: everything is escaped first, then a narrow, explicitly whitelisted set of patterns (headers, bold, italic, code, tables, fenced code blocks, links, and images, including raw HTML `<img>`/`<a>` tags, validated to http/https only) is turned back into real markup. Nothing fetched from an external source can inject real HTML into the page.
 
@@ -97,17 +101,18 @@ _Real capture of the reader opening a GitHub README. It happened to hit a live r
 
 | Key / Button | Action |
 |---|---|
-| `←` `→` or `1`–`9` | Change channel. Doesn't interrupt playback either way |
+| `←` `→`, `1`–`9`, or `0` | Change channel (`0` is channel 10). Doesn't interrupt playback either way |
 | `❚❚ STOP` / `▶ WATCH` | Playing is the default, like turning on a real TV. STOP freezes on whatever story is currently showing; WATCH resumes from there |
 | `⚙` | Toggle channels on/off. Each shows an explicit **ON** / **OFF** label, not just a switch position (at least one channel must stay on) |
 | Speed button | `1×` `2×` `3×` `0.5×`, how long each story stays on screen |
 | `⛶` | Fullscreen toggle |
+| `★` | Opens this repo on GitHub in a new tab, where you can star it. The TV keeps playing |
 | `⏻` | Power. Green glow means on, dim gray means off, tooltip tells you which way it'll flip. Powering off plays a real CRT-style collapse (screen squishes to a line, then a dot, then dark); powering on reverses it |
 | `Esc` | Close the in-app reader |
 
 Static (real per-pixel noise, not a CSS texture) plays continuously on first load until you pick a channel, and briefly on every channel change afterward, like actually tuning a signal.
 
-A few more broadcast touches: a live clock sits in the header next to ON AIR, and every 6 stories the TV cuts to a short fake commercial break ("this is not a real advertisement" is printed right on it). It lasts 6 seconds, and changing the channel skips it, just like a real remote.
+A few more broadcast touches: a live clock sits in the header next to ON AIR (small phones drop the seconds so it fits), and every so often the TV cuts to a short fake commercial break for an invented developer product, like Works On My Machine™ Shipping, Merge Conflict Therapy, or Off-By-One Pizza. "This is not a real advertisement" is printed on every one. They're a rare treat, not a schedule: none in your first 3 minutes, then about one every 5 minutes of playback. Each lasts 6 seconds, changing the channel skips it, and **Commercial breaks** in the ⚙ panel switches them off entirely (the choice is remembered).
 
 ![Channel settings panel](./assets/screenshot-settings.png)
 
@@ -166,7 +171,7 @@ It's a static file, so any static host works. No config needed.
 - All state (enabled channels, playback speed) lives in `localStorage`, scoped per browser/origin.
 - Each channel refreshes independently every 10 minutes, regardless of playback state. A channel that fails shows `SIGNAL LOST` with the underlying error, without affecting the others.
 - The `RELEASES` channel makes 6 requests per refresh (one per tracked project) against `api.github.com`, same host as the `GITHUB` channel. Combined, the GitHub-backed channels use 7 requests per 10-minute refresh cycle, which is 42 requests/hour at the default rate. GitHub's unauthenticated core API allows 60 requests/hour/IP, so that leaves roughly 18/hour of headroom for interactive README reads before the shared limit is hit. If it is hit, the affected channel or reader shows a clear error rather than breaking the rest of the app. Note that this limit is tied to the originating IP, so multiple people behind the same public IP (an office, a shared network) share the same budget.
-- `CVE` makes one request per refresh to NVD, well inside its keyless limit. `HN Video` makes one request per refresh to HN's Algolia search API. Neither touches the GitHub budget above.
+- `CVE` makes one request per refresh to NVD, well inside its keyless limit. `HN Video` and `AI Video` each make one request per refresh to HN's Algolia search API. None of these touch the GitHub budget above.
 - The power-on/off transition is a real CSS keyframe animation (`scale` + `filter: brightness/contrast`) on the screen element, not a fade. It genuinely collapses to a line and a dot, CRT-style.
 
 ## 🚫 What's deliberately not here yet
@@ -177,7 +182,7 @@ Kept out of scope for the same reason a v1 TV network doesn't launch with 40 cha
 - AI-generated summaries: every story is real source data, not a rewrite
 - A backend of any kind (several candidate sources, Reddit, Product Hunt, X, LinkedIn, Discord, were evaluated and ruled out specifically because they require one; see below)
 - Community-created channels
-- Dozens of channels: nine is already a lot of TV
+- Dozens of channels: ten is already a lot of TV
 
 ## 🔍 Sources considered and ruled out
 
