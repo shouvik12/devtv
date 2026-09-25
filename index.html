@@ -131,6 +131,10 @@
   @media (max-width: 400px) { #clock { font-size: 10px !important; letter-spacing: 0 !important; } #tv-logo { font-size: 15px !important; letter-spacing: 0.08em !important; } }
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   @media (max-width: 340px) { #tv-logo { font-size: 13px !important; letter-spacing: 0.04em !important; } #fullscreen-btn { display: none !important; } }
+  .hn-article-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; margin-bottom: 14px; border: 1px solid rgba(255,107,71,0.35); border-radius: 6px; background: rgba(255,107,71,0.08); font-size: 13px; color: #d8d8dc; }
+  .hn-article-banner a { color: #ff8a6b; font-weight: 600; text-decoration: none; white-space: nowrap; }
+  .hn-article-banner a:hover { text-decoration: underline; }
+  .hn-discussion-note { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #8a8a92; margin: 0 0 12px; }
 </style>
 </head>
 <body>
@@ -1215,8 +1219,22 @@ async function openReader(channel, story) {
         .replace(/<br\s*\/?>/gi, "\n")
         .replace(/<[^>]*>/g, "");
 
+      // Link posts point at an article on another website. Say so clearly
+      // at the top, with the article link right there, so nobody wonders
+      // why they're reading comments instead of the article.
+      let articleBanner = "";
+      try {
+        const u = new URL(story.url || "");
+        if (/^https?:$/.test(u.protocol) && u.hostname !== "news.ycombinator.com") {
+          const domain = escapeHtml(u.hostname.replace(/^www\./, ""));
+          articleBanner = `<div class="hn-article-banner"><div>This story links to an article on <strong>${domain}</strong></div>`
+            + `<a href="${escapeHtml(u.href)}" target="_blank" rel="noopener noreferrer">Read the article \u2197</a></div>`;
+        }
+      } catch (e) { articleBanner = ""; }
+      const discussionNote = (msg) => articleBanner + `<p class="hn-discussion-note">${msg}</p>`;
+
       if (story.hnText) {
-        html = mdLite(stripHnHtml(story.hnText));
+        html = articleBanner + mdLite(stripHnHtml(story.hnText));
       } else if (story.hnKids && story.hnKids.length > 0) {
         // Link posts have no article text on HN itself, but the discussion
         // usually exists and is often the more valuable thing to read —
@@ -1229,12 +1247,17 @@ async function openReader(channel, story) {
         ));
         const validComments = results.filter(c => c && c.text && !c.deleted && !c.dead);
         if (validComments.length === 0) {
-          throw new Error("Couldn't load the discussion for this story. Use \u201cOpen original source\u201d below to read it on Hacker News.");
+          if (!articleBanner) throw new Error("Couldn't load the discussion for this story. Use \u201cOpen original source\u201d below to read it on Hacker News.");
+          html = discussionNote("The Hacker News discussion couldn't be loaded right now.");
         }
         const commentsMarkdown = validComments
           .map(c => `**${c.by || "unknown"}**\n\n${stripHnHtml(c.text)}`)
           .join("\n\n---\n\n");
-        html = mdLite("*Top comments from Hacker News:*\n\n" + commentsMarkdown);
+        if (validComments.length > 0) {
+          html = (articleBanner ? discussionNote("Discussion on Hacker News \u00b7 top comments") : mdLite("*Top comments from Hacker News:*")) + mdLite(commentsMarkdown);
+        }
+      } else if (articleBanner) {
+        html = discussionNote("No discussion on Hacker News yet.");
       } else {
         throw new Error("No discussion yet on Hacker News for this story. Use \u201cOpen original source\u201d below to read it.");
       }
