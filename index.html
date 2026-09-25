@@ -135,6 +135,47 @@
   .hn-article-banner a { color: #ff8a6b; font-weight: 600; text-decoration: none; white-space: nowrap; }
   .hn-article-banner a:hover { text-decoration: underline; }
   .hn-discussion-note { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #8a8a92; margin: 0 0 12px; }
+  #ad-break { position: absolute; inset: 0; z-index: 15; flex-direction: column; overflow: hidden; padding: 18px 22px 16px;
+    background: var(--ad-bg, #1d4ed8); color: var(--ad-ink, #fff); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #ad-break::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(135deg, rgba(255,255,255,0.06) 0 14px, transparent 14px 28px); }
+  .ad-top, .ad-bottom, .ad-main { position: relative; }
+  .ad-top { display: flex; justify-content: space-between; align-items: center; }
+  .ad-tag-short { display: none; }
+  .ad-tag { font-size: 10px; font-weight: 800; letter-spacing: 0.18em; background: rgba(0,0,0,0.35); padding: 4px 8px; border-radius: 3px; }
+  .ad-countdown { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; opacity: 0.85; }
+  .ad-main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; padding: 8px 0; }
+  .ad-logo { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-size: 32px; background: var(--ad-accent, #facc15); box-shadow: 0 4px 0 rgba(0,0,0,0.25); }
+  .ad-brand { font-size: clamp(26px, 5.5vw, 48px); font-weight: 900; letter-spacing: -0.02em; line-height: 1; text-transform: uppercase; text-shadow: 0 3px 0 rgba(0,0,0,0.25); max-width: 90%; }
+  .ad-slogan { font-size: clamp(14px, 2.4vw, 20px); font-weight: 800; font-style: italic; color: var(--ad-accent, #facc15); max-width: 90%; }
+  .ad-body { font-size: 13px; line-height: 1.5; max-width: 440px; opacity: 0.92; }
+  .ad-cta { margin-top: 6px; padding: 10px 18px; border-radius: 999px; font-size: 13px; font-weight: 900; letter-spacing: 0.06em;
+    background: var(--ad-accent, #facc15); color: var(--ad-bg, #1d4ed8); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
+  .ad-burst { position: absolute; top: 60px; right: 18px; width: 108px; height: 108px; display: grid; place-items: center; text-align: center;
+    background: var(--ad-accent, #facc15); color: var(--ad-bg, #1d4ed8); font-weight: 900; font-size: 14px; line-height: 1.1; padding: 22px;
+    clip-path: polygon(50% 0%, 61% 17%, 79% 9%, 79% 29%, 98% 32%, 86% 48%, 98% 65%, 79% 70%, 79% 90%, 61% 82%, 50% 100%, 39% 82%, 21% 90%, 21% 70%, 2% 65%, 14% 48%, 2% 32%, 21% 29%, 21% 9%, 39% 17%);
+    animation: ad-wobble 1.6s ease-in-out infinite; }
+  @keyframes ad-wobble { 0%, 100% { transform: rotate(12deg) scale(1); } 50% { transform: rotate(8deg) scale(1.06); } }
+  .ad-bottom { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .ad-disclaimer { font-size: 10px; letter-spacing: 0.08em; opacity: 0.75; }
+  .ad-bar { width: 160px; height: 3px; background: rgba(0,0,0,0.3); border-radius: 2px; overflow: hidden; }
+  #ad-break-progress { height: 100%; width: 0%; background: var(--ad-ink, #fff); }
+  @media (max-width: 640px) {
+    #ad-break { padding: 10px 12px 8px; }
+    .ad-tag { font-size: 8px; padding: 3px 6px; } .ad-tag-long { display: none; } .ad-tag-short { display: inline; } .ad-countdown { font-size: 9px; }
+    .ad-main { gap: 4px; padding: 2px 0; }
+    .ad-logo { display: none; }
+    .ad-brand { font-size: 19px; max-width: 92%; }
+    .ad-slogan { font-size: 12px; max-width: 80%; }
+    .ad-body { display: none; }
+    .ad-cta { margin-top: 2px; padding: 5px 12px; font-size: 10px; box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
+    .ad-burst { top: 9px; left: 50%; right: auto; width: auto; height: auto; max-width: 42%; padding: 3px 7px; border-radius: 3px;
+      clip-path: none; font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
+      animation: none; transform: translateX(-50%) rotate(-4deg); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
+    .ad-bottom { gap: 4px; } .ad-disclaimer { font-size: 8px; } .ad-bar { width: 110px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .ad-burst { animation: none; transform: rotate(12deg); } }
+  @media (max-width: 340px) { .ad-brand { font-size: 16px; } .ad-slogan { font-size: 11px; } }
 </style>
 </head>
 <body>
@@ -164,6 +205,7 @@
           <button id="close-settings" style="background:none; border:none; color:#6a6a72; cursor:pointer; font-size:16px;">✕</button>
         </div>
         <div id="channel-toggles" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div id="extras-toggles" style="display:flex; flex-direction:column; gap:10px; margin-top:16px;"></div>
         <div class="mono" style="font-size:10px; color:#45454c; margin-top:16px;">WATCH/STOP only plays or freezes the current channel. Channels never change on their own.</div>
       </div>
 
@@ -186,13 +228,19 @@
         </div>
       </div>
 
-      <div id="ad-break" style="display:none; position:absolute; inset:0; z-index:15; background:#0a0a0c; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px;">
-        <div class="mono" style="font-size:10px; letter-spacing:0.15em; color:#6a6a72; margin-bottom:18px;">● WE'LL BE RIGHT BACK</div>
-        <div id="ad-break-headline" style="font-size:26px; font-weight:700; color:#f5f5f7; margin-bottom:10px; max-width:520px;"></div>
-        <div id="ad-break-body" class="mono" style="font-size:12px; color:#8a8a92; max-width:440px; line-height:1.6;"></div>
-        <div class="mono" style="font-size:9px; letter-spacing:0.1em; color:#45454c; margin-top:26px;">this is not a real advertisement</div>
-        <div style="width:160px; height:2px; background:#232328; margin-top:18px; overflow:hidden;">
-          <div id="ad-break-progress" style="height:100%; width:0%; background:#6a6a72;"></div>
+      <div id="ad-break" style="display:none;">
+        <div class="ad-top"><span class="ad-tag"><span class="ad-tag-long">ADVERTISEMENT</span><span class="ad-tag-short">AD</span></span><span class="ad-countdown" id="ad-countdown"></span></div>
+        <div class="ad-main">
+          <div class="ad-logo" id="ad-logo" aria-hidden="true"></div>
+          <div class="ad-brand" id="ad-brand"></div>
+          <div class="ad-slogan" id="ad-slogan"></div>
+          <div class="ad-body" id="ad-body"></div>
+          <div class="ad-cta" id="ad-cta"></div>
+        </div>
+        <div class="ad-burst" id="ad-burst"><span id="ad-offer"></span></div>
+        <div class="ad-bottom">
+          <div class="ad-disclaimer">this is not a real advertisement</div>
+          <div class="ad-bar"><div id="ad-break-progress"></div></div>
         </div>
       </div>
 
@@ -893,14 +941,24 @@ let readerOpen = false, readerLoading = false, readerStory = null, readerChannel
 let bootStaticShowing = true; // cleared the moment the shown channel has a real result
 let tickInterval = null, identTimeout = null;
 let speed = loadSpeed();
-let storiesSinceAdBreak = 0, adBreakActive = false;
-const AD_BREAK_EVERY = 6; // trigger a fake commercial break every N stories
+let adBreakActive = false;
+// Fake commercial breaks are a rare treat, not a schedule: none in the
+// first few minutes, then about one every five minutes of playback, and
+// they can be switched off in settings.
+const AD_FIRST_AFTER_MS = 3 * 60 * 1000;
+const AD_EVERY_MS = 5 * 60 * 1000;
+const ADS_KEY = "devtv-ads-enabled";
+let nextAdAt = Date.now() + AD_FIRST_AFTER_MS;
+let adsEnabled = (() => { try { return localStorage.getItem(ADS_KEY) !== "off"; } catch (e) { return true; } })();
 const AD_BREAKS = [
-  { headline: "STACKOVERFLOW PREMIUM™", body: "Now with 50% more \u201cmarked as duplicate.\u201d Ask a question, get closed in record time." },
-  { headline: "SEMICOLON INSURANCE CO.", body: "Never lose a build to a missing semicolon again. Terms, conditions, and linters apply." },
-  { headline: "COFFEE++", body: "Regular coffee fixes tiredness. Ours claims to fix production bugs too. Results not guaranteed, or tested, or real." },
-  { headline: "REGEX UNDERSTANDING, LLC", body: "For when you write a regex today and can't explain it to yourself tomorrow. We can't help either, but we sell mugs about it." },
-  { headline: "THE INFINITE SCROLLBAR CO.", body: "Buy one scrollbar, get an infinite number more, whether you wanted them or not." },
+  { brand: "Works On My Machine\u2122 Shipping", logo: "\u{1F4E6}", slogan: "We ship your laptop to production.", body: "Can't reproduce the bug in prod? Now prod runs on your exact laptop. Overnight delivery.", offer: "FREE SHIPPING TO PROD", cta: "SHIP IT", bg: "#1d4ed8", accent: "#facc15", ink: "#ffffff" },
+  { brand: "Semicolon Insurance Co.", logo: "\u{1F6E1}", slogan: "Never lose a build again.", body: "Full coverage for every missing semicolon. Terms, conditions, and linters apply.", offer: "ONLY $0.00*", cta: "CALL 1-800-NO-BUGS", bg: "#0f766e", accent: "#fde047", ink: "#ffffff" },
+  { brand: "Merge Conflict Therapy", logo: "\u{1F6CB}", slogan: "Let's talk about <<<<<<< HEAD.", body: "Two branches, one file, a lot of feelings. Licensed therapists who have seen every rebase.", offer: "FIRST SESSION FREE", cta: "RESOLVE NOW", bg: "#be185d", accent: "#fbcfe8", ink: "#ffffff" },
+  { brand: "node_modules Self Storage", logo: "\u{1F3E2}", slogan: "Room for your hello world.", body: "Units from 300 MB. Every dependency's dependency's dependency, stored safely forever.", offer: "NOW 2 PETABYTES", cta: "npm install storage", bg: "#15803d", accent: "#bbf7d0", ink: "#ffffff" },
+  { brand: "Regex Understanding LLC", logo: "\u{1F9E9}", slogan: "We can't help. We sell mugs.", body: "For when you wrote a regex today and can't explain it to yourself tomorrow.", offer: "MUGS 50% OFF", cta: "SHOP /m[uo]gs?/", bg: "#6d28d9", accent: "#a3e635", ink: "#ffffff" },
+  { brand: "Rollback Airlines", logo: "\u2708", slogan: "Every flight returns to the last stable version.", body: "Deployed on a Friday? Relax. We'll have you back to Thursday before anyone notices.", offer: "UNLIMITED REVERTS", cta: "BOOK A REVERT", bg: "#b91c1c", accent: "#fde047", ink: "#ffffff" },
+  { brand: "Off-By-One Pizza", logo: "\u{1F355}", slogan: "Order 10 slices. Get 9. Or 11.", body: "Every order indexed from zero, delivered to the address next door. Mostly.", offer: "BUY 1 GET 0", cta: "ORDER[0]", bg: "#c2410c", accent: "#fef08a", ink: "#ffffff" },
+  { brand: "Legacy Code Archaeology", logo: "\u26CF", slogan: "Digging up TODOs from 2009.", body: "No docs? No tests? No original author? Our experts have seen worse, and left comments about it.", offer: "NO DOCS NEEDED", cta: "START DIGGING", bg: "#78350f", accent: "#fbbf24", ink: "#fff7ed" },
 ];
 
 function loadSpeed() {
@@ -1099,9 +1157,8 @@ function advance() {
   storyIdx = (storyIdx + 1) % count;
   progress = 0;
 
-  storiesSinceAdBreak++;
-  if (storiesSinceAdBreak >= AD_BREAK_EVERY) {
-    storiesSinceAdBreak = 0;
+  if (adsEnabled && Date.now() >= nextAdAt) {
+    nextAdAt = Date.now() + AD_EVERY_MS;
     showAdBreak();
   }
 }
@@ -1110,8 +1167,17 @@ const AD_BREAK_SECONDS = 6;
 function showAdBreak() {
   adBreakActive = true;
   const ad = AD_BREAKS[Math.floor(Math.random() * AD_BREAKS.length)];
-  document.getElementById("ad-break-headline").textContent = ad.headline;
-  document.getElementById("ad-break-body").textContent = ad.body;
+  const box = document.getElementById("ad-break");
+  box.style.setProperty("--ad-bg", ad.bg);
+  box.style.setProperty("--ad-accent", ad.accent);
+  box.style.setProperty("--ad-ink", ad.ink);
+  document.getElementById("ad-logo").textContent = ad.logo;
+  document.getElementById("ad-brand").textContent = ad.brand;
+  document.getElementById("ad-slogan").textContent = ad.slogan;
+  document.getElementById("ad-body").textContent = ad.body;
+  document.getElementById("ad-offer").textContent = ad.offer;
+  document.getElementById("ad-cta").textContent = ad.cta;
+  document.getElementById("ad-countdown").textContent = `BACK IN ${AD_BREAK_SECONDS}`;
   const progressEl = document.getElementById("ad-break-progress");
   progressEl.style.width = "0%";
   playStatic(420, () => {
@@ -1122,6 +1188,7 @@ function showAdBreak() {
       const elapsed = (Date.now() - start) / 1000;
       const pct = Math.min(100, (elapsed / AD_BREAK_SECONDS) * 100);
       progressEl.style.width = pct + "%";
+      document.getElementById("ad-countdown").textContent = `BACK IN ${Math.max(1, Math.ceil(AD_BREAK_SECONDS - elapsed))}`;
       if (elapsed >= AD_BREAK_SECONDS) {
         endAdBreak();
       } else {
@@ -1404,6 +1471,34 @@ function render() {
     row.appendChild(swWrap);
     togglesEl.appendChild(row);
   });
+  const extrasEl = document.getElementById("extras-toggles");
+  if (extrasEl) {
+    extrasEl.innerHTML = "";
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:6px; border:1px solid #232328; background:#111114;";
+    row.innerHTML = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="font-size:13px; font-weight:600; color:#e8e8ea;">Commercial breaks</span><span class="mono" style="font-size:9px; color:#6a6a72;">Fake dev ads, about every 5 min</span></div>`;
+    const sw = document.createElement("button");
+    sw.className = "switch";
+    sw.setAttribute("aria-label", "Commercial breaks " + (adsEnabled ? "on" : "off"));
+    sw.style.background = adsEnabled ? "#a67c3d" : "#2a2a2e";
+    sw.innerHTML = `<span class="knob" style="left:${adsEnabled ? 20 : 2}px;"></span>`;
+    sw.onclick = () => {
+      adsEnabled = !adsEnabled;
+      try { localStorage.setItem(ADS_KEY, adsEnabled ? "on" : "off"); } catch (e) {}
+      if (adsEnabled) nextAdAt = Date.now() + AD_FIRST_AFTER_MS;
+      render();
+    };
+    const swWrap = document.createElement("div");
+    swWrap.style.cssText = "display:flex; align-items:center; gap:8px;";
+    const swLabel = document.createElement("span");
+    swLabel.className = "mono";
+    swLabel.textContent = adsEnabled ? "ON" : "OFF";
+    swLabel.style.cssText = `font-size:10px; letter-spacing:0.05em; width:24px; text-align:right; color:${adsEnabled ? "#a67c3d" : "#45454c"};`;
+    swWrap.appendChild(swLabel);
+    swWrap.appendChild(sw);
+    row.appendChild(swWrap);
+    extrasEl.appendChild(row);
+  }
 
   if (!channel) {
     document.getElementById("body-area").innerHTML = '<span class="mono" style="color:#6a6a72;">No channels enabled.</span>';
