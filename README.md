@@ -4,6 +4,8 @@
 
 ### The developer internet, broadcast.
 
+<a href="https://www.producthunt.com/products/dev-tv?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-dev-tv" target="_blank" rel="noopener noreferrer"><img alt="DEV·TV - A retro TV for GitHub, HN, Hugging Face &amp; more: 10 channels | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1260239&amp;theme=dark&amp;t=1790354898149"></a>
+
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![No backend](https://img.shields.io/badge/backend-none-brightgreen)]()
 [![Single file](https://img.shields.io/badge/build%20step-none-brightgreen)]()
@@ -14,7 +16,7 @@ Five tabs, checked out of habit, half-read, closed again. That's most people's r
 
 **Keep coding. Keep an eye on the developer world.**
 
-**[▶ Live demo](https://shouvik12.github.io/devtv/)** · **[View source](https://github.com/shouvik12/devtv)**
+**[▶ Live demo](https://shouvik12.github.io/devtv/)** · **[View source](https://github.com/shouvik12/devtv)** · **[Product Hunt](https://www.producthunt.com/products/dev-tv?launch=dev-tv)**
 
 </div>
 
