@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./assets/devtv-tv.gif" width="140" height="140" alt="DEV·TV">
+
 # 📺 DEV·TV
 
 ### The developer internet, broadcast.
