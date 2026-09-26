@@ -879,6 +879,7 @@ async function fetchReleasesStories() {
     { name: "Node.js", repo: "nodejs/node" },
     { name: "Python", repo: "python/cpython" },
     { name: "Rust", repo: "rust-lang/rust" },
+    { name: "Swift", repo: "swiftlang/swift" },
   ];
   const settled = await Promise.allSettled(
     TRACKED.map(async ({ name, repo }) => {
@@ -897,7 +898,7 @@ async function fetchReleasesStories() {
   );
   const releases = settled.filter(r => r.status === "fulfilled").map(r => r.value);
   if (releases.length === 0) {
-    // Surface the real reason all six failed — most often this is the same
+    // Surface the real reason every request failed — most often this is the same
     // shared GitHub rate limit hitting every request at once, in which case
     // the individual fetch's message already has the exact reset time.
     const rejectionMessages = settled.filter(r => r.status === "rejected").map(r => r.reason?.message || "");
@@ -905,10 +906,10 @@ async function fetchReleasesStories() {
     throw new Error(rateLimitMsg || "Couldn't load release data for any tracked project");
   }
   releases.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-  // Capped at 6 by definition, not by choice — that's the entire tracked
-  // list (React, Vue, TypeScript, Node, Python, Rust). Nothing to raise
-  // here the way the other channels' limits could be.
-  return releases.slice(0, 6).map(r => ({
+  // One story per tracked project, so the cap follows the TRACKED list
+  // (React, Vue, TypeScript, Node, Python, Rust, Swift) instead of a
+  // hardcoded number that silently drops the oldest release.
+  return releases.slice(0, TRACKED.length).map(r => ({
     show: "NEW RELEASE",
     title: `${r.name} ${r.tag}`,
     line1: `released ${timeAgo(r.publishedAt)}`,
