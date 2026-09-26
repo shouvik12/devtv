@@ -122,6 +122,12 @@
     .mobile-hint { display: block !important; }
     /* Bigger, thumb-friendly tap targets for the small icon buttons */
     #fullscreen-btn, #gear, #star-link { padding: 8px !important; font-size: 16px !important; }
+  @media (max-width: 640px) {
+    #tv-header-row { flex-wrap: wrap; row-gap: 10px; }
+    #tv-right-group { width: 100%; }
+    #ph-badge img { height: 24px !important; }
+  }
+  @media (max-width: 340px) { #ph-badge img { height: 20px !important; } }
     #close-settings, #close-reader { padding: 10px !important; font-size: 18px !important; }
   }
   .mobile-hint { display: none; }
@@ -186,9 +192,12 @@
   <div class="antenna-base"></div>
 </div>
 <div id="tv">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:0 4px;">
-    <span id="tv-logo" class="mono" style="font-size:18px; font-weight:700; color:#9a9aa2; letter-spacing:0.12em;">DEV·TV</span>
-    <div style="display:flex; align-items:center; gap:12px;">
+  <div id="tv-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:0 4px;">
+    <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+      <span id="tv-logo" class="mono" style="font-size:18px; font-weight:700; color:#9a9aa2; letter-spacing:0.12em; flex-shrink:0;">DEV·TV</span>
+      <a id="ph-badge" href="https://www.producthunt.com/products/dev-tv?launch=dev-tv&amp;utm_source=badge-top-post-badge&amp;utm_medium=badge&amp;utm_campaign=badge-dev-tv" target="_blank" rel="noopener noreferrer" title="#5 Product of the Day on Product Hunt" aria-label="#5 Product of the Day on Product Hunt" style="display:inline-flex; align-items:center; line-height:0; flex-shrink:0;"><img src="https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=1260239&amp;theme=dark&amp;period=daily" alt="DEV·TV - #5 Product of the Day | Product Hunt" style="height:32px; width:auto; opacity:0.9;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.9"></a>
+    </div>
+    <div id="tv-right-group" style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
       <span id="clock" class="mono" style="font-size:11px; color:#6a6a72; letter-spacing:0.05em; white-space:nowrap; flex-shrink:0;"></span>
       <span id="onair" class="mono" style="font-size:10px; color:#ff5c5c; letter-spacing:0.1em; display:none; white-space:nowrap;">● ON AIR</span>
       <a id="star-link" href="https://github.com/shouvik12/devtv" target="_blank" rel="noopener noreferrer" title="Star DEV·TV on GitHub" aria-label="Star DEV·TV on GitHub" class="mono" style="color:#a67c3d; font-size:14px; line-height:1; text-decoration:none; padding:2px;">★</a>
