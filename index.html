@@ -121,7 +121,8 @@
     .desktop-hint { display: none; }
     .mobile-hint { display: block !important; }
     /* Bigger, thumb-friendly tap targets for the small icon buttons */
-    #fullscreen-btn, #gear, #star-link { padding: 8px !important; font-size: 16px !important; }
+    #fullscreen-btn, #gear { padding: 8px !important; font-size: 16px !important; }
+    #star-link { padding: 14px 10px !important; font-size: 14px !important; }
   @media (max-width: 640px) {
     #tv-header-row { flex-wrap: wrap; row-gap: 10px; }
     #tv-right-group { width: 100%; }
@@ -133,7 +134,7 @@
   .mobile-hint { display: none; }
   .video-frame { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 4px; overflow: hidden; }
   .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-  #star-link:hover, #star-link:focus-visible { color: #e8c170 !important; }
+  #star-link:hover, #star-link:focus-visible { color: #e8c170 !important; border-color: #e8c170 !important; }
   @media (max-width: 400px) { #clock { font-size: 10px !important; letter-spacing: 0 !important; } #tv-logo { font-size: 15px !important; letter-spacing: 0.08em !important; } }
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   @media (max-width: 340px) { #tv-logo { font-size: 13px !important; letter-spacing: 0.04em !important; } #fullscreen-btn { display: none !important; } }
@@ -200,7 +201,7 @@
     <div id="tv-right-group" style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
       <span id="clock" class="mono" style="font-size:11px; color:#6a6a72; letter-spacing:0.05em; white-space:nowrap; flex-shrink:0;"></span>
       <span id="onair" class="mono" style="font-size:10px; color:#ff5c5c; letter-spacing:0.1em; display:none; white-space:nowrap;">● ON AIR</span>
-      <a id="star-link" href="https://github.com/shouvik12/devtv" target="_blank" rel="noopener noreferrer" title="Star DEV·TV on GitHub" aria-label="Star DEV·TV on GitHub" class="mono" style="color:#a67c3d; font-size:14px; line-height:1; text-decoration:none; padding:2px;">★</a>
+      <a id="star-link" href="https://github.com/shouvik12/devtv" target="_blank" rel="noopener noreferrer" title="Star DEV·TV on GitHub" aria-label="Star DEV·TV on GitHub" class="mono" style="color:#a67c3d; font-size:12px; line-height:1; text-decoration:none; padding:14px 10px; border:1px solid #3a3a40; border-radius:4px; white-space:nowrap; display:inline-flex; align-items:center; gap:5px;">★ Star</a>
       <button id="fullscreen-btn" class="btn" title="Fullscreen" style="background:none; border:none; padding:2px; color:#55555c; font-size:13px; line-height:1;">⛶</button>
       <button id="gear" class="btn" style="background:none; border:none; padding:2px; color:#55555c; font-size:13px; line-height:1;">⚙</button>
     </div>
