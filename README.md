@@ -4,7 +4,9 @@
 
 # 📺 DEV·TV
 
-### The developer internet, broadcast.
+### A TV for the developer internet.
+
+10 live channels of developer content. Open it on a second monitor and leave it running.
 
 <a href="https://www.producthunt.com/products/dev-tv?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-dev-tv" target="_blank" rel="noopener noreferrer"><img alt="DEV·TV - A retro TV for GitHub, HN, Hugging Face &amp; more: 10 channels | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1260239&amp;theme=dark&amp;t=1790406451251"></a>
 <a href="https://www.producthunt.com/products/dev-tv?embed=true&amp;utm_source=badge-top-post-badge&amp;utm_medium=badge&amp;utm_campaign=badge-dev-tv" target="_blank" rel="noopener noreferrer"><img alt="DEV·TV - A retro TV for GitHub, HN, Hugging Face &amp; more: 10 channels | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=1260239&amp;theme=dark&amp;period=daily&amp;t=1790406451251"></a>
