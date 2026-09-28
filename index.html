@@ -183,6 +183,16 @@
   }
   @media (prefers-reduced-motion: reduce) { .ad-burst { animation: none; transform: rotate(12deg); } }
   @media (max-width: 340px) { .ad-brand { font-size: 16px; } .ad-slogan { font-size: 11px; } }
+  /* Community Spotlight: a small stage lamp at the top with a soft beam of light. */
+  .spot-beam { position: absolute; top: 0; left: 0; right: 0; height: 130px; pointer-events: none; overflow: hidden; z-index: 1; mix-blend-mode: screen; }
+  .spot-beam::before { content: ""; position: absolute; top: 0; left: 50%; width: min(520px, 100%); height: 100%; transform: translateX(-50%);
+    background: linear-gradient(to bottom, rgba(253,230,138,0.30), rgba(253,230,138,0.08) 65%, rgba(253,230,138,0));
+    clip-path: polygon(45% 0, 55% 0, 100% 100%, 0 100%); animation: spot-fade 1.2s ease-out both; }
+  .spot-beam::after { content: ""; position: absolute; top: 0; left: 50%; width: 46px; height: 12px; transform: translateX(-50%); border-radius: 0 0 23px 23px;
+    background: linear-gradient(#4a4a52, #1c1c20); box-shadow: 0 4px 16px 3px rgba(253,230,138,0.55); }
+  @keyframes spot-fade { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .spot-beam::before { animation: none; } }
+  .spot-readme-head { font-size: 10px; letter-spacing: 0.14em; color: #8a8a92; margin: 22px 0 10px; padding-top: 14px; border-top: 1px solid #232328; }
 </style>
 </head>
 <body>
@@ -877,6 +887,134 @@ async function fetchAIVideoStories() {
   return videos.slice(0, 10).map(h => hnVideoToStory(h, "AI VIDEO · HACKER NEWS"));
 }
 
+// COMMUNITY SPOTLIGHT: developer projects curated by hand. The entries live
+// in spotlight.json next to index.html, so GitHub Pages serves them from the
+// same site as the TV: no outside service, no rate limit. Every field is
+// checked, and anything invalid is skipped rather than shown. Text is
+// escaped on screen and goes through safeMd in the reader, links must be
+// https, and videos must be real YouTube IDs.
+const SAFE_LT = "\u0000SAFELT\u0000";
+function safeMd(text) { return mdLite(String(text ?? "").replace(/</g, SAFE_LT)).split(SAFE_LT).join("&lt;"); }
+
+const SPOTLIGHT_ID = /^[a-z0-9][a-z0-9-]{0,39}$/;
+function cleanSpotlight(e) {
+  if (!e || typeof e !== "object") return null;
+  const str = (v, max) => (typeof v === "string" && v.trim() && v.trim().length <= max) ? v.trim() : null;
+  const id = typeof e.id === "string" && SPOTLIGHT_ID.test(e.id) ? e.id : null;
+  const project = str(e.project, 60), tagline = str(e.tagline, 120), description = str(e.description, 600), by = str(e.by, 40);
+  let link = null;
+  try { const u = new URL(e.link); if (u.protocol === "https:") link = u.href; } catch (err) {}
+  if (!id || !project || !tagline || !link) return null;
+  const tags = (Array.isArray(e.tags) ? e.tags : []).filter(t => typeof t === "string" && /^[a-z0-9+#.-]{1,20}$/.test(t)).slice(0, 5);
+  const videoId = e.video ? extractYouTubeId(e.video) : null;
+  const added = typeof e.added === "string" && /^\d{4}-\d{2}-\d{2}$/.test(e.added) ? e.added : "";
+  return { id, project, tagline, description: description || tagline, by, link, tags, videoId, added };
+}
+
+async function fetchSpotlightStories() {
+  if (!/^https?:$/.test(location.protocol)) throw new Error("The Spotlight channel needs the live site. It can't load from a downloaded copy of the file.");
+  const res = await fetch("spotlight.json", { cache: "no-store" });
+  if (!res.ok) throw new Error("spotlight.json " + res.status);
+  const data = await res.json();
+  const entries = (Array.isArray(data.spotlights) ? data.spotlights : []).map(cleanSpotlight).filter(Boolean);
+  if (entries.length === 0) throw new Error("No spotlights yet");
+  entries.sort((a, b) => b.added.localeCompare(a.added));
+  return entries.slice(0, 20).map(e => ({
+    show: "COMMUNITY SPOTLIGHT",
+    title: e.project,
+    line1: e.tagline,
+    line2: [e.by ? "by " + e.by : "", e.tags.map(t => "#" + t).join(" ")].filter(Boolean).join(" \u00b7 "),
+    url: e.link,
+    videoId: e.videoId,
+    spotlightId: e.id,
+    by: e.by,
+    tags: e.tags,
+    fullText: e.description,
+  }));
+}
+
+const SPOT_BEAM_HTML = '<div class="spot-beam" aria-hidden="true"></div>';
+
+// A GitHub project shows its README right in the reader, the same way the
+// GitHub channel does, instead of sending people off the TV. Only plain
+// github.com/owner/repo links qualify; anything else keeps the outside link.
+function githubRepoFromUrl(url) {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== "https:" || u.hostname.replace(/^www\./, "") !== "github.com") return null;
+    const parts = u.pathname.split("/").filter(Boolean);
+    if (parts.length !== 2) return null;
+    const owner = parts[0], repo = parts[1].replace(/\.git$/, "");
+    if (!/^[A-Za-z0-9_.-]+$/.test(owner) || !/^[A-Za-z0-9_.-]+$/.test(repo)) return null;
+    return owner + "/" + repo;
+  } catch (e) { return null; }
+}
+// READMEs point at their own screenshots with relative paths
+// (./graphics/shot.png), which GitHub's website quietly rewrites when it
+// displays them. A reader working from the raw text has to do that itself,
+// otherwise every screenshot vanishes. Only simple in-repo paths are
+// rewritten (no "..", no odd characters); anything else is left alone.
+function resolveReadmeImage(repo, path) {
+  if (/^(https?:|data:|\/\/|#)/i.test(path)) return null;
+  const clean = path.replace(/^\.?\/+/, "");
+  if (!clean || clean.includes("..") || !/^[A-Za-z0-9._\/@+-]+$/.test(clean)) return null;
+  return `https://raw.githubusercontent.com/${repo}/HEAD/${clean}`;
+}
+function absolutizeReadmeImages(text, repo) {
+  return String(text)
+    .replace(/(<img\b[^>]*?\bsrc\s*=\s*)(["'])([^"']+)\2/gi, (m, pre, q, path) => { const u = resolveReadmeImage(repo, path); return u ? pre + q + u + q : m; })
+    .replace(/(!\[[^\]]*\]\()([^)\s]+)(\))/g, (m, pre, path, post) => { const u = resolveReadmeImage(repo, path); return u ? pre + u + post : m; });
+}
+// READMEs often use small presentational HTML (<br>, <big>, <center>) that
+// the reader doesn't know, which would show up as literal text. Turn line
+// breaks into real ones and drop the others, keeping their content. Fenced
+// and inline code are skipped, so a README that documents these tags keeps
+// them exactly as written.
+function tidyReadmeHtml(text) {
+  return String(text).split(/(```[\s\S]*?```)/).map((seg, i) => {
+    if (i % 2 === 1) return seg;
+    return seg.split(/(`[^`\n]+`)/).map((part, j) => j % 2 === 1 ? part : part
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/?(?:big|small|center|font|sub|sup|kbd|u|span)(?:\s[^>]*)?>/gi, "")
+    ).join("");
+  }).join("");
+}
+// Shares the GitHub channel's README memory (an hour, kept a day as a
+// fallback), so opening a project that was already read costs no request.
+// It never throws: if the README can't load, the reader still shows the
+// curator's description, with a short note instead of an error page.
+async function loadSpotlightReadme(repo) {
+  const key = "readme:" + repo;
+  const cached = readCache(key);
+  if (cached && Date.now() - cached.t < 60 * 60 * 1000) return { text: cached.data };
+  try {
+    const res = await fetch(`https://api.github.com/repos/${repo}/readme`, { headers: { Accept: "application/vnd.github.raw" }, cache: "no-store" });
+    if (res.ok) { const text = await res.text(); cacheReadme(key, text); return { text }; }
+    if (cached) return { text: cached.data };
+    return { note: githubErrorMessage(res, "This repository has no README, or it couldn't be loaded") };
+  } catch (e) {
+    if (cached) return { text: cached.data };
+    return { note: "The README couldn't be loaded right now." };
+  }
+}
+
+// Share links: ?spotlight=<id> opens the TV tuned straight to that spotlight.
+let pendingSpotlight = (() => {
+  try { const v = new URLSearchParams(location.search).get("spotlight"); return v && SPOTLIGHT_ID.test(v) ? v : null; } catch (e) { return null; }
+})();
+function spotlightShareUrl(id) { return location.origin + location.pathname + "?spotlight=" + encodeURIComponent(id); }
+function applyPendingSpotlight() {
+  if (!pendingSpotlight) return;
+  const channels = getChannels();
+  const ci = channels.findIndex(c => c.id === "spotlight");
+  if (ci === -1 || channels[ci].status !== "ready") return;
+  const si = channels[ci].stories.findIndex(st => st.spotlightId === pendingSpotlight);
+  pendingSpotlight = null;
+  if (si === -1) return;
+  channelIdx = ci; storyIdx = si; progress = 0;
+  render();
+}
+
 // Tracks real version releases for the stacks people actually google to stay
 // current on — not a firehose of every GitHub release, a curated shortlist.
 // One call per repo (github.com/{repo}/releases/latest), all on the same
@@ -941,6 +1079,7 @@ const ALL_CHANNELS = [
   { id: "cve", name: "CVE", color: "#ef4444", key: "8", fetcher: fetchCVEStories, tag: "CVE" },
   { id: "hnvideo", name: "HN VIDEO", color: "#fb923c", key: "9", fetcher: fetchHNVideoStories, tag: "VID" },
   { id: "aivideo", name: "AI VIDEO", color: "#38bdf8", key: "0", fetcher: fetchAIVideoStories, tag: "AIV" },
+  { id: "spotlight", name: "SPOTLIGHT", color: "#fde68a", key: "", fetcher: fetchSpotlightStories, tag: "SPOT" },
 ];
 
 let enabledIds = loadEnabledIds();
@@ -1063,9 +1202,13 @@ function cacheReadme(key, text) {
 
 async function loadChannel(def) {
   const cached = readCache("ch:" + def.id);
-  if (cached && Date.now() - cached.t < CACHE_FRESH_MS && Array.isArray(cached.data) && cached.data.length > 0) {
+  // Spotlight is a tiny file on this same site with no rate limit, so it always
+  // fetches fresh: a new entry shows on the next refresh. The saved copy is still
+  // used if the fetch fails.
+  if (def.id !== "spotlight" && cached && Date.now() - cached.t < CACHE_FRESH_MS && Array.isArray(cached.data) && cached.data.length > 0) {
     dataByChannel[def.id] = { stories: cached.data, status: "ready", error: null, staleSince: null };
     render();
+    if (def.id === "spotlight") applyPendingSpotlight();
     return;
   }
   dataByChannel[def.id] = { ...dataByChannel[def.id], status: "loading" };
@@ -1083,6 +1226,7 @@ async function loadChannel(def) {
     }
   }
   render();
+  if (def.id === "spotlight") applyPendingSpotlight();
 }
 let lastLoadAllTime = 0;
 function loadAll() {
@@ -1441,6 +1585,25 @@ async function openReader(channel, story) {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "cve") {
       html = mdLite(story.fullText || story.line2);
+    } else if (channel.id === "spotlight") {
+      const vid = /^[A-Za-z0-9_-]{11}$/.test(story.videoId || "") ? story.videoId : null;
+      let player = "";
+      if (vid && /^https?:$/.test(location.protocol)) {
+        player = `<div class="video-frame" style="margin-bottom:14px;"><iframe src="https://www.youtube-nocookie.com/embed/${vid}?rel=0&playsinline=1" title="Project demo" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
+      }
+      const share = spotlightShareUrl(story.spotlightId);
+      const repo = githubRepoFromUrl(story.url);
+      const readme = repo ? await loadSpotlightReadme(repo) : null;
+      html = SPOT_BEAM_HTML
+        + `<div class="hn-article-banner"><div>Community Spotlight${story.by ? " \u00b7 made by <strong>" + escapeHtml(story.by) + "</strong>" : ""}</div>`
+        + `<a href="${escapeHtml(story.url)}" target="_blank" rel="noopener noreferrer">${repo ? "Open on GitHub" : "Visit the project"} \u2197</a></div>`
+        + player
+        + safeMd(story.fullText)
+        + (story.tags && story.tags.length ? `<p class="mono" style="font-size:11px; color:#8a8a92;">${story.tags.map(t => "#" + escapeHtml(t)).join(" ")}</p>` : "")
+        + `<p style="font-size:12px;">Share this spotlight: <a href="${escapeHtml(share)}" target="_blank" rel="noopener noreferrer">${escapeHtml(share)}</a></p>`
+        + (readme ? (readme.text
+            ? `<div class="spot-readme-head mono">README \u00b7 FROM GITHUB</div>` + mdLite(absolutizeReadmeImages(tidyReadmeHtml(readme.text), repo))
+            : `<p class="hn-discussion-note">${escapeHtml(readme.note)}</p>`) : "");
     } else if (channel.id === "hnvideo" || channel.id === "aivideo") {
       // Re-validate the ID right before it touches an iframe src, even
       // though the fetcher already did, so nothing unexpected can ever
@@ -1659,6 +1822,7 @@ function render() {
     const laterStory = channel.stories[(storyIdx + 2) % channel.stories.length];
     bodyEl.innerHTML = `
       <div class="reader-open-target" id="story-open-target">
+        ${channel.id === "spotlight" ? SPOT_BEAM_HTML : ""}
         <div class="mono" style="font-size:11px; color:${channel.color}; letter-spacing:0.08em;">${story.show}</div>
         ${channel.staleSince ? `<div class="mono" style="font-size:10px; color:#8a8a92; letter-spacing:0.05em; margin-top:4px;">Showing stories from ${Math.max(1, Math.round((Date.now() - channel.staleSince) / 60000))} min ago \u00b7 couldn't refresh, will retry</div>` : ""}
         <div class="story-title" style="font-weight:700; font-size:clamp(16px, 3.2vw, 28px); color:#f5f5f7; line-height:1.2; letter-spacing:-0.01em; margin-top:6px;">${escapeHtml(story.title)}</div>

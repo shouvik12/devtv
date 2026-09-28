@@ -1,0 +1,22 @@
+{
+  "_format": "Newest first by 'added'. id: lowercase letters, numbers, dashes (used in the share link ?spotlight=id). project max 60 chars, tagline max 120, description max 600, by max 40. link must start with https://. tags: up to 5, lowercase, no spaces. video: optional YouTube link. added: YYYY-MM-DD.",
+  "spotlights": [
+    {    
+      "id": "merk",
+      "project": "MERK",
+      "tagline": "A free, open source IRC client with an mIRC-style multi-window interface, for Windows, Linux, and macOS.",
+      "description": "MERK is an open source IRC client written in Python with PyQt5 and Twisted. Like the classic mIRC, every server, channel, and chat gets its own window. It connects to multiple servers at once, has over 400 settings, a scripting engine, and Python plugins, and new builds land almost every day. Built by one developer as his own "dream IRC client".",
+      "by": "Dan Hetrick",
+      "link": "https://github.com/nutjob-laboratories/merk",
+      "tags": [
+        "python",
+        "irc",
+        "opensource",
+        "pyqt5",
+        "cross-platform"
+      ],
+      "video": "",
+      "added": "2026-09-28"
+    }
+  ]
+}
