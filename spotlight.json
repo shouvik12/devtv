@@ -2,21 +2,6 @@
   "_format": "Newest first by 'added'. id: lowercase letters, numbers, dashes (used in the share link ?spotlight=id). project max 60 chars, tagline max 120, description max 600, by max 40. link must start with https://. tags: up to 5, lowercase, no spaces. video: optional YouTube link. added: YYYY-MM-DD.",
   "spotlights": [
     {
-      "id": "devtv",
-      "project": "DEV·TV",
-      "tagline": "The developer internet, broadcast as channels you flip through.",
-      "description": "A TV for the developer internet: GitHub, Hacker News, DEV, Hugging Face, releases, papers, CVEs, and developer videos as channels that play on their own. One HTML file, no backend, no signup. Built to sit on a second screen so you can glance, catch one thing, and get back to work.",
-      "by": "@shouvik12",
-      "link": "https://github.com/shouvik12/devtv",
-      "tags": [
-        "javascript",
-        "opensource",
-        "webdev"
-      ],
-      "video": "",
-      "added": "2026-09-27"
-    },
-    {
       "id": "merk",
       "project": "MERK",
       "tagline": "A free, open source IRC client with an mIRC-style multi-window interface, for Windows, Linux, and macOS.",
