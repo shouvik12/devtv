@@ -106,6 +106,29 @@ Markdown from fetched content renders through a hand-rolled converter: everythin
 
 _Real capture of the reader opening a GitHub README. It happened to hit a live rate limit (`403`) from this repo's own testing volume when the screenshot was taken, which is actually a decent look at the app's real error handling: a clear message plus a working "Open original source" fallback, rather than a broken page._
 
+## 🎬 Community Spotlight
+
+Got something you built? We want to feature it on DEV·TV.
+
+The Spotlight is a channel by and for developers. Share your open-source projects, developer tools, experimental builds, technical articles, launches, or anything interesting you've made — and we'll add it to the live TV feed where developers actually hang out.
+
+### Submit your project
+
+Send an email to **[devtv.developers@gmail.com](mailto:devtv.developers@gmail.com)** with the subject line: `DEV·TV Spotlight`
+
+**What to include:**
+
+- **Project/Article**: Name + URL (e.g., `Trooper | https://github.com/user/trooper`)
+- **One-liner**: What does it do? (one sentence, max)
+- **About it**: 2–3 sentences on what you built and why
+- **Built by**: Your name / GitHub handle / Bluesky handle
+- **Tags**: e.g., `Ollama · Python · LLM · Open Source`
+- **Optional**: Link to repo, demo, video, or screenshot
+
+**What happens next:** Handpicked projects get added to `spotlight.json` and featured on the live site. No payment, curated by hand, starting small and growing with the community.
+
+---
+
 ## 🎛️ Controls
 
 | Key / Button | Action |
