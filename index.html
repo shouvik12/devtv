@@ -596,6 +596,63 @@ async function fetchGithubStories() {
   }));
 }
 
+// New models, newest first, from OpenRouter's public model catalog. The
+// list endpoint is shown in OpenRouter's own docs as a plain GET with no key
+// and it supports sort=newest, which means "most recently added to
+// OpenRouter", not "announced by the lab": a model can show up here a little
+// after its launch. Each model can also appear under variant ids (":free",
+// ":thinking" and so on) that share one base id, so those are collapsed to
+// one story. It re-sorts by the created timestamp itself so the channel
+// doesn't depend on the server-side sort staying as documented.
+function fmtContext(n) {
+  if (!n || n < 1000) return "";
+  if (n >= 1000000) return (Math.round(n / 100000) / 10) + "M context";
+  return Math.round(n / 1000) + "K context";
+}
+function fmtPerMillion(perToken) {
+  const n = Number(perToken) * 1000000;
+  if (!isFinite(n)) return null;
+  if (n === 0) return "free";
+  return "$" + (n >= 10 ? n.toFixed(0) : n.toFixed(2).replace(/\.?0+$/, ""));
+}
+async function fetchNewModelsStories() {
+  const res = await fetch("https://openrouter.ai/api/v1/models?sort=newest&output_modalities=text,image", { cache: "no-store" });
+  if (!res.ok) throw new Error("OpenRouter API " + res.status);
+  const data = await res.json();
+  const list = Array.isArray(data.data) ? data.data : [];
+  // One story per base model. When a base id has variants, the base entry
+  // wins (its name and pricing are the real ones; a ":free" listing added
+  // later would otherwise show a paid model as free). If only variants
+  // exist, the earliest one stands in for the model.
+  const groups = new Map();
+  for (const m of list) {
+    if (!m || typeof m.id !== "string" || !(Number(m.created) > 0)) continue;
+    const base = m.id.split(":")[0];
+    const cur = groups.get(base);
+    const isBase = m.id === base;
+    if (!cur || (isBase && cur.id !== base) || (!isBase && cur.id !== base && Number(m.created) < Number(cur.created))) groups.set(base, m);
+  }
+  const models = Array.from(groups.values()).sort((a, b) => Number(b.created) - Number(a.created));
+  if (models.length === 0) throw new Error("No models returned by OpenRouter");
+  return models.slice(0, 10).map(m => {
+    const name = (typeof m.name === "string" && m.name.trim()) ? m.name.trim() : m.id;
+    const inP = m.pricing ? fmtPerMillion(m.pricing.prompt) : null;
+    const outP = m.pricing ? fmtPerMillion(m.pricing.completion) : null;
+    const price = inP && outP ? (inP === "free" && outP === "free" ? "free" : inP + " in / " + outP + " out per 1M tokens") : "";
+    const facts = [fmtContext(Number(m.context_length)), price].filter(Boolean);
+    const desc = (typeof m.description === "string" ? m.description : "").replace(/\s+/g, " ").trim();
+    const okId = /^[A-Za-z0-9._~\/-]+(?::[A-Za-z0-9._-]+)?$/.test(m.id);
+    return {
+      show: "NEW MODEL \u00b7 OPENROUTER",
+      title: name,
+      line1: "added " + timeAgo(Number(m.created) * 1000) + (facts.length ? " \u00b7 " + facts.join(" \u00b7 ") : ""),
+      line2: desc ? (desc.length > 220 ? desc.slice(0, 217) + "..." : desc) : "Model id: " + m.id,
+      url: okId ? "https://openrouter.ai/" + m.id.split(":")[0] : "https://openrouter.ai/models",
+      fullText: "**" + name + "**\n\n" + (desc || "No description provided.") + "\n\nModel id: `" + m.id + "`" + (facts.length ? "\n\n" + facts.join(" \u00b7 ") : ""),
+    };
+  });
+}
+
 async function fetchHNStories() {
   const idsRes = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json", { cache: "no-store" });
   if (!idsRes.ok) throw new Error("HN API " + idsRes.status);
@@ -1079,6 +1136,8 @@ const ALL_CHANNELS = [
   { id: "cve", name: "CVE", color: "#ef4444", key: "8", fetcher: fetchCVEStories, tag: "CVE" },
   { id: "hnvideo", name: "HN VIDEO", color: "#fb923c", key: "9", fetcher: fetchHNVideoStories, tag: "VID" },
   { id: "aivideo", name: "AI VIDEO", color: "#38bdf8", key: "0", fetcher: fetchAIVideoStories, tag: "AIV" },
+  // Channels 11 and up have no number key (1-9 and 0 are taken): arrows or click.
+  { id: "models", name: "NEW MODELS", color: "#e879f9", key: "", fetcher: fetchNewModelsStories, tag: "MOD" },
   { id: "spotlight", name: "SPOTLIGHT", color: "#fde68a", key: "", fetcher: fetchSpotlightStories, tag: "SPOT" },
 ];
 
@@ -1584,6 +1643,8 @@ async function openReader(channel, story) {
     } else if (channel.id === "latestpapers") {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "cve") {
+      html = mdLite(story.fullText || story.line2);
+    } else if (channel.id === "models") {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "spotlight") {
       const vid = /^[A-Za-z0-9_-]{11}$/.test(story.videoId || "") ? story.videoId : null;
