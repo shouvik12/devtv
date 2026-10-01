@@ -727,10 +727,25 @@ async function fetchHuggingFaceStories() {
 // rather than assuming one exact structure.
 async function fetchAIPapersStories() {
   const today = new Date().toISOString().slice(0, 10);
-  const res = await fetch(`https://huggingface.co/api/daily_papers?date=${today}`, { cache: "no-store" });
-  if (!res.ok) throw new Error("Hugging Face Papers API " + res.status);
-  const data = await res.json();
-  if (!Array.isArray(data) || data.length === 0) throw new Error("No papers returned for today");
+  // Ask for today's list first. If Hugging Face refuses that request (it did,
+  // with a 400, for one user) or returns nothing for it (no list published yet
+  // for that UTC day, weekends), ask for the latest list with no date at all.
+  // That is the list HF itself falls back to, so the answer is the same
+  // either way, but it can't fail on the date. If both fail, the error shows
+  // both results so the cause is visible, e.g. "400 / 400".
+  const urls = [`https://huggingface.co/api/daily_papers?date=${today}`, "https://huggingface.co/api/daily_papers"];
+  const problems = [];
+  let data = null;
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) { problems.push(String(res.status)); continue; }
+      const body = await res.json();
+      if (Array.isArray(body) && body.length > 0) { data = body; break; }
+      problems.push("empty");
+    } catch (e) { problems.push("blocked"); }
+  }
+  if (!data) throw new Error("Hugging Face Papers API " + problems.join(" / "));
 
   return data.slice(0, 10).map(item => {
     const p = item.paper || item;
@@ -965,7 +980,10 @@ function cleanSpotlight(e) {
   const tags = (Array.isArray(e.tags) ? e.tags : []).filter(t => typeof t === "string" && /^[a-z0-9+#.-]{1,20}$/.test(t)).slice(0, 5);
   const videoId = e.video ? extractYouTubeId(e.video) : null;
   const added = typeof e.added === "string" && /^\d{4}-\d{2}-\d{2}$/.test(e.added) ? e.added : "";
-  return { id, project, tagline, description: description || tagline, by, link, tags, videoId, added };
+  // Optional passage from the project or article itself, shown in the reader.
+  // Over the limit it is simply left out, like the other text fields.
+  const excerpt = str(e.excerpt, 2500) || "";
+  return { id, project, tagline, description: description || tagline, by, link, tags, videoId, added, excerpt };
 }
 
 async function fetchSpotlightStories() {
@@ -973,8 +991,31 @@ async function fetchSpotlightStories() {
   const res = await fetch("spotlight.json", { cache: "no-store" });
   if (!res.ok) throw new Error("spotlight.json " + res.status);
   const data = await res.json();
-  const entries = (Array.isArray(data.spotlights) ? data.spotlights : []).map(cleanSpotlight).filter(Boolean);
-  if (entries.length === 0) throw new Error("No spotlights yet");
+  const raw = Array.isArray(data.spotlights) ? data.spotlights : null;
+  if (raw === null) throw new Error("spotlight.json has no spotlights list");
+  const entries = raw.map(cleanSpotlight).filter(Boolean);
+  if (entries.length === 0) {
+    // Entries exist but none pass the checks (bad link, missing field): that
+    // is a mistake in the file, so it stays a visible error instead of
+    // quietly looking like an empty Spotlight.
+    if (raw.length > 0) throw new Error("No valid spotlights in spotlight.json");
+    // An empty list on purpose is a normal state, not a failure. Being a
+    // successful load, it also replaces any saved copy in visitors' browsers,
+    // so removing the last entry takes effect right away for everyone.
+    return [{
+      show: "COMMUNITY SPOTLIGHT",
+      title: "No spotlight right now",
+      line1: "Built something? Yours could be up here.",
+      line2: "Email devtv.developers@gmail.com with the subject \"DEV\u00b7TV Spotlight\"",
+      url: "https://github.com/shouvik12/devtv",
+      videoId: null,
+      spotlightId: "",
+      by: "",
+      tags: [],
+      empty: true,
+      fullText: "**Your project could be here.**\n\nThe Spotlight is a channel by and for developers. Send a name, a link and a line or two about what you built to devtv.developers@gmail.com with the subject \"DEV\u00b7TV Spotlight\".\n\nThe link can go to a repo, a website, a newsletter or a YouTube video.",
+    }];
+  }
   entries.sort((a, b) => b.added.localeCompare(a.added));
   return entries.slice(0, 20).map(e => ({
     show: "COMMUNITY SPOTLIGHT",
@@ -987,6 +1028,7 @@ async function fetchSpotlightStories() {
     by: e.by,
     tags: e.tags,
     fullText: e.description,
+    excerpt: e.excerpt,
   }));
 }
 
@@ -1646,6 +1688,8 @@ async function openReader(channel, story) {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "models") {
       html = mdLite(story.fullText || story.line2);
+    } else if (channel.id === "spotlight" && story.empty) {
+      html = SPOT_BEAM_HTML + `<div class="hn-article-banner"><div>Community Spotlight</div></div>` + safeMd(story.fullText);
     } else if (channel.id === "spotlight") {
       const vid = /^[A-Za-z0-9_-]{11}$/.test(story.videoId || "") ? story.videoId : null;
       let player = "";
@@ -1660,6 +1704,7 @@ async function openReader(channel, story) {
         + `<a href="${escapeHtml(story.url)}" target="_blank" rel="noopener noreferrer">${repo ? "Open on GitHub" : "Visit the project"} \u2197</a></div>`
         + player
         + safeMd(story.fullText)
+        + (story.excerpt ? `<div class="spot-readme-head mono">FROM THE ARTICLE</div>` + safeMd(story.excerpt) + `<p><a href="${escapeHtml(story.url)}" target="_blank" rel="noopener noreferrer">Read the full article \u2197</a></p>` : "")
         + (story.tags && story.tags.length ? `<p class="mono" style="font-size:11px; color:#8a8a92;">${story.tags.map(t => "#" + escapeHtml(t)).join(" ")}</p>` : "")
         + `<p style="font-size:12px;">Share this spotlight: <a href="${escapeHtml(share)}" target="_blank" rel="noopener noreferrer">${escapeHtml(share)}</a></p>`
         + (readme ? (readme.text
@@ -1899,7 +1944,7 @@ function render() {
     bodyEl.innerHTML = "";
   }
 
-  const tickerItems = channels.flatMap(c => c.status === "ready" ? c.stories.slice(0, 2).map(s => ({ source: c.tag, text: s.title })) : []);
+  const tickerItems = channels.flatMap(c => c.status === "ready" ? c.stories.filter(s => !s.empty).slice(0, 2).map(s => ({ source: c.tag, text: s.title })) : []);
   const tickerEl = document.getElementById("ticker");
   tickerEl.textContent = tickerItems.length > 0
     ? [...tickerItems, ...tickerItems].map(i => `${i.source}: ${i.text}`).join("   •   ") + "   •   "

@@ -2,21 +2,22 @@
   "_format": "Newest first by 'added'. id: lowercase letters, numbers, dashes (used in the share link ?spotlight=id). project max 60 chars, tagline max 120, description max 600, by max 40. link must start with https://. tags: up to 5, lowercase, no spaces. video: optional YouTube link. added: YYYY-MM-DD.",
   "spotlights": [
     {
-      "id": "merk",
-      "project": "MERK",
-      "tagline": "A free, open source IRC client with an mIRC-style multi-window interface, for Windows, Linux, and macOS.",
-      "description": "MERK is an open source IRC client written in Python with PyQt5 and Twisted. Like the classic mIRC, every server, channel, and chat gets its own window. It connects to multiple servers at once, has over 400 settings, a scripting engine, and Python plugins, and new builds land almost every day. Built by one developer as his own \"dream IRC client\".",
-      "by": "Dan Hetrick",
-      "link": "https://github.com/nutjob-laboratories/merk",
+      "id": "the-ai-engineer",
+      "project": "The AI Engineer",
+      "tagline": "A course on GPUs, CUDA, quantization and serving, from the newsletter The AI Engineer.",
+      "description": "Hardware & Inference is an ordered course on GPUs, CUDA, quantization, serving and fine-tuning, from what a GPU does to cutting your inference bill. 18 lessons in three parts: foundations, tools and decisions, and case studies. Most of the path is free.",
+      "by": "Paolo Perrone",
+      "link": "https://theaiengineer.substack.com/p/hardware-and-inference",
       "tags": [
-        "python",
-        "irc",
-        "opensource",
-        "pyqt5",
-        "cross-platform"
+        "ai",
+        "inference",
+        "gpu",
+        "quantization",
+        "newsletter"
       ],
       "video": "",
-      "added": "2026-09-28"
+      "added": "2026-10-01",
+      "excerpt": "This is the ⚡ Hardware & Inference course: after it, you can cut your inference bill and stop guessing why your model is slow.\n\nEvery course runs in three parts:\n\n- **Foundations**: the concepts, in the order they build on each other\n- **Tools & Decisions**: pick your stack, compare the options\n- **Case Studies**: how real teams shipped it\n\n**Foundations**\n\n1. What is Inference?\n2. What is a GPU?\n3. Why Does AI Need a GPU?\n4. What is CUDA\n5. Why is Inference Slow and Expensive?\n6. What Makes Inference Nondeterministic?\n7. What is Quantization?\n8. What is Fine-Tuning?"
     }
   ]
 }
