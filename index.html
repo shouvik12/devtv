@@ -89,6 +89,204 @@
   .reader-open-target:hover .story-title { text-decoration: underline; }
   #no-signal { width: 100%; height: 100%; display: none; align-items: center; justify-content: center; font-family: 'Courier New', monospace; font-size: 11px; color: #333338; letter-spacing: 0.1em; }
   #controls { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 20px; flex-wrap: wrap; }
+
+  /* ---- Fullscreen TV ----------------------------------------------------
+     Fullscreen is applied to the TV container, not the document or the
+     inner screen.  The fallback class is also used on browsers that do not
+     expose the Fullscreen API (notably iPhone Safari), so the TV still fills
+     the available viewport without breaking the normal page layout. */
+  #tv:fullscreen, #tv:-webkit-full-screen, #tv.is-fullscreen {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding-top: max(6px, env(safe-area-inset-top));
+    padding-right: max(8px, env(safe-area-inset-right));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    padding-left: max(8px, env(safe-area-inset-left));
+    border-radius: 0;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    overflow: hidden;
+    z-index: 2147483647;
+  }
+
+  #tv:fullscreen #tv-header-row,
+  #tv:-webkit-full-screen #tv-header-row,
+  #tv.is-fullscreen #tv-header-row {
+    min-width: 0;
+    margin-bottom: clamp(6px, 1vh, 12px) !important;
+  }
+
+  #tv:fullscreen #bezel,
+  #tv:-webkit-full-screen #bezel,
+  #tv.is-fullscreen #bezel {
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    overflow: hidden;
+  }
+
+  #tv:fullscreen #screen,
+  #tv:-webkit-full-screen #screen,
+  #tv.is-fullscreen #screen {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    aspect-ratio: auto;
+  }
+
+  #tv:fullscreen #controls,
+  #tv:-webkit-full-screen #controls,
+  #tv.is-fullscreen #controls {
+    min-width: 0;
+    min-height: 0;
+    margin-top: clamp(6px, 1vh, 10px);
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow: hidden;
+  }
+
+  #tv:fullscreen #channel-buttons,
+  #tv:-webkit-full-screen #channel-buttons,
+  #tv.is-fullscreen #channel-buttons {
+    min-width: 0;
+    flex: 1 1 auto;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  #tv:fullscreen #channel-buttons::-webkit-scrollbar,
+  #tv:-webkit-full-screen #channel-buttons::-webkit-scrollbar,
+  #tv.is-fullscreen #channel-buttons::-webkit-scrollbar {
+    display: none;
+  }
+
+  #tv:fullscreen #channel-buttons .chbtn,
+  #tv:-webkit-full-screen #channel-buttons .chbtn,
+  #tv.is-fullscreen #channel-buttons .chbtn {
+    flex: 0 0 clamp(48px, 6vw, 62px);
+    width: clamp(48px, 6vw, 62px);
+    min-width: 0;
+  }
+
+  #tv:fullscreen #watch-btn,
+  #tv:-webkit-full-screen #watch-btn,
+  #tv.is-fullscreen #watch-btn {
+    flex: 0 0 auto;
+    order: 0;
+    white-space: nowrap;
+  }
+
+  #tv:fullscreen #speed-btn,
+  #tv:-webkit-full-screen #speed-btn,
+  #tv.is-fullscreen #speed-btn,
+  #tv:fullscreen #power-btn,
+  #tv:-webkit-full-screen #power-btn,
+  #tv.is-fullscreen #power-btn {
+    flex: 0 0 auto;
+  }
+
+  body.tv-fullscreen-active {
+    overflow: hidden;
+    padding: 0 !important;
+  }
+
+  /* Landscape phones have very little vertical space. Keep the header on
+     one line and make the control deck compact instead of pushing the
+     actual TV screen out of view. */
+  @media (max-width: 900px) and (orientation: landscape) {
+    #tv.is-fullscreen {
+      padding: 6px 8px 8px;
+    }
+    #tv.is-fullscreen #tv-header-row {
+      flex-wrap: nowrap !important;
+      margin-bottom: 5px !important;
+      padding: 0 2px !important;
+    }
+    #tv.is-fullscreen #tv-right-group {
+      width: auto !important;
+      gap: 6px !important;
+    }
+    #tv.is-fullscreen #ph-badge,
+    #tv.is-fullscreen #star-link {
+      display: none !important;
+    }
+    #tv.is-fullscreen #tv-logo {
+      font-size: 14px !important;
+      letter-spacing: 0.06em !important;
+    }
+    #tv.is-fullscreen #clock {
+      font-size: 9px !important;
+    }
+    #tv.is-fullscreen #fullscreen-btn,
+    #tv.is-fullscreen #gear {
+      padding: 4px !important;
+      font-size: 14px !important;
+    }
+    #tv.is-fullscreen #controls {
+      gap: 5px;
+      margin-top: 5px;
+    }
+    #tv.is-fullscreen #watch-btn {
+      padding: 7px 9px !important;
+      font-size: 9px !important;
+    }
+    #tv.is-fullscreen #channel-buttons {
+      gap: 4px !important;
+    }
+    #tv.is-fullscreen #channel-buttons .chbtn {
+      flex-basis: 48px;
+      width: 48px;
+      padding: 6px 2px;
+    }
+    #tv.is-fullscreen #channel-buttons .chbtn .name {
+      font-size: 7px;
+    }
+    #tv.is-fullscreen #channel-buttons .chbtn .num {
+      font-size: 8px;
+    }
+    #tv.is-fullscreen #speed-btn {
+      padding: 7px 8px !important;
+      font-size: 9px !important;
+    }
+    #tv.is-fullscreen #power-btn {
+      width: 36px !important;
+      height: 36px !important;
+      font-size: 12px !important;
+    }
+  }
+
+  /* Portrait phones: preserve the full TV layout while allowing the
+     channel deck to scroll horizontally rather than growing vertically. */
+  @media (max-width: 640px) {
+    #tv.is-fullscreen {
+      padding: 8px 8px 10px;
+    }
+    #tv.is-fullscreen #controls {
+      flex-wrap: nowrap;
+    }
+    #tv.is-fullscreen #watch-btn {
+      flex: 0 0 auto;
+      order: 0;
+    }
+    #tv.is-fullscreen #channel-buttons {
+      flex: 1 1 auto;
+    }
+  }
   .chbtn { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 66px; padding: 9px 3px; border-radius: 6px; border: 1px solid #000; border-top: 1px solid #3a3a40; background: linear-gradient(180deg, #232328, #17171a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); position: relative; }
   .chbtn .num { font-family: 'Courier New', monospace; font-size: 10px; color: #6a6a72; }
   .chbtn .name { font-size: 9px; font-weight: 600; color: #d8d8dc; letter-spacing: 0.01em; text-align: center; line-height: 1.15; }
@@ -137,7 +335,7 @@
   #star-link:hover, #star-link:focus-visible { color: #e8c170 !important; border-color: #e8c170 !important; }
   @media (max-width: 400px) { #clock { font-size: 10px !important; letter-spacing: 0 !important; } #tv-logo { font-size: 15px !important; letter-spacing: 0.08em !important; } }
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-  @media (max-width: 340px) { #tv-logo { font-size: 13px !important; letter-spacing: 0.04em !important; } #fullscreen-btn { display: none !important; } }
+  @media (max-width: 340px) { #tv-logo { font-size: 13px !important; letter-spacing: 0.04em !important; } }
   .hn-article-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; margin-bottom: 14px; border: 1px solid rgba(255,107,71,0.35); border-radius: 6px; background: rgba(255,107,71,0.08); font-size: 13px; color: #d8d8dc; }
   .hn-article-banner a { color: #ff8a6b; font-weight: 600; text-decoration: none; white-space: nowrap; }
   .hn-article-banner a:hover { text-decoration: underline; }
@@ -1984,39 +2182,90 @@ function render() {
 }
 
 document.getElementById("gear").onclick = () => { showSettings = !showSettings; render(); };
-// iPhone Safari has never implemented the Fullscreen API for arbitrary
-// elements (document.documentElement.requestFullscreen is undefined there,
-// not just unsupported) — calling it throws a TypeError synchronously,
-// before .catch() can even attach. Feature-detect and hide the button
-// entirely on devices that can't use it, rather than leave a dead control.
-const fullscreenSupported = !!(
-  document.documentElement.requestFullscreen ||
-  document.documentElement.webkitRequestFullscreen
-);
+
+// Fullscreen the TV itself. Browsers with the Fullscreen API get native
+// fullscreen; browsers that do not expose element fullscreen (notably
+// iPhone Safari) use the same responsive TV layout as a viewport-filling
+// fallback instead of hiding the fullscreen control.
+const tvEl = document.getElementById("tv");
 const fullscreenBtn = document.getElementById("fullscreen-btn");
-if (!fullscreenSupported) {
-  fullscreenBtn.style.display = "none";
-} else {
-  fullscreenBtn.onclick = () => {
+let fallbackFullscreen = false;
+
+const getNativeFullscreenElement = () =>
+  document.fullscreenElement || document.webkitFullscreenElement || null;
+
+const hasNativeFullscreen = !!(
+  tvEl.requestFullscreen || tvEl.webkitRequestFullscreen
+);
+
+const syncFullscreenState = () => {
+  const nativeFullscreen = getNativeFullscreenElement() === tvEl;
+  const active = nativeFullscreen || fallbackFullscreen;
+  tvEl.classList.toggle("is-fullscreen", active);
+  document.body.classList.toggle("tv-fullscreen-active", active);
+  fullscreenBtn.style.color = active ? "#e8e8ea" : "#55555c";
+  fullscreenBtn.title = active ? "Exit fullscreen" : "Fullscreen";
+};
+
+const enterFallbackFullscreen = () => {
+  fallbackFullscreen = true;
+  syncFullscreenState();
+};
+
+const exitFallbackFullscreen = () => {
+  fallbackFullscreen = false;
+  syncFullscreenState();
+};
+
+fullscreenBtn.onclick = async () => {
+  const nativeFullscreen = getNativeFullscreenElement() === tvEl;
+
+  if (nativeFullscreen) {
     try {
-      if (!document.fullscreenElement) {
-        const req = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
-        const result = req.call(document.documentElement);
-        if (result && result.catch) result.catch(() => {});
-      } else {
-        const exit = document.exitFullscreen || document.webkitExitFullscreen;
-        const result = exit.call(document);
-        if (result && result.catch) result.catch(() => {});
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exit) {
+        await exit.call(document);
       }
     } catch (e) {
-      // Some older prefixed implementations throw synchronously instead
-      // of rejecting a promise — fail silently either way.
+      // Keep the UI state in sync even if an older browser rejects exit.
     }
-  };
-  document.addEventListener("fullscreenchange", () => {
-    fullscreenBtn.style.color = document.fullscreenElement ? "#e8e8ea" : "#55555c";
-  });
+    return;
+  }
+
+  if (fallbackFullscreen) {
+    exitFallbackFullscreen();
+    return;
+  }
+
+  if (hasNativeFullscreen) {
+    try {
+      const req = tvEl.requestFullscreen || tvEl.webkitRequestFullscreen;
+      await req.call(tvEl);
+      // fullscreenchange will apply the class.
+      return;
+    } catch (e) {
+      // Some mobile browsers expose the method but reject the request.
+      // Fall through to the viewport-filling fallback.
+    }
+  }
+
+  enterFallbackFullscreen();
+};
+
+const handleFullscreenChange = () => {
+  // A native exit (Escape, browser UI, orientation change, etc.) must also
+  // clear our fallback state so the normal layout is restored.
+  if (!getNativeFullscreenElement()) fallbackFullscreen = false;
+  syncFullscreenState();
+};
+
+document.addEventListener("fullscreenchange", handleFullscreenChange);
+document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+window.addEventListener("resize", syncFullscreenState);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", syncFullscreenState);
 }
+syncFullscreenState();
 document.getElementById("close-settings").onclick = () => { showSettings = false; render(); };
 document.getElementById("close-reader").onclick = closeReader;
 document.getElementById("watch-btn").onclick = toggleAutoPilot;
