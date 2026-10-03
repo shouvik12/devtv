@@ -108,24 +108,19 @@ _Real capture of the reader opening a GitHub README. It happened to hit a live r
 
 ## 🎬 Community Spotlight
 
-Got something you built? We want to feature it on DEV·TV.
+### Get your project featured
 
-The Spotlight is a channel by and for developers. Share your open-source projects, developer tools, experimental builds, technical articles, launches, or anything interesting you've made — and we'll add it to the live TV feed where developers actually hang out.
+Built something? You can send it to the Spotlight in about a minute.
 
-### Submit your project
+- **On DEV·TV:** press **Submit your project** in the strip under the channel keys, or **★ Get your project featured** under any Spotlight story. It's also in ⚙ Settings.
+- **Direct link:** `https://shouvik12.github.io/devtv/?submit` opens the form straight away.
+- **Plain email:** write to **devtv.developers@gmail.com** with the subject `DEV·TV Spotlight`.
 
-Send an email to **[devtv.developers@gmail.com](mailto:devtv.developers@gmail.com)** with the subject line: `DEV·TV Spotlight`
+The form asks for a project name, your name or handle, a one-line description, a link (https) and your email. A YouTube demo, a longer description and up to five tags are optional. A live preview shows how your card will look on the channel.
 
-**What to include:**
+**What happens when you press Send:** by default, DEV·TV opens your email app with the message already addressed to devtv.developers@gmail.com. Nothing leaves the page until you send that email. Every submission is read by hand, and if it fits it goes up on the Spotlight channel.
 
-- **Project/Article**: Name + URL (e.g., `Trooper | https://github.com/user/trooper`)
-- **One-liner**: What does it do? (one sentence, max)
-- **About it**: 2–3 sentences on what you built and why
-- **Built by**: Your name / GitHub handle / Bluesky handle
-- **Tags**: e.g., `Ollama · Python · LLM · Open Source`
-- **Optional**: Link to repo, demo, video, or screenshot
-
-**What happens next:** Handpicked projects get added to `spotlight.json` and featured on the live site. No payment, curated by hand, starting small and growing with the community.
+**For maintainers:** each submission includes a ready-to-paste entry for `spotlight.json`, already checked against the same rules the channel uses. Paste it into the `spotlights` list. The recipient is the `SPOTLIGHT_EMAIL` constant at the top of the script in `index.html`. To receive submissions without opening the sender's email app, create a form endpoint (Formspree, FormSubmit or Web3Forms) that forwards to your inbox, and put its URL in `SPOTLIGHT_SUBMIT_ENDPOINT`. Leave it empty to keep using email links.
 
 ---
 
