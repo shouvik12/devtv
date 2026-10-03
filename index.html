@@ -14,6 +14,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <title>DEV·TV</title>
 <style>
+/* Page reset, body, fonts, shared keyframes and the base button style. */
   :root {
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top, 0px);
@@ -37,6 +38,8 @@
   .btn:hover { filter: brightness(1.2); }
   .btn:active { transform: translateY(1px) scale(0.98); }
   a { color: inherit; }
+
+/* The TV itself: cabinet, bezel, screen, CRT power on/off, content area, scanlines, vignette. */
   #tv {
     width: 100%; max-width: 1020px;
     background: var(--tv-surface);
@@ -67,8 +70,13 @@
   #content { width: 100%; height: 100%; padding: 18px 22px; display: flex; flex-direction: column; justify-content: space-between; position: relative; transition: opacity 0.15s ease; }
   .scanlines { position: absolute; inset: 0; pointer-events: none; z-index: 2; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px); }
   .vignette { position: absolute; inset: 0; pointer-events: none; z-index: 2; box-shadow: inset 0 0 80px rgba(0,0,0,0.5); }
+
+/* Full-screen layers that sit on the picture: channel ident, settings panel, NO SIGNAL. */
   #ident { position: absolute; inset: 0; z-index: 5; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 6px; animation: identIn 0.15s ease; }
   #settings-overlay { position: absolute; inset: 0; z-index: 10; background: rgba(5,5,6,0.96); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); display: none; flex-direction: column; padding: 20px 24px; animation: overlayIn 0.15s ease; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  #no-signal { width: 100%; height: 100%; display: none; align-items: center; justify-content: center; font-family: 'Courier New', monospace; font-size: 11px; color: #333338; letter-spacing: 0.1em; }
+
+/* Reader overlay and article typography, embedded video frame, Hacker News banner. */
   #reader-overlay { position: absolute; inset: 0; z-index: 12; background: #08080a; display: none; flex-direction: column; animation: overlayIn 0.15s ease; }
   #reader-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid #1c1c20; flex-shrink: 0; }
   #reader-body { flex: 1; overflow-y: auto; padding: 20px 22px 28px; -webkit-overflow-scrolling: touch; }
@@ -90,8 +98,24 @@
   #reader-footer { padding: 14px 22px; border-top: 1px solid #1c1c20; flex-shrink: 0; }
   .reader-open-target { cursor: pointer; }
   .reader-open-target:hover .story-title { text-decoration: underline; }
-  #no-signal { width: 100%; height: 100%; display: none; align-items: center; justify-content: center; font-family: 'Courier New', monospace; font-size: 11px; color: #333338; letter-spacing: 0.1em; }
+  .video-frame { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 4px; overflow: hidden; }
+  .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .hn-article-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; margin-bottom: 14px; border: 1px solid rgba(255,107,71,0.35); border-radius: 6px; background: rgba(255,107,71,0.08); font-size: 13px; color: #d8d8dc; }
+  .hn-article-banner a { color: #ff8a6b; font-weight: 600; text-decoration: none; white-space: nowrap; }
+  .hn-article-banner a:hover { text-decoration: underline; }
+  .hn-discussion-note { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #8a8a92; margin: 0 0 12px; }
+
+/* Control deck: the panel, channel keys, round buttons, switches. */
   #controls { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 20px; flex-wrap: wrap; }
+  .chbtn { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 66px; padding: 9px 3px; border-radius: 6px; border: 1px solid #000; border-top: 1px solid var(--key-edge); background: linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); position: relative; }
+  .chbtn .num { font-family: 'Courier New', monospace; font-size: 10px; color: var(--key-num); }
+  .chbtn .name { font-size: 9px; font-weight: 600; color: var(--key-ink); letter-spacing: 0.01em; text-align: center; line-height: 1.15; }
+  .dot { position: absolute; top: 4px; right: 5px; width: 5px; height: 5px; border-radius: 50%; }
+  .round-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #000; border-top: 1px solid var(--key-edge); background: linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color: var(--key-ink); font-size: 13px; }
+  .switch { width: 38px; height: 20px; border-radius: 10px; border: 1px solid #000; position: relative; cursor: pointer; transition: background 0.15s ease; }
+  .switch .knob { position: absolute; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: left 0.15s ease; }
+
+/* Fullscreen layout (native and the iPhone fallback), including landscape and portrait phones. */
 
   /* ---- Fullscreen TV ----------------------------------------------------
      Fullscreen is applied to the TV container, not the document or the
@@ -290,13 +314,8 @@
       flex: 1 1 auto;
     }
   }
-  .chbtn { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 66px; padding: 9px 3px; border-radius: 6px; border: 1px solid #000; border-top: 1px solid var(--key-edge); background: linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); position: relative; }
-  .chbtn .num { font-family: 'Courier New', monospace; font-size: 10px; color: var(--key-num); }
-  .chbtn .name { font-size: 9px; font-weight: 600; color: var(--key-ink); letter-spacing: 0.01em; text-align: center; line-height: 1.15; }
-  .dot { position: absolute; top: 4px; right: 5px; width: 5px; height: 5px; border-radius: 50%; }
-  .round-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #000; border-top: 1px solid var(--key-edge); background: linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color: var(--key-ink); font-size: 13px; }
-  .switch { width: 38px; height: 20px; border-radius: 10px; border: 1px solid #000; position: relative; cursor: pointer; transition: background 0.15s ease; }
-  .switch .knob { position: absolute; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: left 0.15s ease; }
+
+/* The TV stand and the antenna. */
   .stand1 { width: 200px; height: 14px; background: linear-gradient(180deg, var(--stand-a), var(--stand-b)); border-radius: 0 0 10px 10px; margin-top: -2px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.12); }
   .stand2 { width: 280px; height: 6px; background: linear-gradient(180deg, var(--stand2-a), var(--stand2-b)); border-radius: 3px; margin-top: 2px; box-shadow: 0 8px 20px rgba(0,0,0,0.6); }
   .antenna { position: relative; width: 40px; height: 70px; margin: 0 auto -10px; z-index: 1; }
@@ -304,6 +323,8 @@
   .antenna-arm { position: absolute; bottom: 6px; left: 50%; width: 3px; height: 64px; background: linear-gradient(90deg, var(--ant-a), var(--ant-b) 45%, var(--ant-a)); border-radius: 2px; transform-origin: bottom center; box-shadow: 1px 0 3px rgba(0,0,0,0.4); }
   .antenna-left { transform: translateX(-50%) rotate(-27deg); }
   .antenna-right { transform: translateX(-50%) rotate(27deg); }
+
+/* Phone and small-screen adjustments. */
 
   /* ---- Mobile ---- */
   @media (max-width: 640px) {
@@ -333,16 +354,12 @@
     #close-settings, #close-reader { padding: 10px !important; font-size: 18px !important; }
   }
   .mobile-hint { display: none; }
-  .video-frame { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 4px; overflow: hidden; }
-  .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   #star-link:hover, #star-link:focus-visible { color: var(--accent-hi) !important; border-color: var(--accent-hi) !important; }
   @media (max-width: 400px) { #clock { font-size: 10px !important; letter-spacing: 0 !important; } #tv-logo { font-size: 15px !important; letter-spacing: 0.08em !important; } }
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   @media (max-width: 340px) { #tv-logo { font-size: 13px !important; letter-spacing: 0.04em !important; } }
-  .hn-article-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; margin-bottom: 14px; border: 1px solid rgba(255,107,71,0.35); border-radius: 6px; background: rgba(255,107,71,0.08); font-size: 13px; color: #d8d8dc; }
-  .hn-article-banner a { color: #ff8a6b; font-weight: 600; text-decoration: none; white-space: nowrap; }
-  .hn-article-banner a:hover { text-decoration: underline; }
-  .hn-discussion-note { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #8a8a92; margin: 0 0 12px; }
+
+/* Fake commercial breaks. */
   #ad-break { position: absolute; inset: 0; z-index: 15; flex-direction: column; overflow: hidden; padding: 18px 22px 16px;
     background: var(--ad-bg, #1d4ed8); color: var(--ad-ink, #fff); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
   #ad-break::before { content: ""; position: absolute; inset: 0; pointer-events: none;
@@ -384,6 +401,8 @@
   }
   @media (prefers-reduced-motion: reduce) { .ad-burst { animation: none; transform: rotate(12deg); } }
   @media (max-width: 340px) { .ad-brand { font-size: 16px; } .ad-slogan { font-size: 11px; } }
+
+/* Community Spotlight: stage lamp beam and README header. */
   /* Community Spotlight: a small stage lamp at the top with a soft beam of light. */
   .spot-beam { position: absolute; top: 0; left: 0; right: 0; height: 130px; pointer-events: none; overflow: hidden; z-index: 1; mix-blend-mode: screen; }
   .spot-beam::before { content: ""; position: absolute; top: 0; left: 50%; width: min(520px, 100%); height: 100%; transform: translateX(-50%);
@@ -394,6 +413,8 @@
   @keyframes spot-fade { from { opacity: 0; } to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .spot-beam::before { animation: none; } }
   .spot-readme-head { font-size: 10px; letter-spacing: 0.14em; color: #8a8a92; margin: 22px 0 10px; padding-top: 14px; border-top: 1px solid #232328; }
+
+/* Skin definitions. A skin is only a set of colour variables on <html data-skin>. */
 
   /* ==== Skins ============================================================
      Every skin is only a set of custom properties on <html data-skin="...">.
@@ -446,6 +467,7 @@
     --ant-a: #7d7d84; --ant-b: #ffffff; --ant-tip: #f4f4f8;
   }
 
+/* Cabinet styling that reads the skin variables: nameplate, clock, header icons, panel, keys. */
   /* ==== Cabinet ==========================================================
      Plate, clock, keys, panel. Reads skin variables only; there
      are no skin-specific selectors below this line. */
@@ -478,13 +500,6 @@
     #watch-btn.playing { background: linear-gradient(180deg, color-mix(in srgb, var(--stop-ink) 22%, var(--key-top)), color-mix(in srgb, var(--stop-ink) 8%, var(--key-bot))); }
   }
   @media (min-width: 901px) { #controls .chbtn { width: 58px; } #channel-buttons { flex-wrap: nowrap !important; } }
-  /* skin picker (Settings) */
-  .skin-opt { background: none; border: 1px solid #232328; border-radius: 8px; padding: 6px 4px 5px; display: flex; flex-direction: column; align-items: center; gap: 6px; color: #8a8a92; min-width: 0; }
-  .skin-opt.on { border-color: #e8e8ea; color: #f5f5f7; background: #17171b; }
-  .skin-prev { display: block; width: 100%; height: 30px; border-radius: 5px; border: 2px solid; padding: 4px; }
-  .skin-prev > span { display: block; height: 100%; border-radius: 4px; box-shadow: inset 0 0 6px rgba(0,0,0,0.8); }
-  .skin-name { font-size: 9px; letter-spacing: 0; white-space: nowrap; }
-  @media (max-width: 420px) { .skin-name { font-size: 8px; } .skin-opt { padding: 6px 2px 5px; } }
 
   @media (max-width: 640px) {
     #tv-logo { padding: 5px 8px 5px 10px; }
@@ -494,6 +509,91 @@
     .skin-dot { width: 16px; height: 16px; }
   }
   @media (max-width: 900px) and (orientation: landscape) { #tv.is-fullscreen #skin-btn { padding: 4px !important; } }
+
+/* The skin picker in Settings. */
+  /* skin picker (Settings) */
+  .skin-opt { background: none; border: 1px solid #232328; border-radius: 8px; padding: 6px 4px 5px; display: flex; flex-direction: column; align-items: center; gap: 6px; color: #8a8a92; min-width: 0; }
+  .skin-opt.on { border-color: #e8e8ea; color: #f5f5f7; background: #17171b; }
+  .skin-prev { display: block; width: 100%; height: 30px; border-radius: 5px; border: 2px solid; padding: 4px; }
+  .skin-prev > span { display: block; height: 100%; border-radius: 4px; box-shadow: inset 0 0 6px rgba(0,0,0,0.8); }
+  .skin-name { font-size: 9px; letter-spacing: 0; white-space: nowrap; }
+  @media (max-width: 420px) { .skin-name { font-size: 8px; } .skin-opt { padding: 6px 2px 5px; } }
+
+/* Spotlight submission panel. It lives on the TV screen, so it uses the screen's own neutral colours rather than skin variables. */
+#submit-overlay { position: absolute; inset: 0; z-index: 11; display: none; flex-direction: column; background: #07070a; color: #e8e8ea; animation: overlayIn 0.15s ease; }
+.sp-top { display: flex; justify-content: space-between; align-items: center; padding: 12px 22px; border-bottom: 1px solid #1c1c20; flex-shrink: 0; }
+.sp-label { display: flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 0.08em; color: #fde68a; }
+.sp-lamp { width: 7px; height: 7px; border-radius: 50%; background: #fde68a; box-shadow: 0 0 8px #fde68a; }
+.sp-close { background: none; border: none; color: #9a9aa2; cursor: pointer; font-size: 16px; padding: 6px; }
+.sp-close:hover { color: #f5f5f7; }
+.sp-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 22px 12px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 26px; align-items: start; }
+.sp-title { margin: 0 0 4px; font-size: 20px; line-height: 1.25; color: #f5f5f7; letter-spacing: -0.01em; }
+.sp-lede { margin: 0 0 14px; font-size: 13px; line-height: 1.5; color: #9a9aa2; max-width: 58ch; }
+.sp-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sp-field { margin-bottom: 11px; min-width: 0; }
+.sp-lbl { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.sp-lbl label { font-size: 12px; font-weight: 600; color: #d8d8dc; }
+.sp-opt { font-size: 10px; color: #6a6a72; }
+.sp-count { margin-left: auto; font-family: 'Courier New', monospace; font-size: 10px; color: #55555c; }
+.sp-field input, .sp-field textarea { width: 100%; background: #0d0d11; border: 1px solid #2a2a30; border-radius: 6px; color: #f5f5f7; font: inherit; font-size: 14px; padding: 8px 10px; outline: none; resize: vertical; }
+.sp-field textarea { min-height: 62px; line-height: 1.4; }
+.sp-field input::placeholder, .sp-field textarea::placeholder { color: #4a4a52; }
+.sp-field input:focus, .sp-field textarea:focus { border-color: #fde68a; box-shadow: 0 0 0 2px rgba(253,230,138,0.15); }
+.sp-field.bad input, .sp-field.bad textarea { border-color: #ff5c5c; }
+.sp-hint { margin-top: 3px; font-size: 11px; color: #6a6a72; }
+.sp-err { margin-top: 3px; font-size: 11px; color: #ff7a7a; }
+.sp-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.sp-side { position: sticky; top: 0; min-width: 0; }
+.sp-side-label { font-size: 10px; letter-spacing: 0.1em; color: #6a6a72; margin-bottom: 8px; }
+.sp-card { position: relative; overflow: hidden; border: 1px solid #25252b; border-radius: 8px; padding: 26px 18px 16px; background: linear-gradient(180deg, #121216, #09090c); min-height: 150px; }
+.sp-card .spot-beam { height: 100px; }
+.sp-card .ph { opacity: 0.4; }
+.sp-steps { margin: 14px 0 0; padding: 0; list-style: none; counter-reset: sp; font-size: 12px; color: #9a9aa2; line-height: 1.5; }
+.sp-steps li { position: relative; padding-left: 24px; margin-bottom: 7px; counter-increment: sp; }
+.sp-steps li::before { content: counter(sp); position: absolute; left: 0; top: 1px; width: 15px; height: 15px; border-radius: 50%; border: 1px solid #3a3a40; color: #fde68a; font: 10px/13px 'Courier New', monospace; text-align: center; }
+.sp-foot { display: flex; align-items: center; gap: 14px; padding: 11px 22px; border-top: 1px solid #1c1c20; flex-shrink: 0; background: #07070a; }
+.sp-status { flex: 1; min-width: 0; font-size: 12px; line-height: 1.4; color: #8a8a92; }
+.sp-status.ok { color: #7dffb0; }
+.sp-status.err { color: #ff7a7a; }
+.sp-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.sp-btn { display: inline-flex; align-items: center; justify-content: center; padding: 9px 14px; border-radius: 6px; border: 1px solid #3a3a40; background: #17171b; color: #e8e8ea; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; font-family: inherit; }
+.sp-btn:hover { border-color: #55555c; }
+.sp-primary { background: #fde68a; border-color: #fde68a; color: #1a1405; }
+.sp-primary:hover { border-color: #fff3bd; filter: brightness(1.06); }
+.sp-primary[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+.spot-submit { position: relative; z-index: 1; margin-top: 12px; padding: 7px 12px; border-radius: 6px; border: 1px solid rgba(253,230,138,0.4); background: rgba(253,230,138,0.07); color: #fde68a; font-size: 11px; letter-spacing: 0.02em; cursor: pointer; }
+.spot-submit:hover { background: rgba(253,230,138,0.14); }
+@media (max-width: 760px) {
+  .sp-body { grid-template-columns: 1fr; gap: 14px; padding: 14px 16px; }
+  .sp-side { position: static; }
+  .sp-top { padding: 10px 16px; }
+  .sp-title { font-size: 18px; }
+  .sp-lede { font-size: 12px; margin-bottom: 10px; }
+  .sp-status:not(.ok):not(.err) { display: none; }   /* the steps list already says where it goes; keep the footer to the buttons */
+  .sp-row2 { grid-template-columns: 1fr; gap: 0; }
+  .sp-field input, .sp-field textarea { font-size: 16px; }
+  .sp-foot { flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
+  .sp-status { flex-basis: 100%; }
+  .sp-actions { width: 100%; }
+  .sp-actions .sp-btn { flex: 1; padding: 10px 8px; }
+  .sp-close { padding: 10px; font-size: 18px; }
+}
+.reader-submit { background: none; border: none; padding: 0; margin-left: 16px; color: #fde68a; font-size: 11px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.reader-submit:hover { color: #fff3bd; }
+
+/* The email prompt under the channel keys. It sits on the cabinet, so it follows the skin variables. */
+.tv-submit { margin-top: 12px; padding: 9px 14px; border-radius: 10px; background: var(--panel-bg); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 12px;
+  font-family: 'Courier New', monospace; font-size: 12px; color: var(--key-ink);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.14); }
+.tv-submit-text { opacity: 0.92; }
+.tv-submit-or { opacity: 0.8; }
+.tv-submit-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid #000; border-top: 1px solid var(--key-edge); background: linear-gradient(180deg, var(--key-top), var(--key-bot)); color: var(--key-ink);
+  font: 600 11px 'Courier New', monospace; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); }
+.tv-submit-btn:hover { filter: brightness(1.12); }
+.tv-submit a { color: inherit; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+.tv-submit a:hover, .tv-submit a:focus-visible { color: var(--accent-hi); }
+#tv.is-fullscreen .tv-submit { display: none; }   /* fullscreen keeps every pixel for the picture and keys */
+@media (max-width: 640px) { .tv-submit { font-size: 11px; padding: 10px 12px; text-align: center; } .tv-submit-btn { padding: 8px 12px; } }
 </style>
 </head>
 <body>
@@ -548,8 +648,11 @@
         </div>
         <div id="reader-footer">
           <a id="reader-source-link" href="#" target="_blank" rel="noopener noreferrer" class="mono" style="font-size:11px; color:#9a9aa2;">↗ Open original source</a>
+          <button type="button" id="reader-submit-link" class="reader-submit mono" style="display:none;">✉ Get your project featured</button>
         </div>
       </div>
+
+      <div id="submit-overlay" role="dialog" aria-modal="true" aria-labelledby="submit-title"></div>
 
       <div id="ad-break" style="display:none;">
         <div class="ad-top"><span class="ad-tag"><span class="ad-tag-long">ADVERTISEMENT</span><span class="ad-tag-short">AD</span></span><span class="ad-countdown" id="ad-countdown"></span></div>
@@ -618,6 +721,11 @@
     <button id="speed-btn" class="btn mono" title="Playback speed" style="padding:9px 10px; border-radius:6px; border:1px solid #000; border-top:1px solid var(--key-edge); background:linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color:var(--key-ink); font-size:11px; font-weight:600;">1×</button>
     <button id="power-btn" class="round-btn btn" title="Turn TV off">⏻</button>
   </div>
+  <div id="tv-submit" class="tv-submit">
+    <span class="tv-submit-text">✉ Built something? Get it on the Spotlight.</span>
+    <button type="button" id="tv-submit-btn" class="tv-submit-btn">Submit your project</button>
+    <span class="tv-submit-or">or email <a id="tv-submit-mail" href="#"></a></span>
+  </div>
 </div>
 
 <div class="stand1"></div>
@@ -631,12 +739,29 @@
 </div>
 
 <script>
+/* Constants and storage keys. */
 const STORY_SECONDS = 7;
+
 const IDENT_MS = 900;
+
 const REFRESH_MINUTES = 10;
+
 const SETTINGS_KEY = "devtv:enabled-channels";
+
 const SPEED_KEY = "devtv:speed";
+
 const SPEEDS = [1, 2, 3, 0.5]; // multiplier cycle: 1x -> 2x -> 3x -> 0.5x -> 1x...
+
+// ---- Spotlight submissions ----
+// Where "Get your project featured" goes.
+const SPOTLIGHT_EMAIL = "devtv.developers@gmail.com";
+// A static page cannot send email by itself. By default the form opens the visitor's own
+// email app, addressed to SPOTLIGHT_EMAIL (mailto). To deliver submissions straight to your
+// inbox instead, create a free form endpoint (Formspree, FormSubmit, Web3Forms...) that
+// forwards to SPOTLIGHT_EMAIL and paste its URL here. Leave it empty to keep using mailto.
+const SPOTLIGHT_SUBMIT_ENDPOINT = "";
+
+/* Small pure helpers: time formatting, HTML escaping, GitHub error text. */
 function timeAgo(dateInput) {
   const diffMs = Date.now() - new Date(dateInput).getTime();
   const mins = Math.floor(diffMs / 60000);
@@ -668,6 +793,7 @@ function githubErrorMessage(res, whatFailed) {
   return `${whatFailed} (${res.status})`;
 }
 
+/* Markdown to HTML for the reader. */
 // Very small, deliberately limited markdown renderer. Input is escaped first
 // so nothing from a fetched README/article can inject real HTML — only the
 // few patterns below are turned back into tags.
@@ -876,6 +1002,8 @@ function mdLite(md) {
     .replace(/\u0000I_OPEN\u0000/g, "<i>")
     .replace(/\u0000I_CLOSE\u0000/g, "</i>");
 }
+
+/* GITHUB channel. */
 async function fetchGithubStories() {
   // A TV should show today's news, not whatever's been biggest all week.
   // sort=stars is cumulative, not "gained recently" (GitHub's Search API
@@ -897,6 +1025,7 @@ async function fetchGithubStories() {
   }));
 }
 
+/* NEW MODELS channel. */
 // New models, newest first, from OpenRouter's public model catalog. The
 // list endpoint is shown in OpenRouter's own docs as a plain GET with no key
 // and it supports sort=newest, which means "most recently added to
@@ -910,12 +1039,14 @@ function fmtContext(n) {
   if (n >= 1000000) return (Math.round(n / 100000) / 10) + "M context";
   return Math.round(n / 1000) + "K context";
 }
+
 function fmtPerMillion(perToken) {
   const n = Number(perToken) * 1000000;
   if (!isFinite(n)) return null;
   if (n === 0) return "free";
   return "$" + (n >= 10 ? n.toFixed(0) : n.toFixed(2).replace(/\.?0+$/, ""));
 }
+
 async function fetchNewModelsStories() {
   const res = await fetch("https://openrouter.ai/api/v1/models?sort=newest&output_modalities=text,image", { cache: "no-store" });
   if (!res.ok) throw new Error("OpenRouter API " + res.status);
@@ -954,6 +1085,7 @@ async function fetchNewModelsStories() {
   });
 }
 
+/* HACKER NEWS channel. */
 async function fetchHNStories() {
   const idsRes = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json", { cache: "no-store" });
   if (!idsRes.ok) throw new Error("HN API " + idsRes.status);
@@ -975,6 +1107,7 @@ async function fetchHNStories() {
   }));
 }
 
+/* DEV channel. */
 async function fetchDevToStories() {
   // top=1 = today's top articles specifically, not this week's, for the
   // same reason as the GitHub window above.
@@ -991,6 +1124,7 @@ async function fetchDevToStories() {
   }));
 }
 
+/* HUGGING FACE channel. */
 async function fetchHuggingFaceStories() {
   // Fetch a larger pool than we need, then filter to models created within
   // the last 14 days before ranking by trendingScore — same idea as the
@@ -1020,6 +1154,7 @@ async function fetchHuggingFaceStories() {
   }));
 }
 
+/* AI PAPERS and LATEST PAPERS channels. */
 // AI research papers the Hugging Face community is upvoting today, a
 // different content type from the models channel above (papers vs models),
 // same huggingface.co host already proven to allow browser fetch(). The
@@ -1130,6 +1265,7 @@ async function fetchLatestPapersStories() {
   });
 }
 
+/* CVE channel. */
 // Recently published CVEs. First attempt used cveawg.mitre.org's
 // /api/cve-id endpoint and got a 400 — turned out that endpoint is part of
 // MITRE's CVE ID Reservation service, built for CNAs managing their own
@@ -1178,6 +1314,7 @@ async function fetchCVEStories() {
   });
 }
 
+/* HN VIDEO and AI VIDEO channels, YouTube id handling. */
 // General breaking news, not tech-specific like HN or DEV.to — aggregated
 // from 200+ curated RSS sources. A third-party directory (API Bouncer)
 // lists this as auth: none, CORS: yes, but that's a directory listing,
@@ -1260,6 +1397,7 @@ async function fetchAIVideoStories() {
   return videos.slice(0, 10).map(h => hnVideoToStory(h, "AI VIDEO · HACKER NEWS"));
 }
 
+/* SPOTLIGHT channel: community projects, safe markdown, README loading, share links. */
 // COMMUNITY SPOTLIGHT: developer projects curated by hand. The entries live
 // in spotlight.json next to index.html, so GitHub Pages serves them from the
 // same site as the TV: no outside service, no rate limit. Every field is
@@ -1267,9 +1405,11 @@ async function fetchAIVideoStories() {
 // escaped on screen and goes through safeMd in the reader, links must be
 // https, and videos must be real YouTube IDs.
 const SAFE_LT = "\u0000SAFELT\u0000";
+
 function safeMd(text) { return mdLite(String(text ?? "").replace(/</g, SAFE_LT)).split(SAFE_LT).join("&lt;"); }
 
 const SPOTLIGHT_ID = /^[a-z0-9][a-z0-9-]{0,39}$/;
+
 function cleanSpotlight(e) {
   if (!e || typeof e !== "object") return null;
   const str = (v, max) => (typeof v === "string" && v.trim() && v.trim().length <= max) ? v.trim() : null;
@@ -1286,6 +1426,10 @@ function cleanSpotlight(e) {
   const excerpt = str(e.excerpt, 2500) || "";
   return { id, project, tagline, description: description || tagline, by, link, tags, videoId, added, excerpt };
 }
+
+// The invitation shown when the channel is empty, and as the last slide of the rotation, so people who watch
+// the channel learn they can be on it.
+const SPOTLIGHT_INVITE = "**Your project could be here.**\n\nThe Spotlight is a channel by and for developers. Press **Get your project featured**, add a name, a link and a line or two about what you built, and it goes to the DEV\u00b7TV team. Prefer plain email? Send the same to " + SPOTLIGHT_EMAIL + " with the subject \"DEV\u00b7TV Spotlight\".\n\nThe link can go to a repo, a website, a newsletter or a YouTube video.";
 
 async function fetchSpotlightStories() {
   if (!/^https?:$/.test(location.protocol)) throw new Error("The Spotlight channel needs the live site. It can't load from a downloaded copy of the file.");
@@ -1307,18 +1451,18 @@ async function fetchSpotlightStories() {
       show: "COMMUNITY SPOTLIGHT",
       title: "No spotlight right now",
       line1: "Built something? Yours could be up here.",
-      line2: "Email devtv.developers@gmail.com with the subject \"DEV\u00b7TV Spotlight\"",
+      line2: "Press the button below, or email " + SPOTLIGHT_EMAIL,
       url: "https://github.com/shouvik12/devtv",
       videoId: null,
       spotlightId: "",
       by: "",
       tags: [],
       empty: true,
-      fullText: "**Your project could be here.**\n\nThe Spotlight is a channel by and for developers. Send a name, a link and a line or two about what you built to devtv.developers@gmail.com with the subject \"DEV\u00b7TV Spotlight\".\n\nThe link can go to a repo, a website, a newsletter or a YouTube video.",
+      fullText: SPOTLIGHT_INVITE,
     }];
   }
   entries.sort((a, b) => b.added.localeCompare(a.added));
-  return entries.slice(0, 20).map(e => ({
+  const stories = entries.slice(0, 20).map(e => ({
     show: "COMMUNITY SPOTLIGHT",
     title: e.project,
     line1: e.tagline,
@@ -1331,6 +1475,19 @@ async function fetchSpotlightStories() {
     fullText: e.description,
     excerpt: e.excerpt,
   }));
+  // Last slide in the rotation: an invitation. It reuses the empty-state story (so it stays out of the ticker and the reader
+  // shows its text), and clicking the card opens the form directly.
+  stories.push({
+    show: "COMMUNITY SPOTLIGHT",
+    title: "Your project could be here",
+    line1: "Built something? Get on the Spotlight.",
+    line2: "It takes a minute. Press the button below.",
+    url: "https://github.com/shouvik12/devtv",
+    videoId: null, spotlightId: "", by: "", tags: [],
+    empty: true, cta: true,
+    fullText: SPOTLIGHT_INVITE,
+  });
+  return stories;
 }
 
 const SPOT_BEAM_HTML = '<div class="spot-beam" aria-hidden="true"></div>';
@@ -1349,6 +1506,7 @@ function githubRepoFromUrl(url) {
     return owner + "/" + repo;
   } catch (e) { return null; }
 }
+
 // READMEs point at their own screenshots with relative paths
 // (./graphics/shot.png), which GitHub's website quietly rewrites when it
 // displays them. A reader working from the raw text has to do that itself,
@@ -1360,11 +1518,13 @@ function resolveReadmeImage(repo, path) {
   if (!clean || clean.includes("..") || !/^[A-Za-z0-9._\/@+-]+$/.test(clean)) return null;
   return `https://raw.githubusercontent.com/${repo}/HEAD/${clean}`;
 }
+
 function absolutizeReadmeImages(text, repo) {
   return String(text)
     .replace(/(<img\b[^>]*?\bsrc\s*=\s*)(["'])([^"']+)\2/gi, (m, pre, q, path) => { const u = resolveReadmeImage(repo, path); return u ? pre + q + u + q : m; })
     .replace(/(!\[[^\]]*\]\()([^)\s]+)(\))/g, (m, pre, path, post) => { const u = resolveReadmeImage(repo, path); return u ? pre + u + post : m; });
 }
+
 // READMEs often use small presentational HTML (<br>, <big>, <center>) that
 // the reader doesn't know, which would show up as literal text. Turn line
 // breaks into real ones and drop the others, keeping their content. Fenced
@@ -1379,6 +1539,7 @@ function tidyReadmeHtml(text) {
     ).join("");
   }).join("");
 }
+
 // Shares the GitHub channel's README memory (an hour, kept a day as a
 // fallback), so opening a project that was already read costs no request.
 // It never throws: if the README can't load, the reader still shows the
@@ -1402,7 +1563,9 @@ async function loadSpotlightReadme(repo) {
 let pendingSpotlight = (() => {
   try { const v = new URLSearchParams(location.search).get("spotlight"); return v && SPOTLIGHT_ID.test(v) ? v : null; } catch (e) { return null; }
 })();
+
 function spotlightShareUrl(id) { return location.origin + location.pathname + "?spotlight=" + encodeURIComponent(id); }
+
 function applyPendingSpotlight() {
   if (!pendingSpotlight) return;
   const channels = getChannels();
@@ -1415,6 +1578,7 @@ function applyPendingSpotlight() {
   render();
 }
 
+/* RELEASES channel. */
 // Tracks real version releases for the stacks people actually google to stay
 // current on — not a firehose of every GitHub release, a curated shortlist.
 // One call per repo (github.com/{repo}/releases/latest), all on the same
@@ -1467,6 +1631,8 @@ async function fetchReleasesStories() {
     fullText: r.body || "No release notes provided.",
   }));
 }
+
+/* The channel list. Loads after every fetcher it points to. */
 const ALL_CHANNELS = [
   { id: "github", name: "GITHUB", color: "#7c8cff", key: "1", fetcher: fetchGithubStories, tag: "GH" },
   { id: "hn", name: "HACKER NEWS", color: "#ff6b47", key: "2", fetcher: fetchHNStories, tag: "HN" },
@@ -1483,55 +1649,7 @@ const ALL_CHANNELS = [
   { id: "spotlight", name: "SPOTLIGHT", color: "#fde68a", key: "", fetcher: fetchSpotlightStories, tag: "SPOT" },
 ];
 
-let enabledIds = loadEnabledIds();
-let dataByChannel = {};
-let channelIdx = 0, storyIdx = 0;
-let mode = "autopilot"; // default is playing, same as turning on a real TV; STOP freezes it
-let power = true, progress = 0, showSettings = false;
-let readerOpen = false, readerLoading = false, readerStory = null, readerChannel = null, readerError = null;
-let bootStaticShowing = true; // cleared the moment the shown channel has a real result
-let tickInterval = null, identTimeout = null;
-let speed = loadSpeed();
-let adBreakActive = false;
-// Fake commercial breaks are a rare treat, not a schedule: none in the
-// first few minutes, then about one every five minutes of playback, and
-// they can be switched off in settings.
-const AD_FIRST_AFTER_MS = 3 * 60 * 1000;
-const AD_EVERY_MS = 5 * 60 * 1000;
-const ADS_KEY = "devtv-ads-enabled";
-let nextAdAt = Date.now() + AD_FIRST_AFTER_MS;
-// ---- Skins: cabinet looks. Colours live in the CSS (html[data-skin]); this list drives the picker. ----
-const SKIN_KEY = "devtv-skin";
-const SKINS = [
-  { id: "graphite", name: "Graphite", cab: "linear-gradient(135deg,#2e2e33,#0e0e10)", edge: "#a67c3d", tube: "#14161a" },
-  { id: "walnut",   name: "Walnut",   cab: "linear-gradient(135deg,#6a4023,#2f190b)", edge: "#c9a24d", tube: "#14161a" },
-  { id: "cream",    name: "Cream",    cab: "linear-gradient(135deg,#f1e8d1,#c6b995)", edge: "#a89a77", tube: "#1b1d21" },
-];
-let skinId = (() => { try { const v = localStorage.getItem(SKIN_KEY); return SKINS.some(s => s.id === v) ? v : "graphite"; } catch (e) { return "graphite"; } })();
-document.documentElement.setAttribute("data-skin", skinId);
-function setSkin(id) {
-  if (!SKINS.some(s => s.id === id)) return;
-  skinId = id;
-  document.documentElement.setAttribute("data-skin", id);
-  try { localStorage.setItem(SKIN_KEY, id); } catch (e) {}
-  render();
-}
-function cycleSkin() {
-  const i = SKINS.findIndex(s => s.id === skinId);
-  setSkin(SKINS[(i + 1) % SKINS.length].id);
-}
-let adsEnabled = (() => { try { return localStorage.getItem(ADS_KEY) !== "off"; } catch (e) { return true; } })();
-const AD_BREAKS = [
-  { brand: "Works On My Machine\u2122 Shipping", logo: "\u{1F4E6}", slogan: "We ship your laptop to production.", body: "Can't reproduce the bug in prod? Now prod runs on your exact laptop. Overnight delivery.", offer: "FREE SHIPPING TO PROD", cta: "SHIP IT", bg: "#1d4ed8", accent: "#facc15", ink: "#ffffff" },
-  { brand: "Semicolon Insurance Co.", logo: "\u{1F6E1}", slogan: "Never lose a build again.", body: "Full coverage for every missing semicolon. Terms, conditions, and linters apply.", offer: "ONLY $0.00*", cta: "CALL 1-800-NO-BUGS", bg: "#0f766e", accent: "#fde047", ink: "#ffffff" },
-  { brand: "Merge Conflict Therapy", logo: "\u{1F6CB}", slogan: "Let's talk about <<<<<<< HEAD.", body: "Two branches, one file, a lot of feelings. Licensed therapists who have seen every rebase.", offer: "FIRST SESSION FREE", cta: "RESOLVE NOW", bg: "#be185d", accent: "#fbcfe8", ink: "#ffffff" },
-  { brand: "node_modules Self Storage", logo: "\u{1F3E2}", slogan: "Room for your hello world.", body: "Units from 300 MB. Every dependency's dependency's dependency, stored safely forever.", offer: "NOW 2 PETABYTES", cta: "npm install storage", bg: "#15803d", accent: "#bbf7d0", ink: "#ffffff" },
-  { brand: "Regex Understanding LLC", logo: "\u{1F9E9}", slogan: "We can't help. We sell mugs.", body: "For when you wrote a regex today and can't explain it to yourself tomorrow.", offer: "MUGS 50% OFF", cta: "SHOP /m[uo]gs?/", bg: "#6d28d9", accent: "#a3e635", ink: "#ffffff" },
-  { brand: "Rollback Airlines", logo: "\u2708", slogan: "Every flight returns to the last stable version.", body: "Deployed on a Friday? Relax. We'll have you back to Thursday before anyone notices.", offer: "UNLIMITED REVERTS", cta: "BOOK A REVERT", bg: "#b91c1c", accent: "#fde047", ink: "#ffffff" },
-  { brand: "Off-By-One Pizza", logo: "\u{1F355}", slogan: "Order 10 slices. Get 9. Or 11.", body: "Every order indexed from zero, delivered to the address next door. Mostly.", offer: "BUY 1 GET 0", cta: "ORDER[0]", bg: "#c2410c", accent: "#fef08a", ink: "#ffffff" },
-  { brand: "Legacy Code Archaeology", logo: "\u26CF", slogan: "Digging up TODOs from 2009.", body: "No docs? No tests? No original author? Our experts have seen worse, and left comments about it.", offer: "NO DOCS NEEDED", cta: "START DIGGING", bg: "#78350f", accent: "#fbbf24", ink: "#fff7ed" },
-];
-
+/* Saved settings (speed, enabled channels) and getChannels(). */
 function loadSpeed() {
   try {
     const raw = localStorage.getItem(SPEED_KEY);
@@ -1540,6 +1658,7 @@ function loadSpeed() {
   } catch (e) {}
   return 1;
 }
+
 function cycleSpeed() {
   const idx = SPEEDS.indexOf(speed);
   speed = SPEEDS[(idx + 1) % SPEEDS.length];
@@ -1558,9 +1677,11 @@ function loadEnabledIds() {
   } catch (e) {}
   return ALL_CHANNELS.map(c => c.id);
 }
+
 function persistEnabled() {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(enabledIds)); } catch (e) {}
 }
+
 function getChannels() {
   return ALL_CHANNELS.filter(c => enabledIds.includes(c.id)).map((c, i) => ({
     ...c,
@@ -1572,6 +1693,77 @@ function getChannels() {
   }));
 }
 
+function toggleChannel(id) {
+  const isEnabled = enabledIds.includes(id);
+  if (isEnabled && enabledIds.length === 1) return;
+  enabledIds = isEnabled ? enabledIds.filter(x => x !== id) : [...enabledIds, id];
+  persistEnabled();
+  if (channelIdx >= getChannels().length) { channelIdx = 0; storyIdx = 0; progress = 0; }
+  render();
+}
+
+/* Live TV state shared by every module. */
+let enabledIds = loadEnabledIds();
+
+let dataByChannel = {};
+
+let channelIdx = 0, storyIdx = 0;
+
+let mode = "autopilot"; // default is playing, same as turning on a real TV; STOP freezes it
+
+let power = true, progress = 0, showSettings = false;
+
+let readerOpen = false, readerLoading = false, readerStory = null, readerChannel = null, readerError = null;
+
+let bootStaticShowing = true; // cleared the moment the shown channel has a real result
+
+let tickInterval = null, identTimeout = null;
+
+let speed = loadSpeed();
+
+let adBreakActive = false;
+
+// Fake commercial breaks are a rare treat, not a schedule: none in the
+// first few minutes, then about one every five minutes of playback, and
+// they can be switched off in settings.
+const AD_FIRST_AFTER_MS = 3 * 60 * 1000;
+
+const AD_EVERY_MS = 5 * 60 * 1000;
+
+const ADS_KEY = "devtv-ads-enabled";
+
+let nextAdAt = Date.now() + AD_FIRST_AFTER_MS;
+
+let adsEnabled = (() => { try { return localStorage.getItem(ADS_KEY) !== "off"; } catch (e) { return true; } })();
+
+/* Skin list, saved choice, setSkin and cycleSkin. Colours live in css/skins.css. */
+// ---- Skins: cabinet looks. Colours live in the CSS (html[data-skin]); this list drives the picker. ----
+const SKIN_KEY = "devtv-skin";
+
+const SKINS = [
+  { id: "graphite", name: "Graphite", cab: "linear-gradient(135deg,#2e2e33,#0e0e10)", edge: "#a67c3d", tube: "#14161a" },
+  { id: "walnut",   name: "Walnut",   cab: "linear-gradient(135deg,#6a4023,#2f190b)", edge: "#c9a24d", tube: "#14161a" },
+  { id: "cream",    name: "Cream",    cab: "linear-gradient(135deg,#f1e8d1,#c6b995)", edge: "#a89a77", tube: "#1b1d21" },
+];
+
+let skinId = (() => { try { const v = localStorage.getItem(SKIN_KEY); return SKINS.some(s => s.id === v) ? v : "graphite"; } catch (e) { return "graphite"; } })();
+
+document.documentElement.setAttribute("data-skin", skinId);
+
+function setSkin(id) {
+  if (!SKINS.some(s => s.id === id)) return;
+  skinId = id;
+  document.documentElement.setAttribute("data-skin", id);
+  try { localStorage.setItem(SKIN_KEY, id); } catch (e) {}
+  render();
+}
+
+function cycleSkin() {
+  const i = SKINS.findIndex(s => s.id === skinId);
+  setSkin(SKINS[(i + 1) % SKINS.length].id);
+}
+
+/* Per-channel and README caching in localStorage. */
 // Each channel's stories are remembered in this browser for just under
 // one refresh interval. Reloading the page (or coming back to the tab)
 // reuses them instead of spending requests again. That matters most for
@@ -1581,8 +1773,11 @@ function getChannels() {
 // REFRESH_MINUTES anyway. If a fetch fails, the last good stories (up to
 // a day old) stay on screen with a note saying how old they are.
 const CACHE_PREFIX = "devtv-cache:";
+
 const CACHE_FRESH_MS = REFRESH_MINUTES * 60 * 1000 - 30 * 1000;
+
 const CACHE_KEEP_MS = 24 * 60 * 60 * 1000;
+
 function readCache(key) {
   try {
     const raw = localStorage.getItem(CACHE_PREFIX + key);
@@ -1593,12 +1788,14 @@ function readCache(key) {
     return o;
   } catch (e) { return null; }
 }
+
 function writeCache(key, data) {
   try { localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({ t: Date.now(), data })); return true; }
   catch (e) { return false; } // storage full or blocked: caching is optional
 }
 
 const README_CACHE_LIMIT = 25;
+
 function cacheReadme(key, text) {
   if (typeof text !== "string" || text.length > 400000) return; // skip giant READMEs
   const prefix = CACHE_PREFIX + "readme:";
@@ -1621,6 +1818,7 @@ function cacheReadme(key, text) {
   }
 }
 
+/* Loads channels, with cache and stale fallback. */
 async function loadChannel(def) {
   const cached = readCache("ch:" + def.id);
   // Spotlight is a tiny file on this same site with no rate limit, so it always
@@ -1649,12 +1847,15 @@ async function loadChannel(def) {
   render();
   if (def.id === "spotlight") applyPendingSpotlight();
 }
+
 let lastLoadAllTime = 0;
+
 function loadAll() {
   lastLoadAllTime = Date.now();
   ALL_CHANNELS.forEach(loadChannel);
 }
 
+/* Screen flash and the TV static. */
 function flashScreen() {
   const el = document.getElementById("content");
   el.style.opacity = "0.5";
@@ -1666,6 +1867,7 @@ function flashScreen() {
 // durationMs === null means "loop forever" — used at boot, where static
 // should sit there until the person actually picks a channel.
 let staticToken = 0;
+
 function playStatic(durationMs, onDone) {
   const myToken = ++staticToken;
   const canvas = document.getElementById("boot-static");
@@ -1704,6 +1906,7 @@ function playStatic(durationMs, onDone) {
   }
   requestAnimationFrame(drawFrame);
 }
+
 function stopStaticSilently() {
   staticToken++;
   bootStaticShowing = false;
@@ -1713,10 +1916,13 @@ function stopStaticSilently() {
   setTimeout(() => { canvas.style.display = "none"; }, 200);
 }
 
+/* Power button and the CRT collapse/expand animation. */
 let powerAnimating = false;
+
 function togglePower() {
   if (powerAnimating) return;
   if (readerOpen) closeReader();
+  if (submitOpen) closeSubmit();
   const screenEl = document.getElementById("screen");
 
   if (power) {
@@ -1750,6 +1956,19 @@ function togglePower() {
     screenEl.addEventListener("animationend", onOnDone);
   }
 }
+
+/* The on-screen clock. */
+// Real, live local time, matching the news-broadcast overlay convention.
+// Uses the browser's own clock, no API call, zero-backend stays intact.
+function updateClock() {
+  const el = document.getElementById("clock");
+  // Small phones drop the seconds so the clock fits next to ON AIR.
+  const narrow = window.matchMedia("(max-width: 400px)").matches;
+  const opts = narrow ? { hour: "2-digit", minute: "2-digit" } : { hour: "2-digit", minute: "2-digit", second: "2-digit" };
+  if (el) el.textContent = new Date().toLocaleTimeString([], opts);
+}
+
+/* Channel changes, story advance, WATCH/STOP and the tick loop. */
 function showIdent() {
   const channels = getChannels();
   const ch = channels[channelIdx];
@@ -1771,6 +1990,7 @@ function manualChangeChannel(idx) {
   // tuning away from that article, so it wouldn't make sense to keep it
   // open on screen.
   if (readerOpen) closeReader();
+  if (submitOpen) closeSubmit();
   // Same idea as flipping the channel during a real commercial break —
   // switching channels escapes the ad instead of forcing you to sit
   // through it.
@@ -1801,7 +2021,49 @@ function advance() {
   }
 }
 
+function toggleAutoPilot() {
+  if (!power) return;
+  mode = mode === "autopilot" ? "manual" : "autopilot";
+  render();
+  bootStaticShowing = false;
+  // Also clears any still-looping boot static if this is the first click
+  // the person makes — otherwise the mode flips correctly underneath but
+  // the screen stays hidden behind static and it looks like nothing happened.
+  playStatic(420, showIdent);
+}
+
+function startTick() {
+  clearInterval(tickInterval);
+  updateClock();
+  setInterval(updateClock, 1000);
+  tickInterval = setInterval(() => {
+    // Manual mode is now a frozen preview: nothing advances on its own.
+    // Auto Pilot is the only thing that moves stories or channels forward.
+    if (!power || readerOpen || submitOpen || adBreakActive || mode !== "autopilot") return;
+    const channels = getChannels();
+    const cur = channels[channelIdx];
+    const hasStories = cur && cur.status === "ready" && cur.stories.length > 0;
+    if (!hasStories) return;
+    progress += (100 / (STORY_SECONDS * 10)) * speed;
+    if (progress >= 100) { advance(); render(); }
+    else { document.getElementById("progress-bar").style.width = progress + "%"; }
+  }, 100);
+}
+
+/* Fake commercial breaks. */
+const AD_BREAKS = [
+  { brand: "Works On My Machine\u2122 Shipping", logo: "\u{1F4E6}", slogan: "We ship your laptop to production.", body: "Can't reproduce the bug in prod? Now prod runs on your exact laptop. Overnight delivery.", offer: "FREE SHIPPING TO PROD", cta: "SHIP IT", bg: "#1d4ed8", accent: "#facc15", ink: "#ffffff" },
+  { brand: "Semicolon Insurance Co.", logo: "\u{1F6E1}", slogan: "Never lose a build again.", body: "Full coverage for every missing semicolon. Terms, conditions, and linters apply.", offer: "ONLY $0.00*", cta: "CALL 1-800-NO-BUGS", bg: "#0f766e", accent: "#fde047", ink: "#ffffff" },
+  { brand: "Merge Conflict Therapy", logo: "\u{1F6CB}", slogan: "Let's talk about <<<<<<< HEAD.", body: "Two branches, one file, a lot of feelings. Licensed therapists who have seen every rebase.", offer: "FIRST SESSION FREE", cta: "RESOLVE NOW", bg: "#be185d", accent: "#fbcfe8", ink: "#ffffff" },
+  { brand: "node_modules Self Storage", logo: "\u{1F3E2}", slogan: "Room for your hello world.", body: "Units from 300 MB. Every dependency's dependency's dependency, stored safely forever.", offer: "NOW 2 PETABYTES", cta: "npm install storage", bg: "#15803d", accent: "#bbf7d0", ink: "#ffffff" },
+  { brand: "Regex Understanding LLC", logo: "\u{1F9E9}", slogan: "We can't help. We sell mugs.", body: "For when you wrote a regex today and can't explain it to yourself tomorrow.", offer: "MUGS 50% OFF", cta: "SHOP /m[uo]gs?/", bg: "#6d28d9", accent: "#a3e635", ink: "#ffffff" },
+  { brand: "Rollback Airlines", logo: "\u2708", slogan: "Every flight returns to the last stable version.", body: "Deployed on a Friday? Relax. We'll have you back to Thursday before anyone notices.", offer: "UNLIMITED REVERTS", cta: "BOOK A REVERT", bg: "#b91c1c", accent: "#fde047", ink: "#ffffff" },
+  { brand: "Off-By-One Pizza", logo: "\u{1F355}", slogan: "Order 10 slices. Get 9. Or 11.", body: "Every order indexed from zero, delivered to the address next door. Mostly.", offer: "BUY 1 GET 0", cta: "ORDER[0]", bg: "#c2410c", accent: "#fef08a", ink: "#ffffff" },
+  { brand: "Legacy Code Archaeology", logo: "\u26CF", slogan: "Digging up TODOs from 2009.", body: "No docs? No tests? No original author? Our experts have seen worse, and left comments about it.", offer: "NO DOCS NEEDED", cta: "START DIGGING", bg: "#78350f", accent: "#fbbf24", ink: "#fff7ed" },
+];
+
 const AD_BREAK_SECONDS = 6;
+
 function showAdBreak() {
   adBreakActive = true;
   const ad = AD_BREAKS[Math.floor(Math.random() * AD_BREAKS.length)];
@@ -1836,59 +2098,14 @@ function showAdBreak() {
     requestAnimationFrame(tick);
   });
 }
+
 function endAdBreak() {
   adBreakActive = false;
   document.getElementById("ad-break").style.display = "none";
   playStatic(420, showIdent);
 }
 
-function toggleAutoPilot() {
-  if (!power) return;
-  mode = mode === "autopilot" ? "manual" : "autopilot";
-  render();
-  bootStaticShowing = false;
-  // Also clears any still-looping boot static if this is the first click
-  // the person makes — otherwise the mode flips correctly underneath but
-  // the screen stays hidden behind static and it looks like nothing happened.
-  playStatic(420, showIdent);
-}
-
-// Real, live local time, matching the news-broadcast overlay convention.
-// Uses the browser's own clock, no API call, zero-backend stays intact.
-function updateClock() {
-  const el = document.getElementById("clock");
-  // Small phones drop the seconds so the clock fits next to ON AIR.
-  const narrow = window.matchMedia("(max-width: 400px)").matches;
-  const opts = narrow ? { hour: "2-digit", minute: "2-digit" } : { hour: "2-digit", minute: "2-digit", second: "2-digit" };
-  if (el) el.textContent = new Date().toLocaleTimeString([], opts);
-}
-
-function startTick() {
-  clearInterval(tickInterval);
-  updateClock();
-  setInterval(updateClock, 1000);
-  tickInterval = setInterval(() => {
-    // Manual mode is now a frozen preview: nothing advances on its own.
-    // Auto Pilot is the only thing that moves stories or channels forward.
-    if (!power || readerOpen || adBreakActive || mode !== "autopilot") return;
-    const channels = getChannels();
-    const cur = channels[channelIdx];
-    const hasStories = cur && cur.status === "ready" && cur.stories.length > 0;
-    if (!hasStories) return;
-    progress += (100 / (STORY_SECONDS * 10)) * speed;
-    if (progress >= 100) { advance(); render(); }
-    else { document.getElementById("progress-bar").style.width = progress + "%"; }
-  }, 100);
-}
-
-function toggleChannel(id) {
-  const isEnabled = enabledIds.includes(id);
-  if (isEnabled && enabledIds.length === 1) return;
-  enabledIds = isEnabled ? enabledIds.filter(x => x !== id) : [...enabledIds, id];
-  persistEnabled();
-  if (channelIdx >= getChannels().length) { channelIdx = 0; storyIdx = 0; progress = 0; }
-  render();
-}
+/* Reader mode. */
 // ---- Reader mode ----
 async function openReader(channel, story) {
   readerOpen = true;
@@ -2072,6 +2289,293 @@ function closeReader() {
   readerError = null;
   render();
 }
+
+/* Spotlight submissions: a template on the TV for sending a project to the DEV·TV inbox.
+   What it produces is an entry for spotlight.json, checked with the same cleanSpotlight() the channel itself uses. */
+let submitOpen = false;
+let spBuilt = false;
+let spAttempted = false;
+let spUseMail = !SPOTLIGHT_SUBMIT_ENDPOINT;
+let spReturnFocus = null;
+const spTouched = new Set();
+const SP_FIELDS = ["project", "by", "tagline", "link", "video", "description", "tags", "email"];
+const SP_LIMITS = { project: 60, by: 40, tagline: 120, description: 600 };
+const SP_SENT_KEY = "devtv-spotlight-sent";
+
+const spEl = (id) => document.getElementById("sp-" + id);
+
+function spField({ id, label, placeholder, max, optional, rows, hint, type, mode }) {
+  const attrs = `id="sp-${id}" placeholder="${placeholder}" ${max ? `maxlength="${max}"` : ""} autocomplete="off" autocapitalize="off" spellcheck="false" ${mode ? `inputmode="${mode}"` : ""}`;
+  const control = rows ? `<textarea ${attrs} rows="${rows}"></textarea>` : `<input ${attrs} type="${type || "text"}">`;
+  return `<div class="sp-field" data-field="${id}">
+    <div class="sp-lbl"><label for="sp-${id}">${label}</label>${optional ? '<span class="sp-opt">optional</span>' : ""}<span class="sp-count" id="sp-${id}-count"></span></div>
+    ${control}${hint ? `<div class="sp-hint">${hint}</div>` : ""}<div class="sp-err" id="sp-${id}-err"></div></div>`;
+}
+
+function spTemplate() {
+  const mail = escapeHtml(SPOTLIGHT_EMAIL);
+  return `
+  <div class="sp-top">
+    <div class="sp-label mono"><span class="sp-lamp"></span><span>COMMUNITY SPOTLIGHT</span></div>
+    <button type="button" class="sp-close" id="sp-close" aria-label="Close">\u2715</button>
+  </div>
+  <div class="sp-body">
+    <form id="sp-form" class="sp-form" novalidate>
+      <h2 id="submit-title" class="sp-title">Get your project on the Spotlight</h2>
+      <p class="sp-lede">Built something? Tell us about it. We read every submission, and if it fits it goes up on the Spotlight channel.</p>
+      <div class="sp-row2">
+        ${spField({ id: "project", label: "Project name", placeholder: "Pocket Linter", max: SP_LIMITS.project })}
+        ${spField({ id: "by", label: "Your name or handle", placeholder: "@you", max: SP_LIMITS.by })}
+      </div>
+      ${spField({ id: "tagline", label: "One line on what it does", placeholder: "A tiny linter that runs in your browser", max: SP_LIMITS.tagline })}
+      <div class="sp-row2">
+        ${spField({ id: "link", label: "Link", placeholder: "github.com/you/pocket-linter", mode: "url" })}
+        ${spField({ id: "video", label: "YouTube demo", placeholder: "youtu.be/\u2026", optional: true, mode: "url" })}
+      </div>
+      ${spField({ id: "description", label: "A bit more", placeholder: "What problem does it solve? What's it built with?", max: SP_LIMITS.description, optional: true, rows: 2 })}
+      <div class="sp-row2">
+        ${spField({ id: "tags", label: "Tags", placeholder: "cli, rust, tui", optional: true, hint: "Up to 5, like rust or web" })}
+        ${spField({ id: "email", label: "Your email, so we can reply", placeholder: "you@example.com", type: "email", mode: "email" })}
+      </div>
+      <div class="sp-hp" aria-hidden="true"><label>Leave this empty<input id="sp-company" tabindex="-1" autocomplete="off"></label></div>
+    </form>
+    <aside class="sp-side" aria-label="Preview">
+      <div class="sp-side-label mono">HOW IT WILL LOOK</div>
+      <div class="sp-card" id="sp-card"></div>
+      <ol class="sp-steps">
+        <li id="sp-step1"></li>
+        <li>We read it.</li>
+        <li>If it fits, it goes on the channel, with your README or video in the reader.</li>
+      </ol>
+    </aside>
+  </div>
+  <div class="sp-foot">
+    <div id="sp-status" class="sp-status" role="status" aria-live="polite"></div>
+    <div class="sp-actions">
+      <button type="button" class="sp-btn" id="sp-copy">Copy entry</button>
+      <a class="sp-btn sp-primary" id="sp-send" href="#" aria-disabled="true">Send to DEV\u00b7TV</a>
+    </div>
+  </div>`;
+}
+
+function spSlug(s) {
+  return String(s || "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/g, "");
+}
+function spToday() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function spNormUrl(v) { v = String(v || "").trim(); if (!v) return ""; return /^[a-z][a-z0-9+.-]*:/i.test(v) ? v : "https://" + v; }
+function spParseTags(raw) {
+  const parts = String(raw || "").split(/[\s,]+/).map(t => t.replace(/^#/, "").toLowerCase()).filter(Boolean);
+  const tags = [], bad = [];
+  for (const t of parts) { if (/^[a-z0-9+#.-]{1,20}$/.test(t)) { if (!tags.includes(t)) tags.push(t); } else bad.push(t); }
+  return { tags: tags.slice(0, 5), bad, extra: tags.length > 5 };
+}
+function spRead() {
+  const val = (id) => (spEl(id) ? spEl(id).value : "").trim();
+  return { project: val("project"), by: val("by"), tagline: val("tagline"), link: val("link"), video: val("video"), description: val("description"), tags: val("tags"), email: val("email") };
+}
+
+function spValidate(v) {
+  const e = {};
+  const slug = spSlug(v.project);
+  if (!v.project) e.project = "Give your project a name.";
+  else if (v.project.length > SP_LIMITS.project) e.project = "Keep it to " + SP_LIMITS.project + " characters.";
+  else if (!slug) e.project = "Use at least one letter or number.";
+  if (!v.by) e.by = "Add your name or handle.";
+  else if (v.by.length > SP_LIMITS.by) e.by = "Keep it to " + SP_LIMITS.by + " characters.";
+  if (!v.tagline) e.tagline = "Add a one-line description.";
+  else if (v.tagline.length > SP_LIMITS.tagline) e.tagline = "Keep it to " + SP_LIMITS.tagline + " characters.";
+  let link = null;
+  if (!v.link) e.link = "Add a link to your project.";
+  else {
+    try {
+      const u = new URL(spNormUrl(v.link));
+      if (u.protocol !== "https:") e.link = "Use an https link.";
+      else if (!u.hostname.includes(".")) e.link = "That doesn't look like a full link.";
+      else link = u.href;
+    } catch (x) { e.link = "That doesn't look like a link."; }
+  }
+  const video = v.video ? spNormUrl(v.video) : "";
+  if (video && !extractYouTubeId(video)) e.video = "Use a YouTube link, or leave this empty.";
+  if (v.description.length > SP_LIMITS.description) e.description = "Keep it to " + SP_LIMITS.description + " characters.";
+  const tg = spParseTags(v.tags);
+  if (tg.bad.length) e.tags = "Tags can use a-z, 0-9 and + # . - (up to 20 characters).";
+  else if (tg.extra) e.tags = "Use at most 5 tags.";
+  if (!v.email) e.email = "Add an email so we can reply.";
+  else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email)) e.email = "That email doesn't look right.";
+  let entry = null;
+  if (!Object.keys(e).length) {
+    entry = { id: slug, project: v.project, tagline: v.tagline };
+    if (v.description) entry.description = v.description;
+    Object.assign(entry, { by: v.by, link, tags: tg.tags });
+    if (video) entry.video = video;
+    entry.added = spToday();
+    // The same check the channel runs when it loads spotlight.json.
+    if (!cleanSpotlight(entry)) { e.project = "That doesn't fit the Spotlight format. Check the lengths."; entry = null; }
+  }
+  return { errors: e, entry, tags: tg.tags };
+}
+
+function spEmail(v, entry) {
+  const origin = /^https?:$/.test(location.protocol) ? location.origin + location.pathname : "DEV\u00b7TV";
+  const readable = [
+    "Project: " + v.project,
+    "Tagline: " + v.tagline,
+    "Link: " + entry.link,
+    v.description ? "Description: " + v.description : null,
+    entry.tags.length ? "Tags: " + entry.tags.join(", ") : null,
+    entry.video ? "Video: " + entry.video : null,
+    "By: " + v.by,
+    "Reply to: " + v.email,
+    "Sent from: " + origin,
+  ].filter(Boolean).join("\n");
+  return { subject: "DEV\u00b7TV Spotlight: " + v.project, readable, json: JSON.stringify(entry, null, 2) };
+}
+function spMailto(mail) {
+  const base = "mailto:" + SPOTLIGHT_EMAIL + "?subject=" + encodeURIComponent(mail.subject) + "&body=";
+  const full = base + encodeURIComponent(mail.readable + "\n\n--- spotlight.json entry ---\n" + mail.json);
+  // Mail apps and browsers cap mailto length; drop the JSON block if it would not fit. Copy entry still has it.
+  return full.length <= 1900 ? full : base + encodeURIComponent(mail.readable);
+}
+
+function spPreviewHtml(v, tags) {
+  const ch = ALL_CHANNELS.find(c => c.id === "spotlight");
+  const color = ch ? ch.color : "#fde68a";
+  const ph = (placeholder, value) => value ? escapeHtml(value) : '<span class="ph">' + escapeHtml(placeholder) + "</span>";
+  const line2 = [v.by ? "by " + v.by : "", tags.map(t => "#" + t).join(" ")].filter(Boolean).join(" \u00b7 ");
+  return SPOT_BEAM_HTML + `
+    <div class="mono" style="font-size:11px; color:${color}; letter-spacing:0.08em;">COMMUNITY SPOTLIGHT</div>
+    <div class="story-title" style="font-weight:700; font-size:clamp(16px, 2.4vw, 24px); color:#f5f5f7; line-height:1.2; letter-spacing:-0.01em; margin-top:6px;">${ph("Your project name", v.project)}</div>
+    <div class="mono" style="font-size:12px; color:${color}; margin-top:6px;">${ph("One line on what it does", v.tagline)}</div>
+    <div style="font-size:13px; color:#9a9aa2; line-height:1.4; margin-top:6px;">${line2 ? escapeHtml(line2) : '<span class="ph">by you \u00b7 #tags</span>'}</div>
+    <div class="mono" style="font-size:10px; color:${color}; margin-top:8px; opacity:0.8;">\u25b8 click to read in DEV\u00b7TV</div>`;
+}
+
+function spStatus(text, kind) {
+  const el = document.getElementById("sp-status");
+  el.textContent = text;
+  el.className = "sp-status" + (kind ? " " + kind : "");
+}
+function spIdleStatus() {
+  spStatus(spUseMail ? "Opens your email app, addressed to " + SPOTLIGHT_EMAIL + "." : "Goes straight to the DEV\u00b7TV inbox.");
+}
+
+// Reads the form, shows errors for fields the person has touched, refreshes the preview and the send link.
+function spUpdate(markAll) {
+  if (markAll) spAttempted = true;
+  const v = spRead();
+  const res = spValidate(v);
+  for (const f of SP_FIELDS) {
+    const show = (spAttempted || spTouched.has(f)) && res.errors[f];
+    spEl(f).closest(".sp-field").classList.toggle("bad", !!show);
+    document.getElementById("sp-" + f + "-err").textContent = show ? res.errors[f] : "";
+    if (SP_LIMITS[f]) document.getElementById("sp-" + f + "-count").textContent = v[f].length + "/" + SP_LIMITS[f];
+  }
+  document.getElementById("sp-card").innerHTML = spPreviewHtml(v, res.tags);
+  const send = document.getElementById("sp-send");
+  const ok = !!res.entry;
+  const mail = ok ? spEmail(v, res.entry) : null;
+  send.setAttribute("aria-disabled", ok ? "false" : "true");
+  send.href = ok && spUseMail ? spMailto(mail) : "#";
+  return { ok, v, entry: res.entry, mail, errors: res.errors };
+}
+
+function spFocusFirstError(errors) {
+  const first = SP_FIELDS.find(f => errors[f]);
+  if (first) spEl(first).focus();
+}
+
+async function spOnSend(ev) {
+  const cur = spUpdate(true);
+  if (!cur.ok) { ev.preventDefault(); spFocusFirstError(cur.errors); spStatus("Fix the highlighted fields first.", "err"); return; }
+  if (spEl("company").value) { ev.preventDefault(); spStatus("Thanks! Your project was sent.", "ok"); return; }   // honeypot: bots fill hidden fields
+  if (spUseMail) {
+    spStatus("Your email app should open with everything filled in. If it doesn't, use Copy entry and email it to " + SPOTLIGHT_EMAIL + ".", "ok");
+    return;                                  // let the mailto: link do its job
+  }
+  ev.preventDefault();
+  let last = 0; try { last = Number(localStorage.getItem(SP_SENT_KEY)) || 0; } catch (e) {}
+  if (Date.now() - last < 60000) { spStatus("You just sent one. Please wait a minute before sending another.", "err"); return; }
+  const send = document.getElementById("sp-send");
+  send.setAttribute("aria-disabled", "true");
+  spStatus("Sending\u2026");
+  try {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 12000);
+    const res = await fetch(SPOTLIGHT_SUBMIT_ENDPOINT, {
+      method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, signal: ctl.signal,
+      body: JSON.stringify({ _subject: cur.mail.subject, name: cur.v.by, email: cur.v.email, message: cur.mail.readable + "\n\n--- spotlight.json entry ---\n" + cur.mail.json, entry: cur.entry }),
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    try { localStorage.setItem(SP_SENT_KEY, String(Date.now())); } catch (e) {}
+    spStatus("Sent. Thanks! We'll take a look.", "ok");
+  } catch (err) {
+    spUseMail = true;                         // fall back to the visitor's email app
+    send.textContent = "Send by email";
+    spUpdate();
+    spStatus("Couldn't send it from here. Use Send by email instead, or Copy entry.", "err");
+  }
+}
+
+async function spCopy() {
+  const cur = spUpdate(true);
+  if (!cur.ok) { spFocusFirstError(cur.errors); spStatus("Fix the highlighted fields first.", "err"); return; }
+  const text = "To: " + SPOTLIGHT_EMAIL + "\nSubject: " + cur.mail.subject + "\n\n" + cur.mail.readable + "\n\n--- spotlight.json entry ---\n" + cur.mail.json;
+  let done = false;
+  try { await navigator.clipboard.writeText(text); done = true; } catch (e) {}
+  if (!done) {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.cssText = "position:fixed; left:-9999px;";
+    document.body.appendChild(ta); ta.select();
+    try { done = document.execCommand("copy"); } catch (e) {}
+    ta.remove();
+  }
+  spStatus(done ? "Copied. Paste it into an email to " + SPOTLIGHT_EMAIL + "." : "Couldn't copy automatically. Select the fields and email them to " + SPOTLIGHT_EMAIL + ".", done ? "ok" : "err");
+}
+
+function spBuild() {
+  if (spBuilt) return;
+  const overlay = document.getElementById("submit-overlay");
+  overlay.innerHTML = spTemplate();
+  document.getElementById("sp-step1").textContent = spUseMail
+    ? "Send opens your email app, ready to go to " + SPOTLIGHT_EMAIL + "."
+    : "Send delivers it straight to our inbox.";
+  const form = document.getElementById("sp-form");
+  // An old "fix the fields" message should not linger once the person starts editing.
+  form.addEventListener("input", () => { spUpdate(); if (document.getElementById("sp-status").classList.contains("err")) spIdleStatus(); });
+  form.addEventListener("focusout", (e) => { const id = e.target && e.target.id; if (id && id.startsWith("sp-")) { spTouched.add(id.slice(3)); spUpdate(); } });
+  form.addEventListener("submit", (e) => { e.preventDefault(); document.getElementById("sp-send").click(); });
+  document.getElementById("sp-close").onclick = closeSubmit;
+  document.getElementById("sp-copy").onclick = spCopy;
+  document.getElementById("sp-send").addEventListener("click", spOnSend);
+  spBuilt = true;
+  spUpdate();
+  spIdleStatus();
+}
+
+function openSubmit() {
+  if (!power) return;
+  if (readerOpen) closeReader();
+  // The boot static can still be running over the screen (it keeps looping when the channels load from cache), and it would swallow clicks.
+  const staticEl = document.getElementById("boot-static");
+  if (staticEl && staticEl.style.display !== "none") stopStaticSilently();
+  showSettings = false;
+  spBuild();
+  spReturnFocus = document.activeElement;
+  submitOpen = true;
+  document.getElementById("submit-overlay").style.display = "flex";
+  render();
+  setTimeout(() => { const f = spEl("project"); if (f && submitOpen) f.focus(); }, 60);
+}
+
+function closeSubmit() {
+  submitOpen = false;
+  document.getElementById("submit-overlay").style.display = "none";
+  render();
+  if (spReturnFocus && spReturnFocus.focus) { try { spReturnFocus.focus(); } catch (e) {} }
+}
+
+/* render(): paints the screen, buttons and settings from current state. */
 function render() {
   const channels = getChannels();
   if (channelIdx >= channels.length) { channelIdx = 0; storyIdx = 0; }
@@ -2086,13 +2590,13 @@ function render() {
   // Hiding it while reading is free: no functional loss, since it's just
   // ornamental, unlike the control deck below (which stays, so channel
   // switching remains available while reading).
-  document.getElementById("antenna").style.display = readerOpen ? "none" : "block";
+  document.getElementById("antenna").style.display = (readerOpen || submitOpen) ? "none" : "block";
   // The outer frame's own padding and the screen's fixed 16:10 aspect
   // ratio both relax while reading — the ratio in particular was capping
   // the screen's height well below what's actually available on a tall
   // mobile viewport, wasting real reading room for no functional reason.
-  document.getElementById("tv").classList.toggle("reading", readerOpen);
-  document.getElementById("screen").classList.toggle("reading", readerOpen);
+  document.getElementById("tv").classList.toggle("reading", readerOpen || submitOpen);
+  document.getElementById("screen").classList.toggle("reading", readerOpen || submitOpen);
   document.getElementById("screen").classList.toggle("off", !power);
   document.getElementById("content").style.display = power ? "flex" : "none";
   document.getElementById("no-signal").style.display = power ? "none" : "flex";
@@ -2107,6 +2611,7 @@ function render() {
     document.getElementById("reader-meta").textContent = readerStory.line1;
     document.getElementById("reader-meta").style.color = readerChannel.color;
     document.getElementById("reader-source-link").href = readerStory.url;
+    document.getElementById("reader-submit-link").style.display = readerChannel.id === "spotlight" ? "inline" : "none";
 
     const statusEl = document.getElementById("reader-status");
     if (readerLoading) {
@@ -2185,6 +2690,15 @@ function render() {
     swWrap.appendChild(sw);
     row.appendChild(swWrap);
     extrasEl.appendChild(row);
+
+    const spRow = document.createElement("div");
+    spRow.style.cssText = "display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-radius:6px; border:1px solid #232328; background:#111114;";
+    spRow.innerHTML = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="font-size:13px; font-weight:600; color:#e8e8ea;">Get your project featured</span><span class="mono" style="font-size:9px; color:#6a6a72;">Send it to the Spotlight channel</span></div>`;
+    const spBtn = document.createElement("button");
+    spBtn.type = "button"; spBtn.className = "sp-btn btn"; spBtn.textContent = "Submit";
+    spBtn.onclick = () => openSubmit();
+    spRow.appendChild(spBtn);
+    extrasEl.appendChild(spRow);
   }
 
   // Skin picker lives at the top of Settings so it is the first thing people see there.
@@ -2274,9 +2788,12 @@ function render() {
         <div class="story-title" style="font-weight:700; font-size:clamp(16px, 3.2vw, 28px); color:#f5f5f7; line-height:1.2; letter-spacing:-0.01em; margin-top:6px;">${escapeHtml(story.title)}</div>
         <div class="mono" style="font-size:12px; color:${channel.color}; margin-top:6px;">${escapeHtml(story.line1)}</div>
         <div style="font-size:13px; color:#9a9aa2; max-width:640px; line-height:1.4; margin-top:6px;">${escapeHtml(story.line2)}</div>
-        <div class="mono" style="font-size:10px; color:${channel.color}; margin-top:8px; opacity:0.8;">▸ click to read in DEV·TV</div>
-      </div>`;
-    document.getElementById("story-open-target").onclick = () => openReader(channel, story);
+        <div class="mono" style="font-size:10px; color:${channel.color}; margin-top:8px; opacity:0.8;">${story.cta ? "▸ click to submit yours" : "▸ click to read in DEV·TV"}</div>
+      </div>
+      ${channel.id === "spotlight" ? '<button type="button" id="spot-submit-btn" class="spot-submit btn mono">★ Get your project featured</button>' : ""}`;
+    document.getElementById("story-open-target").onclick = () => story.cta ? openSubmit() : openReader(channel, story);
+    const spotSubmitBtn = document.getElementById("spot-submit-btn");
+    if (spotSubmitBtn) spotSubmitBtn.onclick = (ev) => { ev.stopPropagation(); openSubmit(); };
     document.getElementById("now-text").textContent = story.title;
     document.getElementById("next-text").textContent = nextStory.title;
     document.getElementById("later-text").textContent = laterStory.title;
@@ -2318,15 +2835,16 @@ function render() {
   document.getElementById("power-btn").style.color = power ? "#7dffb0" : "#6a6a72";
   document.getElementById("power-btn").title = power ? "Turn TV off" : "Turn TV on";
 }
-document.getElementById("gear").onclick = () => { showSettings = !showSettings; render(); };
-document.getElementById("skin-btn").onclick = cycleSkin;
 
+/* Fullscreen, native and the viewport fallback. */
 // Fullscreen the TV itself. Browsers with the Fullscreen API get native
 // fullscreen; browsers that do not expose element fullscreen (notably
 // iPhone Safari) use the same responsive TV layout as a viewport-filling
 // fallback instead of hiding the fullscreen control.
 const tvEl = document.getElementById("tv");
+
 const fullscreenBtn = document.getElementById("fullscreen-btn");
+
 let fallbackFullscreen = false;
 
 const getNativeFullscreenElement = () =>
@@ -2398,19 +2916,19 @@ const handleFullscreenChange = () => {
 };
 
 document.addEventListener("fullscreenchange", handleFullscreenChange);
+
 document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+
 window.addEventListener("resize", syncFullscreenState);
 if (window.visualViewport) {
   window.visualViewport.addEventListener("resize", syncFullscreenState);
 }
-syncFullscreenState();
-document.getElementById("close-settings").onclick = () => { showSettings = false; render(); };
-document.getElementById("close-reader").onclick = closeReader;
-document.getElementById("watch-btn").onclick = toggleAutoPilot;
-document.getElementById("speed-btn").onclick = cycleSpeed;
-document.getElementById("power-btn").onclick = togglePower;
 
+syncFullscreenState();
+
+/* Keyboard shortcuts. */
 document.addEventListener("keydown", (e) => {
+  if (submitOpen) { if (e.key === "Escape") closeSubmit(); return; }
   if (readerOpen && e.key === "Escape") { closeReader(); return; }
   if (!power || showSettings) return;
   const channels = getChannels();
@@ -2423,12 +2941,7 @@ document.addEventListener("keydown", (e) => {
   if (found !== -1) manualChangeChannel(found);
 });
 
-loadAll();
-setInterval(loadAll, REFRESH_MINUTES * 60 * 1000);
-startTick();
-render();
-playStatic(null);
-
+/* Refresh when the tab or app comes back to the foreground. */
 // Background tabs get their timers throttled by the browser to save
 // battery, so the interval above may not have actually fired on schedule
 // while this tab sat unfocused. Refresh immediately whenever the tab
@@ -2436,12 +2949,15 @@ playStatic(null);
 // matches "check in on it now and then" usage much better than waiting
 // for a background timer that might have been paused the whole time.
 const MIN_REFRESH_GAP_MS = 2 * 60 * 1000; // don't refetch on rapid tab-flipping
+
 function maybeRefreshOnReturn() {
   if (Date.now() - lastLoadAllTime > MIN_REFRESH_GAP_MS) loadAll();
 }
+
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") maybeRefreshOnReturn();
 });
+
 // visibilitychange alone isn't fully reliable across every browser/OS
 // combo (switching to a different app, not just a different tab, doesn't
 // always fire it consistently) — window focus is a second, independent
@@ -2449,6 +2965,43 @@ document.addEventListener("visibilitychange", () => {
 // same time-gated guard, so it's harmless if both happen to fire close
 // together.
 window.addEventListener("focus", maybeRefreshOnReturn);
+
+/* Button wiring and startup. Loads last. */
+document.getElementById("gear").onclick = () => { if (submitOpen) closeSubmit(); showSettings = !showSettings; render(); };
+
+document.getElementById("skin-btn").onclick = cycleSkin;
+
+document.getElementById("close-settings").onclick = () => { showSettings = false; render(); };
+
+document.getElementById("close-reader").onclick = closeReader;
+
+document.getElementById("reader-submit-link").onclick = () => openSubmit();
+
+// The strip under the channel keys: a button for the form, and the plain address for people who would rather email.
+const spMailLink = document.getElementById("tv-submit-mail");
+spMailLink.href = "mailto:" + SPOTLIGHT_EMAIL + "?subject=" + encodeURIComponent("DEV\u00b7TV Spotlight");
+spMailLink.textContent = SPOTLIGHT_EMAIL;
+// If the TV is off, switch it on first so the click is never a silent no-op.
+document.getElementById("tv-submit-btn").onclick = () => { if (!power) { togglePower(); setTimeout(openSubmit, 700); } else openSubmit(); };
+
+document.getElementById("watch-btn").onclick = toggleAutoPilot;
+
+document.getElementById("speed-btn").onclick = cycleSpeed;
+
+document.getElementById("power-btn").onclick = togglePower;
+
+loadAll();
+
+setInterval(loadAll, REFRESH_MINUTES * 60 * 1000);
+
+startTick();
+
+render();
+
+playStatic(null);
+
+// ?submit in the address opens the Spotlight form straight away, so it can be linked to.
+if (/[?&]submit(=|&|$)/.test(location.search)) openSubmit();
 </script>
 </body>
 </html>
