@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>try { document.documentElement.setAttribute("data-skin", localStorage.getItem("devtv-skin") || "graphite"); } catch (e) {}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- Best-effort request not to cache the page aggressively. Not a
      guarantee: real HTTP cache-control headers set by GitHub Pages'
@@ -22,7 +23,7 @@
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   body {
     margin: 0; min-height: 100vh; min-height: 100dvh;
-    background: radial-gradient(ellipse 900px 700px at 50% 42%, #171310 0%, #0a0908 40%, #050506 75%);
+    background: var(--room-bg, radial-gradient(ellipse 900px 700px at 50% 42%, #171310 0%, #0a0908 40%, #050506 75%));
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 24px 16px; font-family: -apple-system, 'Inter', sans-serif;
   }
@@ -38,13 +39,15 @@
   a { color: inherit; }
   #tv {
     width: 100%; max-width: 1020px;
-    background: linear-gradient(155deg, #2a2a2e 0%, #18181b 55%, #0e0e10 100%);
+    background: var(--tv-surface);
     border-radius: 22px; padding: 22px 22px 30px;
-    box-shadow: 0 50px 100px -30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -2px 4px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(232,200,136,0.12);
-    border: 2px solid #a67c3d; position: relative;
+    box-shadow: 0 50px 100px -30px rgba(0,0,0,0.85), 0 14px 30px -10px rgba(0,0,0,0.6), var(--tv-aura),
+      inset 0 1px 0 var(--tv-hi), inset 0 -3px 6px rgba(0,0,0,0.55),
+      inset 0 0 0 5px rgba(0,0,0,0.20), inset 0 0 0 6px var(--tv-inlay), inset 0 0 50px rgba(0,0,0,0.45);
+    border: 2px solid var(--tv-edge); position: relative;
   }
   #tv.reading { padding: 12px 12px 20px; }
-  #bezel { background: #000; border-radius: 8px; padding: 10px; box-shadow: inset 0 0 0 2px #050505, inset 0 4px 20px rgba(0,0,0,0.8); }
+  #bezel { background: var(--bezel-bg); border-radius: 8px; padding: 10px; box-shadow: inset 0 0 0 2px #050505, inset 0 4px 20px rgba(0,0,0,0.8), 0 0 0 1px var(--bezel-ring); }
   #screen { aspect-ratio: 16/10; border-radius: 3px; overflow: hidden; position: relative; background: linear-gradient(180deg, #111114 0%, #09090b 100%); transform-origin: center center; }
   #screen.reading { aspect-ratio: unset; min-height: 62vh; }
   #screen.off { background: #000; box-shadow: none !important; }
@@ -287,18 +290,18 @@
       flex: 1 1 auto;
     }
   }
-  .chbtn { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 66px; padding: 9px 3px; border-radius: 6px; border: 1px solid #000; border-top: 1px solid #3a3a40; background: linear-gradient(180deg, #232328, #17171a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); position: relative; }
-  .chbtn .num { font-family: 'Courier New', monospace; font-size: 10px; color: #6a6a72; }
-  .chbtn .name { font-size: 9px; font-weight: 600; color: #d8d8dc; letter-spacing: 0.01em; text-align: center; line-height: 1.15; }
+  .chbtn { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 66px; padding: 9px 3px; border-radius: 6px; border: 1px solid #000; border-top: 1px solid var(--key-edge); background: linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); position: relative; }
+  .chbtn .num { font-family: 'Courier New', monospace; font-size: 10px; color: var(--key-num); }
+  .chbtn .name { font-size: 9px; font-weight: 600; color: var(--key-ink); letter-spacing: 0.01em; text-align: center; line-height: 1.15; }
   .dot { position: absolute; top: 4px; right: 5px; width: 5px; height: 5px; border-radius: 50%; }
-  .round-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #000; border-top: 1px solid #3a3a40; background: linear-gradient(180deg, #232328, #17171a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color: #d8d8dc; font-size: 13px; }
+  .round-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #000; border-top: 1px solid var(--key-edge); background: linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color: var(--key-ink); font-size: 13px; }
   .switch { width: 38px; height: 20px; border-radius: 10px; border: 1px solid #000; position: relative; cursor: pointer; transition: background 0.15s ease; }
   .switch .knob { position: absolute; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: left 0.15s ease; }
-  .stand1 { width: 160px; height: 14px; background: linear-gradient(180deg, #222226, #0e0e10); border-radius: 0 0 8px 8px; margin-top: -2px; }
-  .stand2 { width: 220px; height: 6px; background: linear-gradient(180deg, #1a1a1d, #0a0a0b); border-radius: 3px; margin-top: 2px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
+  .stand1 { width: 200px; height: 14px; background: linear-gradient(180deg, var(--stand-a), var(--stand-b)); border-radius: 0 0 10px 10px; margin-top: -2px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.12); }
+  .stand2 { width: 280px; height: 6px; background: linear-gradient(180deg, var(--stand2-a), var(--stand2-b)); border-radius: 3px; margin-top: 2px; box-shadow: 0 8px 20px rgba(0,0,0,0.6); }
   .antenna { position: relative; width: 40px; height: 70px; margin: 0 auto -10px; z-index: 1; }
-  .antenna-base { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(145deg, #e8c888, #8b6d3f); box-shadow: 0 1px 3px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.3); }
-  .antenna-arm { position: absolute; bottom: 6px; left: 50%; width: 3px; height: 64px; background: linear-gradient(180deg, #f0d8a0, #8b6d3f); border-radius: 2px; transform-origin: bottom center; box-shadow: 1px 0 3px rgba(0,0,0,0.4); }
+  .antenna-base { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(145deg, var(--ant-tip), var(--ant-a)); box-shadow: 0 1px 3px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.3); }
+  .antenna-arm { position: absolute; bottom: 6px; left: 50%; width: 3px; height: 64px; background: linear-gradient(90deg, var(--ant-a), var(--ant-b) 45%, var(--ant-a)); border-radius: 2px; transform-origin: bottom center; box-shadow: 1px 0 3px rgba(0,0,0,0.4); }
   .antenna-left { transform: translateX(-50%) rotate(-27deg); }
   .antenna-right { transform: translateX(-50%) rotate(27deg); }
 
@@ -332,7 +335,7 @@
   .mobile-hint { display: none; }
   .video-frame { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 4px; overflow: hidden; }
   .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-  #star-link:hover, #star-link:focus-visible { color: #e8c170 !important; border-color: #e8c170 !important; }
+  #star-link:hover, #star-link:focus-visible { color: var(--accent-hi) !important; border-color: var(--accent-hi) !important; }
   @media (max-width: 400px) { #clock { font-size: 10px !important; letter-spacing: 0 !important; } #tv-logo { font-size: 15px !important; letter-spacing: 0.08em !important; } }
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   @media (max-width: 340px) { #tv-logo { font-size: 13px !important; letter-spacing: 0.04em !important; } }
@@ -391,6 +394,106 @@
   @keyframes spot-fade { from { opacity: 0; } to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .spot-beam::before { animation: none; } }
   .spot-readme-head { font-size: 10px; letter-spacing: 0.14em; color: #8a8a92; margin: 22px 0 10px; padding-top: 14px; border-top: 1px solid #232328; }
+
+  /* ==== Skins ============================================================
+     Every skin is only a set of custom properties on <html data-skin="...">.
+     Graphite (the original look) is the default and the fallback for anything unknown. */
+  /* values every skin inherits unless it overrides them */
+  :root { --tv-aura: 0 0 0 0 transparent; --stop-ink: #ff6a6a; --onair: #ff5c5c; }
+  html[data-skin="walnut"] {
+    --room-bg: radial-gradient(ellipse 900px 700px at 50% 42%, #171310 0%, #0a0908 40%, #050506 75%);
+    --tv-surface: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='300'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.19' numOctaves='4' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.07  0 0 0 0 0.03  0 0 0 0 0.01  2.4 0 0 0 -0.78'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+      linear-gradient(180deg, rgba(255,214,150,0.13) 0%, rgba(255,214,150,0) 16%, rgba(0,0,0,0) 78%, rgba(0,0,0,0.30) 100%),
+      linear-gradient(155deg, #6a4023 0%, #4a2b15 52%, #2f190b 100%);
+    --tv-edge: #b8923f; --tv-inlay: rgba(214,174,86,0.42); --tv-hi: rgba(255,225,170,0.28); --tv-aura: 0 0 0 0 transparent;
+    --bezel-bg: linear-gradient(160deg, #242120 0%, #0b0a09 55%, #151312 100%); --bezel-ring: rgba(214,174,86,0.30);
+    --plate-bg: linear-gradient(180deg, #f0dca4 0%, #cda850 48%, #9d7a32 100%); --plate-ink: #2a1a09;
+    --plate-shadow: inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.7), 0 0 0 1px rgba(40,24,8,0.8);
+    --plate-text: 0 1px 0 rgba(255,255,255,0.35);
+    --clock-ink: #ffb24a; --clock-glow: rgba(255,150,40,0.65);
+    --panel-bg: linear-gradient(180deg, #1d1712, #0d0a07);
+    --key-top: #322a23; --key-bot: #1b1713; --key-edge: #6a5640; --key-ink: #eadfc6; --key-num: #9c8a6a; --stop-ink: #ff6a6a;
+    --accent: #c9ae72; --accent-hi: #fff1c9; --star-edge: rgba(201,162,77,0.42); --onair: #ff5c5c;
+    --stand-a: #4a2b15; --stand-b: #1f1008; --stand2-a: #2f190b; --stand2-b: #120904;
+    --ant-a: #8b6d3f; --ant-b: #fff1c9; --ant-tip: #e6cf8f;
+  }
+  :root, html[data-skin="graphite"] {
+    --room-bg: radial-gradient(ellipse 900px 700px at 50% 42%, #14141a 0%, #09090c 45%, #040405 80%);
+    --tv-surface: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0) 20%), linear-gradient(155deg, #2a2a2e 0%, #18181b 55%, #0e0e10 100%);
+    --tv-edge: #a67c3d; --tv-inlay: rgba(232,200,136,0.16); --tv-hi: rgba(255,255,255,0.08);
+    --bezel-bg: linear-gradient(160deg, #16161a, #050506 60%, #0e0e10); --bezel-ring: rgba(166,124,61,0.32);
+    --plate-bg: linear-gradient(180deg, #4a4a52, #2a2a30 55%, #1e1e22); --plate-ink: #d6d6dc;
+    --plate-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 1px 2px rgba(0,0,0,0.7), 0 0 0 1px #0a0a0c; --plate-text: 0 1px 0 rgba(0,0,0,0.6);
+    --clock-ink: #8fd0ff; --clock-glow: rgba(110,180,255,0.6);
+    --panel-bg: linear-gradient(180deg, #19191c, #0b0b0d);
+    --key-top: #2a2a2f; --key-bot: #18181b; --key-edge: #4a4a52; --key-ink: #e0e0e6; --key-num: #7a7a84;
+    --accent: #a67c3d; --accent-hi: #e8c170; --star-edge: #3a3a40;
+    --stand-a: #222226; --stand-b: #0e0e10; --stand2-a: #1a1a1d; --stand2-b: #0a0a0b;
+    --ant-a: #8b6d3f; --ant-b: #f0d8a0; --ant-tip: #e8c888;
+  }
+  html[data-skin="cream"] {
+    --room-bg: radial-gradient(ellipse 900px 700px at 50% 42%, #2b2723 0%, #151311 45%, #090807 80%);
+    --tv-surface: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0) 20%, rgba(0,0,0,0) 74%, rgba(90,66,30,0.20) 100%), linear-gradient(155deg, #efe6cf 0%, #ddd1b4 55%, #c6b995 100%);
+    --tv-edge: #a89a77; --tv-inlay: rgba(255,255,255,0.60); --tv-hi: rgba(255,255,255,0.85);
+    --bezel-bg: linear-gradient(160deg, #56565b 0%, #2a2a2d 55%, #3d3d41 100%); --bezel-ring: rgba(70,60,40,0.55);
+    --plate-bg: linear-gradient(180deg, #3b3a3d, #232224); --plate-ink: #f1e7cb;
+    --plate-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 1px 2px rgba(60,40,10,0.6), 0 0 0 1px rgba(0,0,0,0.6); --plate-text: 0 1px 0 rgba(0,0,0,0.5);
+    --clock-ink: #ff5a48; --clock-glow: rgba(255,70,50,0.6);
+    --panel-bg: linear-gradient(180deg, #b9ac8e, #a39674);
+    --key-top: #f4ecd8; --key-bot: #d6cbae; --key-edge: #ffffff; --key-ink: #352d20; --key-num: #8a7852; --stop-ink: #b3261e;
+    --accent: #6b5428; --accent-hi: #3b2d10; --star-edge: rgba(80,60,20,0.45); --onair: #c42a1e;
+    --stand-a: #c9bc9c; --stand-b: #8f8466; --stand2-a: #a99d7e; --stand2-b: #71674d;
+    --ant-a: #7d7d84; --ant-b: #ffffff; --ant-tip: #f4f4f8;
+  }
+
+  /* ==== Cabinet ==========================================================
+     Plate, clock, keys, panel. Reads skin variables only; there
+     are no skin-specific selectors below this line. */
+  #tv-logo { font-family: "Futura", "Avenir Next", "Century Gothic", "Trebuchet MS", sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.34em;
+    color: var(--plate-ink); padding: 7px 10px 7px 14px; border-radius: 3px; background: var(--plate-bg); box-shadow: var(--plate-shadow); text-shadow: var(--plate-text); }
+  #clock { color: var(--clock-ink); letter-spacing: 0.08em; text-shadow: 0 0 6px var(--clock-glow); background: #0f0805; padding: 5px 8px; border-radius: 3px;
+    box-shadow: inset 0 1px 3px #000, 0 0 0 1px rgba(255,255,255,0.14), 0 1px 0 rgba(255,255,255,0.10); }
+  #onair { color: var(--onair) !important; }
+  #star-link { background: rgba(0,0,0,0.22); }
+  #fullscreen-btn, #gear, #skin-btn { color: var(--accent); opacity: 0.9; }
+  #gear.on { color: var(--accent-hi); opacity: 1; text-shadow: 0 0 8px var(--clock-glow); }
+  .skin-dot { display: block; width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(0,0,0,0.22);
+    background: conic-gradient(from 20deg, var(--accent), #d9437a, #3f6bff, #33ff66, var(--accent)); }
+  #skin-btn:hover .skin-dot { filter: brightness(1.25); }
+  .antenna-arm::after { content: ""; position: absolute; top: -4px; left: 50%; width: 7px; height: 7px; transform: translateX(-50%); border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff, var(--ant-tip) 45%, var(--ant-a)); }
+  #controls { padding: 10px 12px; gap: 6px; border-radius: 12px; background: var(--panel-bg);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.14); }
+  #tv.is-fullscreen #controls { padding: 6px 10px; }
+  .round-btn { width: 44px; height: 44px; }
+  #watch-btn { background: linear-gradient(180deg, var(--key-top), var(--key-bot)); color: var(--key-ink); border-top: 1px solid var(--key-edge);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); }
+  #watch-btn.playing { color: var(--stop-ink); }
+  .chbtn.on { transform: translateY(1px); box-shadow: 0 0 0 2px var(--c), inset 0 1px 3px rgba(0,0,0,0.45); }
+  .chbtn.on .num { color: var(--c); }
+  @supports (color: color-mix(in srgb, red 50%, transparent)) {
+    .chbtn.on { background: linear-gradient(180deg, color-mix(in srgb, var(--c) 24%, var(--key-top)), color-mix(in srgb, var(--c) 9%, var(--key-bot)));
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 60%, transparent), inset 0 1px 3px rgba(0,0,0,0.45), 0 0 14px -4px color-mix(in srgb, var(--c) 70%, transparent); }
+    .chbtn.on .num { color: color-mix(in srgb, var(--c) 75%, var(--key-ink)); }
+    #watch-btn.playing { background: linear-gradient(180deg, color-mix(in srgb, var(--stop-ink) 22%, var(--key-top)), color-mix(in srgb, var(--stop-ink) 8%, var(--key-bot))); }
+  }
+  @media (min-width: 901px) { #controls .chbtn { width: 58px; } #channel-buttons { flex-wrap: nowrap !important; } }
+  /* skin picker (Settings) */
+  .skin-opt { background: none; border: 1px solid #232328; border-radius: 8px; padding: 6px 4px 5px; display: flex; flex-direction: column; align-items: center; gap: 6px; color: #8a8a92; min-width: 0; }
+  .skin-opt.on { border-color: #e8e8ea; color: #f5f5f7; background: #17171b; }
+  .skin-prev { display: block; width: 100%; height: 30px; border-radius: 5px; border: 2px solid; padding: 4px; }
+  .skin-prev > span { display: block; height: 100%; border-radius: 4px; box-shadow: inset 0 0 6px rgba(0,0,0,0.8); }
+  .skin-name { font-size: 9px; letter-spacing: 0; white-space: nowrap; }
+  @media (max-width: 420px) { .skin-name { font-size: 8px; } .skin-opt { padding: 6px 2px 5px; } }
+
+  @media (max-width: 640px) {
+    #tv-logo { padding: 5px 8px 5px 10px; }
+    #channel-buttons { flex: 1 1 100%; }
+    #controls .chbtn { flex: 1 1 calc(33.333% - 4px); width: auto; }
+    #skin-btn { padding: 8px !important; }
+    .skin-dot { width: 16px; height: 16px; }
+  }
+  @media (max-width: 900px) and (orientation: landscape) { #tv.is-fullscreen #skin-btn { padding: 4px !important; } }
 </style>
 </head>
 <body>
@@ -403,15 +506,16 @@
 <div id="tv">
   <div id="tv-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:0 4px;">
     <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
-      <span id="tv-logo" class="mono" style="font-size:18px; font-weight:700; color:#9a9aa2; letter-spacing:0.12em; flex-shrink:0;">DEV·TV</span>
+      <span id="tv-logo" style="flex-shrink:0;">DEV·TV</span>
       <a id="ph-badge" href="https://www.producthunt.com/products/dev-tv?launch=dev-tv&amp;utm_source=badge-top-post-badge&amp;utm_medium=badge&amp;utm_campaign=badge-dev-tv" target="_blank" rel="noopener noreferrer" title="#5 Product of the Day on Product Hunt" aria-label="#5 Product of the Day on Product Hunt" style="display:inline-flex; align-items:center; line-height:0; flex-shrink:0;"><img src="https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=1260239&amp;theme=dark&amp;period=daily" alt="DEV·TV - #5 Product of the Day | Product Hunt" style="height:32px; width:auto; opacity:0.9;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.9"></a>
     </div>
     <div id="tv-right-group" style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
-      <span id="clock" class="mono" style="font-size:11px; color:#6a6a72; letter-spacing:0.05em; white-space:nowrap; flex-shrink:0;"></span>
+      <span id="clock" class="mono" style="font-size:11px; white-space:nowrap; flex-shrink:0;"></span>
       <span id="onair" class="mono" style="font-size:10px; color:#ff5c5c; letter-spacing:0.1em; display:none; white-space:nowrap;">● ON AIR</span>
-      <a id="star-link" href="https://github.com/shouvik12/devtv" target="_blank" rel="noopener noreferrer" title="Star DEV·TV on GitHub" aria-label="Star DEV·TV on GitHub" class="mono" style="color:#a67c3d; font-size:12px; line-height:1; text-decoration:none; padding:14px 10px; border:1px solid #3a3a40; border-radius:4px; white-space:nowrap; display:inline-flex; align-items:center; gap:5px;">★ Star</a>
-      <button id="fullscreen-btn" class="btn" title="Fullscreen" style="background:none; border:none; padding:2px; color:#55555c; font-size:13px; line-height:1;">⛶</button>
-      <button id="gear" class="btn" style="background:none; border:none; padding:2px; color:#55555c; font-size:13px; line-height:1;">⚙</button>
+      <a id="star-link" href="https://github.com/shouvik12/devtv" target="_blank" rel="noopener noreferrer" title="Star DEV·TV on GitHub" aria-label="Star DEV·TV on GitHub" class="mono" style="color:var(--accent); font-size:12px; line-height:1; text-decoration:none; padding:14px 10px; border:1px solid var(--star-edge); border-radius:4px; white-space:nowrap; display:inline-flex; align-items:center; gap:5px;">★ Star</a>
+      <button id="skin-btn" class="btn" title="Change TV skin" aria-label="Change TV skin" style="background:none; border:none; padding:2px; line-height:1;"><span class="skin-dot"></span></button>
+      <button id="fullscreen-btn" class="btn" title="Fullscreen" style="background:none; border:none; padding:2px; font-size:13px; line-height:1;">⛶</button>
+      <button id="gear" class="btn" style="background:none; border:none; padding:2px; font-size:13px; line-height:1;">⚙</button>
     </div>
   </div>
 
@@ -422,6 +526,7 @@
           <span style="font-weight:700; font-size:15px; color:#f5f5f7;">Channels</span>
           <button id="close-settings" style="background:none; border:none; color:#6a6a72; cursor:pointer; font-size:16px;">✕</button>
         </div>
+        <div id="skin-picker" style="margin-bottom:14px;"></div>
         <div id="channel-toggles" style="display:flex; flex-direction:column; gap:10px;"></div>
         <div id="extras-toggles" style="display:flex; flex-direction:column; gap:10px; margin-top:16px;"></div>
         <div class="mono" style="font-size:10px; color:#45454c; margin-top:16px;">WATCH/STOP only plays or freezes the current channel. Channels never change on their own.</div>
@@ -508,9 +613,9 @@
   </div>
 
   <div id="controls">
-    <button id="watch-btn" class="btn" style="display:flex; align-items:center; gap:6px; padding:9px 14px; border-radius:6px; border:1px solid #000; border-top:1px solid #3a3a40; background:linear-gradient(180deg, #232328, #17171a); color:#d8d8dc; font-size:11px; font-weight:600;">❚❚ STOP</button>
+    <button id="watch-btn" class="btn" style="display:flex; align-items:center; gap:6px; padding:9px 14px; border-radius:6px; border:1px solid #000; font-size:11px; font-weight:600;">❚❚ STOP</button>
     <div id="channel-buttons" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
-    <button id="speed-btn" class="btn mono" title="Playback speed" style="padding:9px 10px; border-radius:6px; border:1px solid #000; border-top:1px solid #3a3a40; background:linear-gradient(180deg, #232328, #17171a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color:#d8d8dc; font-size:11px; font-weight:600;">1×</button>
+    <button id="speed-btn" class="btn mono" title="Playback speed" style="padding:9px 10px; border-radius:6px; border:1px solid #000; border-top:1px solid var(--key-edge); background:linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color:var(--key-ink); font-size:11px; font-weight:600;">1×</button>
     <button id="power-btn" class="round-btn btn" title="Turn TV off">⏻</button>
   </div>
 </div>
@@ -532,7 +637,6 @@ const REFRESH_MINUTES = 10;
 const SETTINGS_KEY = "devtv:enabled-channels";
 const SPEED_KEY = "devtv:speed";
 const SPEEDS = [1, 2, 3, 0.5]; // multiplier cycle: 1x -> 2x -> 3x -> 0.5x -> 1x...
-
 function timeAgo(dateInput) {
   const diffMs = Date.now() - new Date(dateInput).getTime();
   const mins = Math.floor(diffMs / 60000);
@@ -772,7 +876,6 @@ function mdLite(md) {
     .replace(/\u0000I_OPEN\u0000/g, "<i>")
     .replace(/\u0000I_CLOSE\u0000/g, "</i>");
 }
-
 async function fetchGithubStories() {
   // A TV should show today's news, not whatever's been biggest all week.
   // sort=stars is cumulative, not "gained recently" (GitHub's Search API
@@ -1364,7 +1467,6 @@ async function fetchReleasesStories() {
     fullText: r.body || "No release notes provided.",
   }));
 }
-
 const ALL_CHANNELS = [
   { id: "github", name: "GITHUB", color: "#7c8cff", key: "1", fetcher: fetchGithubStories, tag: "GH" },
   { id: "hn", name: "HACKER NEWS", color: "#ff6b47", key: "2", fetcher: fetchHNStories, tag: "HN" },
@@ -1398,6 +1500,26 @@ const AD_FIRST_AFTER_MS = 3 * 60 * 1000;
 const AD_EVERY_MS = 5 * 60 * 1000;
 const ADS_KEY = "devtv-ads-enabled";
 let nextAdAt = Date.now() + AD_FIRST_AFTER_MS;
+// ---- Skins: cabinet looks. Colours live in the CSS (html[data-skin]); this list drives the picker. ----
+const SKIN_KEY = "devtv-skin";
+const SKINS = [
+  { id: "graphite", name: "Graphite", cab: "linear-gradient(135deg,#2e2e33,#0e0e10)", edge: "#a67c3d", tube: "#14161a" },
+  { id: "walnut",   name: "Walnut",   cab: "linear-gradient(135deg,#6a4023,#2f190b)", edge: "#c9a24d", tube: "#14161a" },
+  { id: "cream",    name: "Cream",    cab: "linear-gradient(135deg,#f1e8d1,#c6b995)", edge: "#a89a77", tube: "#1b1d21" },
+];
+let skinId = (() => { try { const v = localStorage.getItem(SKIN_KEY); return SKINS.some(s => s.id === v) ? v : "graphite"; } catch (e) { return "graphite"; } })();
+document.documentElement.setAttribute("data-skin", skinId);
+function setSkin(id) {
+  if (!SKINS.some(s => s.id === id)) return;
+  skinId = id;
+  document.documentElement.setAttribute("data-skin", id);
+  try { localStorage.setItem(SKIN_KEY, id); } catch (e) {}
+  render();
+}
+function cycleSkin() {
+  const i = SKINS.findIndex(s => s.id === skinId);
+  setSkin(SKINS[(i + 1) % SKINS.length].id);
+}
 let adsEnabled = (() => { try { return localStorage.getItem(ADS_KEY) !== "off"; } catch (e) { return true; } })();
 const AD_BREAKS = [
   { brand: "Works On My Machine\u2122 Shipping", logo: "\u{1F4E6}", slogan: "We ship your laptop to production.", body: "Can't reproduce the bug in prod? Now prod runs on your exact laptop. Overnight delivery.", offer: "FREE SHIPPING TO PROD", cta: "SHIP IT", bg: "#1d4ed8", accent: "#facc15", ink: "#ffffff" },
@@ -1767,7 +1889,6 @@ function toggleChannel(id) {
   if (channelIdx >= getChannels().length) { channelIdx = 0; storyIdx = 0; progress = 0; }
   render();
 }
-
 // ---- Reader mode ----
 async function openReader(channel, story) {
   readerOpen = true;
@@ -1951,14 +2072,13 @@ function closeReader() {
   readerError = null;
   render();
 }
-
 function render() {
   const channels = getChannels();
   if (channelIdx >= channels.length) { channelIdx = 0; storyIdx = 0; }
   const channel = channels[channelIdx];
 
   document.getElementById("onair").style.display = (mode === "autopilot" && power) ? "inline" : "none";
-  document.getElementById("gear").style.color = showSettings ? "#e8e8ea" : "#55555c";
+  document.getElementById("gear").classList.toggle("on", showSettings);
   document.getElementById("settings-overlay").style.display = showSettings ? "flex" : "none";
   document.getElementById("reader-overlay").style.display = readerOpen ? "flex" : "none";
   // The antenna is purely decorative and costs real vertical space,
@@ -2067,6 +2187,28 @@ function render() {
     extrasEl.appendChild(row);
   }
 
+  // Skin picker lives at the top of Settings so it is the first thing people see there.
+  const pickerEl = document.getElementById("skin-picker");
+  if (pickerEl) {
+    pickerEl.innerHTML = "";
+    const box = document.createElement("div");
+    box.style.cssText = "padding:10px 12px 12px; border-radius:6px; border:1px solid #232328; background:#111114;";
+    box.innerHTML = `<div style="display:flex; flex-direction:column; gap:2px; margin-bottom:10px;"><span style="font-size:13px; font-weight:600; color:#e8e8ea;">TV skin</span><span class="mono" style="font-size:9px; color:#6a6a72;">Pick a cabinet. Remembered on this device</span></div>`;
+    const grid = document.createElement("div");
+    grid.style.cssText = "display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px;";
+    SKINS.forEach(s => {
+      const b = document.createElement("button");
+      b.className = "skin-opt btn" + (s.id === skinId ? " on" : "");
+      b.setAttribute("aria-pressed", String(s.id === skinId));
+      b.setAttribute("aria-label", s.name + " skin");
+      b.innerHTML = `<span class="skin-prev" style="background:${s.cab}; border-color:${s.edge};"><span style="background:${s.tube};"></span></span><span class="mono skin-name">${s.name}</span>`;
+      b.onclick = () => setSkin(s.id);
+      grid.appendChild(b);
+    });
+    box.appendChild(grid);
+    pickerEl.appendChild(box);
+  }
+
   if (!channel) {
     document.getElementById("body-area").innerHTML = '<span class="mono" style="color:#6a6a72;">No channels enabled.</span>';
     return;
@@ -2157,14 +2299,11 @@ function render() {
   channels.forEach((c, idx) => {
     const active = power && idx === channelIdx;
     const btn = document.createElement("button");
-    btn.className = "chbtn btn";
-    btn.style.background = active ? `linear-gradient(180deg, ${c.color}33, ${c.color}11)` : "linear-gradient(180deg, #232328, #17171a)";
-    btn.style.boxShadow = active
-      ? `0 0 0 1px ${c.color}55, inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 4px rgba(0,0,0,0.4)`
-      : "inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4)";
+    btn.className = "chbtn btn" + (active ? " on" : "");
+    btn.style.setProperty("--c", c.color);
     btn.style.opacity = power ? "1" : "0.4";
     btn.style.cursor = power ? "pointer" : "not-allowed";
-    btn.innerHTML = `<span class="num" style="color:${active ? c.color : "#6a6a72"};">${c.num}</span><span class="name">${c.name}</span>`;
+    btn.innerHTML = `<span class="num">${c.num}</span><span class="name">${c.name}</span>`;
     if (c.status === "loading") btn.innerHTML += '<span class="dot" style="background:#6a6a72;"></span>';
     if (c.status === "error") btn.innerHTML += '<span class="dot" style="background:#ff5c5c;"></span>';
     btn.onclick = () => manualChangeChannel(idx);
@@ -2172,16 +2311,15 @@ function render() {
   });
 
   document.getElementById("watch-btn").innerHTML = mode === "autopilot" ? "❚❚ STOP" : "▶ WATCH";
-  document.getElementById("watch-btn").style.background = mode === "autopilot" ? "linear-gradient(180deg, #ff5c5c33, #ff5c5c11)" : "linear-gradient(180deg, #232328, #17171a)";
-  document.getElementById("watch-btn").style.color = mode === "autopilot" ? "#ff5c5c" : "#d8d8dc";
+  document.getElementById("watch-btn").classList.toggle("playing", mode === "autopilot");
   document.getElementById("watch-btn").style.opacity = power ? "1" : "0.4";
-  document.getElementById("power-btn").style.background = power ? "linear-gradient(180deg, #1f6b3a, #123d21)" : "linear-gradient(180deg, #232328, #17171a)";
+  document.getElementById("power-btn").style.background = power ? "linear-gradient(180deg, #1f6b3a, #123d21)" : "linear-gradient(180deg, var(--key-top), var(--key-bot))";
   document.getElementById("power-btn").style.boxShadow = power ? "0 0 14px rgba(60,220,120,0.55), 0 0 0 1px rgba(60,220,120,0.4), inset 0 1px 0 rgba(255,255,255,0.1)" : "inset 0 1px 0 rgba(255,255,255,0.05)";
   document.getElementById("power-btn").style.color = power ? "#7dffb0" : "#6a6a72";
   document.getElementById("power-btn").title = power ? "Turn TV off" : "Turn TV on";
 }
-
 document.getElementById("gear").onclick = () => { showSettings = !showSettings; render(); };
+document.getElementById("skin-btn").onclick = cycleSkin;
 
 // Fullscreen the TV itself. Browsers with the Fullscreen API get native
 // fullscreen; browsers that do not expose element fullscreen (notably
