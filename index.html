@@ -594,6 +594,15 @@
 .tv-submit a:hover, .tv-submit a:focus-visible { color: var(--accent-hi); }
 #tv.is-fullscreen .tv-submit { display: none; }   /* fullscreen keeps every pixel for the picture and keys */
 @media (max-width: 640px) { .tv-submit { font-size: 11px; padding: 10px 12px; text-align: center; } .tv-submit-btn { padding: 8px 12px; } }
+
+/* Touch screens (iPhone, iPad): iOS zooms the page when a field under 16px is focused, and Apple's guideline is a 44px tap target. */
+@media (pointer: coarse) {
+  .sp-field input, .sp-field textarea { font-size: 16px; }
+  .tv-submit-btn { min-height: 44px; padding: 0 18px; }
+  .sp-btn { min-height: 44px; }
+  .sp-close { min-width: 44px; min-height: 44px; }
+  .spot-submit, .reader-submit { min-height: 36px; }
+}
 </style>
 </head>
 <body>
@@ -1450,7 +1459,8 @@ async function fetchSpotlightStories() {
     return [{
       show: "COMMUNITY SPOTLIGHT",
       title: "No spotlight right now",
-      line1: "Built something? Yours could be up here.",
+      // Optional "note" in spotlight.json (JSON has no comments), shown only while the list is empty, e.g. "Sorting through submissions".
+      line1: (typeof data.note === "string" && data.note.trim()) ? data.note.trim().slice(0, 120) : "Built something? Yours could be up here.",
       line2: "Press the button below, or email " + SPOTLIGHT_EMAIL,
       url: "https://github.com/shouvik12/devtv",
       videoId: null,
@@ -2517,19 +2527,27 @@ async function spOnSend(ev) {
   }
 }
 
+// iOS only copies from a selectable field with an explicit selection range, and ignores one parked far off-screen.
+function spLegacyCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.setAttribute("readonly", "");
+  ta.style.cssText = "position:fixed; top:0; left:0; width:1px; height:1px; opacity:0; font-size:16px;";
+  document.body.appendChild(ta);
+  ta.focus(); ta.select(); ta.setSelectionRange(0, text.length);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  ta.remove();
+  return ok;
+}
+
 async function spCopy() {
   const cur = spUpdate(true);
   if (!cur.ok) { spFocusFirstError(cur.errors); spStatus("Fix the highlighted fields first.", "err"); return; }
   const text = "To: " + SPOTLIGHT_EMAIL + "\nSubject: " + cur.mail.subject + "\n\n" + cur.mail.readable + "\n\n--- spotlight.json entry ---\n" + cur.mail.json;
   let done = false;
-  try { await navigator.clipboard.writeText(text); done = true; } catch (e) {}
-  if (!done) {
-    const ta = document.createElement("textarea");
-    ta.value = text; ta.style.cssText = "position:fixed; left:-9999px;";
-    document.body.appendChild(ta); ta.select();
-    try { done = document.execCommand("copy"); } catch (e) {}
-    ta.remove();
-  }
+  // Without the async clipboard API (plain http, older iOS) the legacy copy must run synchronously inside the tap.
+  if (!(navigator.clipboard && navigator.clipboard.writeText)) done = spLegacyCopy(text);
+  else { try { await navigator.clipboard.writeText(text); done = true; } catch (e) { done = spLegacyCopy(text); } }
   spStatus(done ? "Copied. Paste it into an email to " + SPOTLIGHT_EMAIL + "." : "Couldn't copy automatically. Select the fields and email them to " + SPOTLIGHT_EMAIL + ".", done ? "ok" : "err");
 }
 
@@ -2565,7 +2583,9 @@ function openSubmit() {
   submitOpen = true;
   document.getElementById("submit-overlay").style.display = "flex";
   render();
-  setTimeout(() => { const f = spEl("project"); if (f && submitOpen) f.focus(); }, 60);
+  // On a touch screen, focusing a field opens the keyboard at once and hides the form, so let the person tap where they want to start.
+  const touch = window.matchMedia && matchMedia("(pointer: coarse)").matches;
+  if (!touch) setTimeout(() => { const f = spEl("project"); if (f && submitOpen) f.focus(); }, 60);
 }
 
 function closeSubmit() {
