@@ -11,7 +11,7 @@
 <a href="https://www.producthunt.com/products/dev-tv?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-dev-tv" target="_blank" rel="noopener noreferrer"><img alt="DEV·TV - A retro TV for GitHub, HN, Hugging Face &amp; more: 10 channels | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1260239&amp;theme=dark&amp;t=1790406451251"></a>
 <a href="https://www.producthunt.com/products/dev-tv?embed=true&amp;utm_source=badge-top-post-badge&amp;utm_medium=badge&amp;utm_campaign=badge-dev-tv" target="_blank" rel="noopener noreferrer"><img alt="DEV·TV - A retro TV for GitHub, HN, Hugging Face &amp; more: 10 channels | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=1260239&amp;theme=dark&amp;period=daily&amp;t=1790406451251"></a>
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
 [![No backend](https://img.shields.io/badge/backend-none-brightgreen)]()
 [![Single file](https://img.shields.io/badge/build%20step-none-brightgreen)]()
 [![Channels](https://img.shields.io/badge/channels-13%20live-orange)]()
@@ -245,4 +245,12 @@ For transparency, since this took real investigation to confirm:
 
 ## 📄 License
 
-MIT, see [LICENSE](./LICENSE).
+The source code is licensed under the **Apache License 2.0**, see [LICENSE](./LICENSE) and [NOTICE](./NOTICE). Versions up to and including v1.0.0 were released under the MIT License and remain available under it.
+
+### Name and logo
+
+DEV·TV and the DEV·TV logo are trademarks/brand assets of Souvik Palit.
+
+The Apache-2.0 license applies to the DEV·TV source code only. It does not grant permission to use the DEV·TV name, logo, or other branding to identify a modified or redistributed version as the official DEV·TV.
+
+Forks and derivative projects are welcome and may use the source code, but should use their own names and branding.

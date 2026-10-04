@@ -48,3 +48,7 @@ There's no test suite, this is intentionally a single static file. Instead:
 - Tracking, analytics, or anything that phones home beyond the channel's own source API.
 
 If you're not sure whether an idea fits, open an issue and ask before building it.
+
+## Licensing
+
+DEV·TV is licensed under the Apache License 2.0 (see [LICENSE](./LICENSE)). By submitting a contribution you agree it may be distributed under that license. The DEV·TV name and logo are not part of the license (see [NOTICE](./NOTICE)).

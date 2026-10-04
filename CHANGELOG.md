@@ -9,6 +9,7 @@
 - TV skins and the Spotlight submission form, which were already on the live page but were not in v1.0.0.
 
 ### Changed
+- **License: MIT to Apache-2.0** for this release onward, with a `NOTICE` file. The Apache License covers the source code only. The DEV·TV name and logo are not licensed, so forks should use their own name and branding. v1.0.0 and earlier stay available under MIT.
 - Spotlight is now channel 13 (it was 12).
 - While the guide is open, stories and commercial breaks pause, and opening the guide closes settings, the reader and the submit form.
 - README: channel count, channel table, controls and tech notes brought up to date (it still said 10 channels).
