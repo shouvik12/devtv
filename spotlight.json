@@ -1,4 +1,21 @@
 {
-  "spotlights": [],
+  "spotlights": [
+    {
+      "id": "cicrew",
+      "project": "CiCrew",
+      "tagline": "Turn an idea into a first version of a mobile app, then refine it in chat.",
+      "description": "**About**\n- CiCrew is a prompt-based app builder.\n- Describe your idea, review the screens, ask for changes in chat, and build and test a first version, with help preparing your App Store launch.\n\n**Pricing**\n- Starter is $20/month for one app, with 500 credits each month.\n- Store account fees and production services are separate.",
+      "by": "CiCrew team",
+      "link": "https://cicrew.com/?utm_source=devtv",
+      "tags": [
+        "ai",
+        "app-development",
+        "no-code",
+        "mobile"
+      ],
+      "video": "",
+      "added": "2026-10-04"
+    }
+  ],
   "note": "Sorting through submissions"
 }

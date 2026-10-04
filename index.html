@@ -87,6 +87,10 @@
   #reader-body a { text-decoration: underline; }
   #reader-body pre { background: #111114; border: 1px solid #232328; border-radius: 6px; padding: 12px 14px; overflow-x: auto; margin: 0 0 14px; -webkit-overflow-scrolling: touch; }
   #reader-body pre code { background: none; padding: 0; font-size: 12.5px; line-height: 1.5; white-space: pre; }
+  /* Spotlight pages are short and meant to be read, so the text is a little bigger than the 14px used for long articles. */
+  #reader-body.spot-reader p, #reader-body.spot-reader li { font-size: clamp(15px, 1.3vw, 17px); line-height: 1.7; color: #c8c8cc; }
+  #reader-body.spot-reader ul { margin: 0 0 14px; padding-left: 1.3em; }
+  #reader-body.spot-reader li { margin-bottom: 6px; }
   #reader-body ul, #reader-body ol { color: #c8c8cc; font-size: 14px; line-height: 1.65; margin: 0 0 14px; padding-left: 22px; }
   #reader-body li { margin-bottom: 4px; }
   #reader-body table { width: 100%; border-collapse: collapse; margin: 0 0 16px; font-size: 13px; }
@@ -561,7 +565,40 @@
 .sp-primary { background: #fde68a; border-color: #fde68a; color: #1a1405; }
 .sp-primary:hover { border-color: #fff3bd; filter: brightness(1.06); }
 .sp-primary[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
-.spot-submit { position: relative; z-index: 1; margin-top: 12px; padding: 7px 12px; border-radius: 6px; border: 1px solid rgba(253,230,138,0.4); background: rgba(253,230,138,0.07); color: #fde68a; font-size: 11px; letter-spacing: 0.02em; cursor: pointer; }
+/* Story text sizes. They grow a little with the screen, and much more in
+   fullscreen, where a wall TV is read from across the room. */
+:root {
+  --fs-kicker: clamp(11px, 1.2vw, 13px);
+  --fs-title: clamp(18px, 3.4vw, 30px);
+  --fs-line1: clamp(13px, 1.5vw, 15px);
+  --fs-line2: clamp(14px, 1.6vw, 16px);
+  --fs-hint: clamp(11px, 1.15vw, 12px);
+  --fs-sched: clamp(12px, 1.2vw, 13px);
+  --fs-btn: clamp(12px, 1.25vw, 14px);
+}
+#tv.is-fullscreen {
+  --fs-kicker: clamp(13px, 1.1vw, 22px);
+  --fs-title: clamp(24px, 3vw, 56px);
+  --fs-line1: clamp(15px, 1.5vw, 28px);
+  --fs-line2: clamp(16px, 1.6vw, 30px);
+  --fs-hint: clamp(12px, 1.1vw, 20px);
+  --fs-sched: clamp(13px, 1.2vw, 22px);
+  --fs-btn: clamp(13px, 1.2vw, 22px);
+}
+#body-area .story-title { overflow-wrap: anywhere; }
+/* 360px-wide phones: the header's icon row ran 7px past the edge (the settings gear stuck out), so tighten its spacing there. */
+/* Phones: the screen is locked to 16:10, only about 210px tall, which cut off the end of longer stories (and the Spotlight button). A square gives the text room;
+   fullscreen and reading mode set their own sizing and are unaffected. */
+@media (max-width: 640px) { #screen:not(.reading) { aspect-ratio: 1 / 1; } }
+@media (max-width: 380px) { #tv-right-group { gap: 7px !important; } }
+@media (max-width: 340px) { #tv-right-group { gap: 4px !important; } #star-link { padding-left: 6px !important; padding-right: 6px !important; } #clock { letter-spacing: 0 !important; } }
+/* Live preview of a Spotlight project's own page, loaded only after a click. */
+.site-preview { margin: 6px 0 14px; }
+.site-preview iframe { display: block; width: 100%; height: min(70vh, 560px); border: 1px solid #2a2a30; border-radius: 6px; background: #fff; }
+.site-preview-btn { padding: 9px 14px; border-radius: 6px; border: 1px solid rgba(253,230,138,0.4); background: rgba(253,230,138,0.07); color: #fde68a; font-family: 'Courier New', monospace; font-size: 12px; cursor: pointer; min-height: 36px; }
+.site-preview-btn:hover { background: rgba(253,230,138,0.14); }
+.site-preview-note { font-size: 11px; color: #8a8a92; line-height: 1.4; margin: 8px 0 0; }
+.spot-submit { position: relative; z-index: 1; margin-top: 12px; padding: 7px 12px; border-radius: 6px; border: 1px solid rgba(253,230,138,0.4); background: rgba(253,230,138,0.07); color: #fde68a; font-size: var(--fs-btn); letter-spacing: 0.02em; cursor: pointer; }
 .spot-submit:hover { background: rgba(253,230,138,0.14); }
 @media (max-width: 760px) {
   .sp-body { grid-template-columns: 1fr; gap: 14px; padding: 14px 16px; }
@@ -706,9 +743,9 @@
         <div id="body-area" style="z-index:1;"></div>
 
         <div id="now-next-later" style="display:none; flex-direction:column; gap:3px; padding-top:8px; border-top:1px solid #1c1c20; z-index:1;">
-          <div style="display:flex; gap:10px; font-size:11px;"><span class="mono" style="color:#e8e8ea; width:44px;">NOW</span><span id="now-text" style="color:#d0d0d4;"></span></div>
-          <div style="display:flex; gap:10px; font-size:11px;"><span class="mono" style="color:#55555c; width:44px;">NEXT</span><span id="next-text" style="color:#55555c;"></span></div>
-          <div style="display:flex; gap:10px; font-size:11px;"><span class="mono" style="color:#3a3a40; width:44px;">LATER</span><span id="later-text" style="color:#3a3a40;"></span></div>
+          <div style="display:flex; gap:10px; font-size:var(--fs-sched);"><span class="mono" style="color:#e8e8ea; width:3.6em; flex-shrink:0;">NOW</span><span id="now-text" style="color:#d0d0d4;"></span></div>
+          <div style="display:flex; gap:10px; font-size:var(--fs-sched);"><span class="mono" style="color:#55555c; width:3.6em; flex-shrink:0;">NEXT</span><span id="next-text" style="color:#55555c;"></span></div>
+          <div style="display:flex; gap:10px; font-size:var(--fs-sched);"><span class="mono" style="color:#3a3a40; width:3.6em; flex-shrink:0;">LATER</span><span id="later-text" style="color:#3a3a40;"></span></div>
         </div>
 
         <div style="height:2px; background:#1c1c20; z-index:1; margin-top:8px;">
@@ -1419,6 +1456,33 @@ function safeMd(text) { return mdLite(String(text ?? "").replace(/</g, SAFE_LT))
 
 const SPOTLIGHT_ID = /^[a-z0-9][a-z0-9-]{0,39}$/;
 
+// A third-party page inside the TV: nothing loads until the visitor clicks, it
+// runs in a sandbox (no top-level navigation, so it can't take over the TV),
+// and the note says plainly that it is their site, not ours.
+function sitePreviewHtml(url) {
+  let host = "";
+  try { host = new URL(url).hostname; } catch (e) { return ""; }
+  return `<div class="spot-readme-head mono">LIVE PREVIEW</div>`
+    + `<div class="site-preview" data-url="${escapeHtml(url)}">`
+    + `<button type="button" class="site-preview-btn">\u25b6 Load ${escapeHtml(host)} here</button>`
+    + `<p class="site-preview-note">This loads their own page inside the TV. It is their site, not ours, so it can set cookies and measure visits like any website. If it stays blank, the site doesn't allow previews: use Visit the project above.</p>`
+    + `</div>`;
+}
+function loadSitePreview(box) {
+  let u;
+  try { u = new URL(box.getAttribute("data-url")); } catch (e) { return; }
+  if (u.protocol !== "https:") return;
+  const f = document.createElement("iframe");
+  f.src = u.href;
+  f.title = "Live preview of " + u.hostname;
+  f.loading = "lazy";
+  f.referrerPolicy = "strict-origin-when-cross-origin";
+  f.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox");
+  const btn = box.querySelector(".site-preview-btn");
+  if (btn) btn.remove();
+  box.insertBefore(f, box.firstChild);
+}
+
 function cleanSpotlight(e) {
   if (!e || typeof e !== "object") return null;
   const str = (v, max) => (typeof v === "string" && v.trim() && v.trim().length <= max) ? v.trim() : null;
@@ -1433,7 +1497,12 @@ function cleanSpotlight(e) {
   // Optional passage from the project or article itself, shown in the reader.
   // Over the limit it is simply left out, like the other text fields.
   const excerpt = str(e.excerpt, 2500) || "";
-  return { id, project, tagline, description: description || tagline, by, link, tags, videoId, added, excerpt };
+  // Optional live preview of the project's own page, loaded in the reader
+  // after a click. https only, and it must be on the same host as the link,
+  // so a preview can't quietly point somewhere else.
+  let preview = "";
+  try { const u = new URL(e.preview); if (u.protocol === "https:" && u.hostname === new URL(link).hostname) preview = u.href; } catch (err) {}
+  return { id, project, tagline, description: description || tagline, by, link, tags, videoId, added, excerpt, preview };
 }
 
 // The invitation shown when the channel is empty, and as the last slide of the rotation, so people who watch
@@ -1484,6 +1553,7 @@ async function fetchSpotlightStories() {
     tags: e.tags,
     fullText: e.description,
     excerpt: e.excerpt,
+    preview: e.preview,
   }));
   // Last slide in the rotation: an invitation. It reuses the empty-state story (so it stays out of the ticker and the reader
   // shows its text), and clicking the card opens the form directly.
@@ -2251,6 +2321,7 @@ async function openReader(channel, story) {
         + player
         + safeMd(story.fullText)
         + (story.excerpt ? `<div class="spot-readme-head mono">FROM THE ARTICLE</div>` + safeMd(story.excerpt) + `<p><a href="${escapeHtml(story.url)}" target="_blank" rel="noopener noreferrer">Read the full article \u2197</a></p>` : "")
+        + (story.preview && /^https?:$/.test(location.protocol) ? sitePreviewHtml(story.preview) : "")
         + (story.tags && story.tags.length ? `<p class="mono" style="font-size:11px; color:#8a8a92;">${story.tags.map(t => "#" + escapeHtml(t)).join(" ")}</p>` : "")
         + `<p style="font-size:12px;">Share this spotlight: <a href="${escapeHtml(share)}" target="_blank" rel="noopener noreferrer">${escapeHtml(share)}</a></p>`
         + (readme ? (readme.text
@@ -2280,6 +2351,7 @@ async function openReader(channel, story) {
       throw new Error("No in-app reader available for this source yet.");
     }
     readerLoading = false;
+    document.getElementById("reader-body").classList.toggle("spot-reader", channel.id === "spotlight");
     document.getElementById("reader-content").innerHTML = html;
   } catch (err) {
     readerLoading = false;
@@ -2803,12 +2875,12 @@ function render() {
     bodyEl.innerHTML = `
       <div class="reader-open-target" id="story-open-target">
         ${channel.id === "spotlight" ? SPOT_BEAM_HTML : ""}
-        <div class="mono" style="font-size:11px; color:${channel.color}; letter-spacing:0.08em;">${story.show}</div>
+        <div class="mono" style="font-size:var(--fs-kicker); color:${channel.color}; letter-spacing:0.08em;">${story.show}</div>
         ${channel.staleSince ? `<div class="mono" style="font-size:10px; color:#8a8a92; letter-spacing:0.05em; margin-top:4px;">Showing stories from ${Math.max(1, Math.round((Date.now() - channel.staleSince) / 60000))} min ago \u00b7 couldn't refresh, will retry</div>` : ""}
-        <div class="story-title" style="font-weight:700; font-size:clamp(16px, 3.2vw, 28px); color:#f5f5f7; line-height:1.2; letter-spacing:-0.01em; margin-top:6px;">${escapeHtml(story.title)}</div>
-        <div class="mono" style="font-size:12px; color:${channel.color}; margin-top:6px;">${escapeHtml(story.line1)}</div>
-        <div style="font-size:13px; color:#9a9aa2; max-width:640px; line-height:1.4; margin-top:6px;">${escapeHtml(story.line2)}</div>
-        <div class="mono" style="font-size:10px; color:${channel.color}; margin-top:8px; opacity:0.8;">${story.cta ? "▸ click to submit yours" : "▸ click to read in DEV·TV"}</div>
+        <div class="story-title" style="font-weight:700; font-size:var(--fs-title); color:#f5f5f7; line-height:1.2; letter-spacing:-0.01em; margin-top:6px;">${escapeHtml(story.title)}</div>
+        <div class="mono" style="font-size:var(--fs-line1); color:${channel.color}; margin-top:6px;">${escapeHtml(story.line1)}</div>
+        <div style="font-size:var(--fs-line2); color:#9a9aa2; max-width:46em; line-height:1.4; margin-top:6px;">${escapeHtml(story.line2)}</div>
+        <div class="mono" style="font-size:var(--fs-hint); color:${channel.color}; margin-top:8px; opacity:0.8;">${story.cta ? "▸ click to submit yours" : "▸ click to read in DEV·TV"}</div>
       </div>
       ${channel.id === "spotlight" ? '<button type="button" id="spot-submit-btn" class="spot-submit btn mono">★ Get your project featured</button>' : ""}`;
     document.getElementById("story-open-target").onclick = () => story.cta ? openSubmit() : openReader(channel, story);
@@ -2994,6 +3066,10 @@ document.getElementById("skin-btn").onclick = cycleSkin;
 document.getElementById("close-settings").onclick = () => { showSettings = false; render(); };
 
 document.getElementById("close-reader").onclick = closeReader;
+document.getElementById("reader-content").addEventListener("click", ev => {
+  const btn = ev.target.closest && ev.target.closest(".site-preview-btn");
+  if (btn) loadSitePreview(btn.closest(".site-preview"));
+});
 
 document.getElementById("reader-submit-link").onclick = () => openSubmit();
 
