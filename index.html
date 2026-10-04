@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- DEV·TV v2.0.0 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -74,6 +75,28 @@
 /* Full-screen layers that sit on the picture: channel ident, settings panel, NO SIGNAL. */
   #ident { position: absolute; inset: 0; z-index: 5; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 6px; animation: identIn 0.15s ease; }
   #settings-overlay { position: absolute; inset: 0; z-index: 10; background: rgba(5,5,6,0.96); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); display: none; flex-direction: column; padding: 20px 24px; animation: overlayIn 0.15s ease; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+/* Channel guide overlay: what is on every channel right now. */
+  #guide-overlay { position: absolute; inset: 0; z-index: 10; background: rgba(5,5,6,0.97); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); display: none; flex-direction: column; animation: overlayIn 0.15s ease; }
+  #guide-top { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px 10px; border-bottom: 1px solid #1c1c20; flex-shrink: 0; }
+  #guide-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 4px 0 10px; }
+  .guide-row { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; column-gap: 10px; align-items: baseline; width: 100%; text-align: left; padding: 9px 18px 9px 15px; background: none; border: 0; border-left: 3px solid transparent; border-bottom: 1px solid #131316; cursor: pointer; color: inherit; font: inherit; }
+  .guide-row .g-num { font-family: 'Courier New', monospace; font-size: 12px; color: #6a6a72; }
+  .guide-row .g-name { font-weight: 700; font-size: 13px; color: #e8e8ea; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .guide-row .g-on { font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.1em; color: var(--c); }
+  .guide-row .g-now { grid-column: 2 / span 2; margin-top: 2px; font-size: 12px; color: #8a8a92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .guide-row.cur { border-left-color: var(--c); }
+  .guide-row.cur .g-num { color: var(--c); }
+  .guide-row.sel { background: #111114; }
+  .guide-row.err .g-now { color: #ff5c5c; }
+  .guide-row:focus-visible { outline: 2px solid var(--c); outline-offset: -2px; }
+  /* GUIDE key colour: change --guide-c to recolour it. The cream skin gets a deeper blue so it reads on the light key. */
+  :root { --guide-c: #7fb2ff; }
+  html[data-skin="cream"] { --guide-c: #1f5fbf; }
+  #guide-btn { color: var(--guide-c) !important; }
+  @supports (color: color-mix(in srgb, red 50%, transparent)) {
+    #guide-btn { background: linear-gradient(180deg, color-mix(in srgb, var(--guide-c) 26%, var(--key-top)), color-mix(in srgb, var(--guide-c) 10%, var(--key-bot))) !important; border-top-color: color-mix(in srgb, var(--guide-c) 55%, var(--key-edge)) !important; }
+  }
+  #guide-btn.on { box-shadow: 0 0 0 2px var(--guide-c), inset 0 1px 3px rgba(0,0,0,0.45) !important; transform: translateY(1px); }
   #no-signal { width: 100%; height: 100%; display: none; align-items: center; justify-content: center; font-family: 'Courier New', monospace; font-size: 11px; color: #333338; letter-spacing: 0.1em; }
 
 /* Reader overlay and article typography, embedded video frame, Hacker News banner. */
@@ -222,6 +245,9 @@
     white-space: nowrap;
   }
 
+  #tv:fullscreen #guide-btn,
+  #tv:-webkit-full-screen #guide-btn,
+  #tv.is-fullscreen #guide-btn,
   #tv:fullscreen #speed-btn,
   #tv:-webkit-full-screen #speed-btn,
   #tv.is-fullscreen #speed-btn,
@@ -290,7 +316,8 @@
     #tv.is-fullscreen #channel-buttons .chbtn .num {
       font-size: 8px;
     }
-    #tv.is-fullscreen #speed-btn {
+    #tv.is-fullscreen #speed-btn,
+    #tv.is-fullscreen #guide-btn {
       padding: 7px 8px !important;
       font-size: 9px !important;
     }
@@ -341,7 +368,7 @@
     .chbtn .name { font-size: 8.5px; }
     .round-btn { width: 44px !important; height: 44px !important; }
     #watch-btn { font-size: 10px !important; padding: 10px 12px !important; flex: 1 1 100%; justify-content: center; order: -1; }
-    #speed-btn { font-size: 10px !important; padding: 10px 12px !important; }
+    #speed-btn, #guide-btn { font-size: 10px !important; padding: 10px 12px !important; }
     #reader-title { font-size: 18px !important; }
     #reader-body { padding: 16px 16px 22px; }
     .desktop-hint { display: none; }
@@ -678,6 +705,17 @@
         <div class="mono" style="font-size:10px; color:#45454c; margin-top:16px;">WATCH/STOP only plays or freezes the current channel. Channels never change on their own.</div>
       </div>
 
+      <div id="guide-overlay" role="dialog" aria-label="Channel guide">
+        <div id="guide-top">
+          <div style="display:flex; align-items:baseline; gap:10px;">
+            <span style="font-weight:700; font-size:15px; color:#f5f5f7;">Guide</span>
+            <span class="mono" style="font-size:10px; color:#6a6a72; letter-spacing:0.08em;">WHAT'S ON NOW</span>
+          </div>
+          <button id="close-guide" aria-label="Close guide" style="background:none; border:none; color:#6a6a72; cursor:pointer; font-size:16px;">✕</button>
+        </div>
+        <div id="guide-list"></div>
+      </div>
+
       <div id="reader-overlay">
         <div id="reader-top">
           <div style="display:flex; align-items:center; gap:8px;">
@@ -764,6 +802,7 @@
   <div id="controls">
     <button id="watch-btn" class="btn" style="display:flex; align-items:center; gap:6px; padding:9px 14px; border-radius:6px; border:1px solid #000; font-size:11px; font-weight:600;">❚❚ STOP</button>
     <div id="channel-buttons" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+    <button id="guide-btn" class="btn mono" title="Channel guide (G)" aria-label="Open channel guide" style="padding:9px 10px; border-radius:6px; border:1px solid #000; border-top:1px solid var(--key-edge); background:linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color:var(--key-ink); font-size:11px; font-weight:600;">GUIDE</button>
     <button id="speed-btn" class="btn mono" title="Playback speed" style="padding:9px 10px; border-radius:6px; border:1px solid #000; border-top:1px solid var(--key-edge); background:linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color:var(--key-ink); font-size:11px; font-weight:600;">1×</button>
     <button id="power-btn" class="round-btn btn" title="Turn TV off">⏻</button>
   </div>
@@ -778,10 +817,10 @@
 <div class="stand2"></div>
 
 <div class="mono desktop-hint" style="font-size:11px; color:#45454c; margin-top:22px; text-align:center;">
-  ← → or number keys to change channel · space or WATCH/STOP to play or freeze · click a story to read · esc to close · ⚙ for channel settings
+  ← → or number keys to change channel · G for the channel guide · space or WATCH/STOP to play or freeze · click a story to read · esc to close · ⚙ for channel settings
 </div>
 <div class="mono mobile-hint" style="font-size:11px; color:#45454c; margin-top:18px; text-align:center; padding:0 12px;">
-  Tap a channel to switch · tap a story to read · ⚙ for channel settings
+  Tap a channel to switch · GUIDE shows what's on · tap a story to read · ⚙ for channel settings
 </div>
 
 <script>
@@ -793,6 +832,8 @@ const IDENT_MS = 900;
 const REFRESH_MINUTES = 10;
 
 const SETTINGS_KEY = "devtv:enabled-channels";
+
+const SEEN_KEY = "devtv:seen-channels";
 
 const SPEED_KEY = "devtv:speed";
 
@@ -1065,6 +1106,44 @@ async function fetchGithubStories() {
     show: "RISING REPOSITORY",
     title: repo.full_name,
     line1: repo.stargazers_count.toLocaleString() + " stars · created " + timeAgo(repo.created_at),
+    line2: repo.description || "No description provided.",
+    url: repo.html_url,
+    fullName: repo.full_name,
+  }));
+}
+
+/* AGENT SKILLS channel. */
+// New skills repos from the last 14 days with at least 20 stars, ranked by
+// stars. GitHub's search won't OR two topics, so this makes one request per
+// topic (claude-skills and agent-skills), merges them, drops repos that carry
+// both topics, and keeps the top 10. These are search requests, which GitHub
+// counts separately from the core limit that the Releases channel uses. If
+// only one of the two requests works, the channel still shows that half
+// rather than going dark.
+async function fetchSkillsStories() {
+  const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const topics = ["claude-skills", "agent-skills"];
+  const results = await Promise.allSettled(topics.map(async t => {
+    const res = await fetch(`https://api.github.com/search/repositories?q=topic:${t}+created:>${since}+stars:>=20&sort=stars&order=desc&per_page=10`, { cache: "no-store" });
+    if (!res.ok) throw new Error(githubErrorMessage(res, "GitHub API request failed"));
+    const data = await res.json();
+    return data.items || [];
+  }));
+  const ok = results.filter(r => r.status === "fulfilled");
+  if (ok.length === 0) throw results[0].reason;
+  const seen = new Set();
+  const repos = [];
+  ok.forEach(r => r.value.forEach(repo => {
+    if (seen.has(repo.full_name)) return;
+    seen.add(repo.full_name);
+    repos.push(repo);
+  }));
+  repos.sort((a, b) => b.stargazers_count - a.stargazers_count);
+  if (repos.length === 0) throw new Error("No new skills repos with 20+ stars in the last 14 days");
+  return repos.slice(0, 10).map(repo => ({
+    show: "NEW AGENT SKILLS",
+    title: repo.full_name,
+    line1: repo.stargazers_count.toLocaleString() + " stars \u00b7 created " + timeAgo(repo.created_at),
     line2: repo.description || "No description provided.",
     url: repo.html_url,
     fullName: repo.full_name,
@@ -1726,6 +1805,7 @@ const ALL_CHANNELS = [
   { id: "aivideo", name: "AI VIDEO", color: "#38bdf8", key: "0", fetcher: fetchAIVideoStories, tag: "AIV" },
   // Channels 11 and up have no number key (1-9 and 0 are taken): arrows or click.
   { id: "models", name: "NEW MODELS", color: "#e879f9", key: "", fetcher: fetchNewModelsStories, tag: "MOD" },
+  { id: "skills", name: "AGENT SKILLS", color: "#a3e635", key: "", fetcher: fetchSkillsStories, tag: "SKL" },
   { id: "spotlight", name: "SPOTLIGHT", color: "#fde68a", key: "", fetcher: fetchSpotlightStories, tag: "SPOT" },
 ];
 
@@ -1747,15 +1827,34 @@ function cycleSpeed() {
 }
 
 function loadEnabledIds() {
+  const allIds = ALL_CHANNELS.map(c => c.id);
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      const valid = parsed.filter(id => ALL_CHANNELS.some(c => c.id === id));
-      if (valid.length > 0) return valid;
+      const valid = parsed.filter(id => allIds.includes(id));
+      if (valid.length > 0) {
+        // A returning visitor has a saved channel list from before a channel
+        // existed, so a new channel would never appear for them. Remember
+        // which channels each browser has already been offered, and switch
+        // on only the ones it hasn't seen. Turning one off afterwards sticks.
+        let seen = null;
+        try { seen = JSON.parse(localStorage.getItem(SEEN_KEY)); } catch (e) {}
+        // No seen list yet means this browser predates it: it has seen every channel except "skills".
+        if (!Array.isArray(seen)) seen = allIds.filter(id => id !== "skills");
+        const fresh = allIds.filter(id => !seen.includes(id) && !valid.includes(id));
+        try { localStorage.setItem(SEEN_KEY, JSON.stringify(allIds)); } catch (e) {}
+        if (fresh.length > 0) {
+          const merged = [...valid, ...fresh];
+          try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged)); } catch (e) {}
+          return merged;
+        }
+        return valid;
+      }
     }
   } catch (e) {}
-  return ALL_CHANNELS.map(c => c.id);
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify(allIds)); } catch (e) {}
+  return allIds;
 }
 
 function persistEnabled() {
@@ -2001,6 +2100,7 @@ let powerAnimating = false;
 
 function togglePower() {
   if (powerAnimating) return;
+  guideOpen = false;
   if (readerOpen) closeReader();
   if (submitOpen) closeSubmit();
   const screenEl = document.getElementById("screen");
@@ -2063,6 +2163,7 @@ function showIdent() {
 
 function manualChangeChannel(idx) {
   if (!power) return;
+  guideOpen = false;
   // Switching channels no longer forces a stop — it just changes what's
   // showing, exactly like a real remote. Playback state (playing or
   // stopped) carries over to whatever channel you land on. Picking a new
@@ -2119,7 +2220,7 @@ function startTick() {
   tickInterval = setInterval(() => {
     // Manual mode is now a frozen preview: nothing advances on its own.
     // Auto Pilot is the only thing that moves stories or channels forward.
-    if (!power || readerOpen || submitOpen || adBreakActive || mode !== "autopilot") return;
+    if (!power || readerOpen || submitOpen || guideOpen || adBreakActive || mode !== "autopilot") return;
     const channels = getChannels();
     const cur = channels[channelIdx];
     const hasStories = cur && cur.status === "ready" && cur.stories.length > 0;
@@ -2202,7 +2303,7 @@ async function openReader(channel, story) {
       if (!res.ok) throw new Error("Couldn't load the full article (" + res.status + ")");
       const data = await res.json();
       html = mdLite(data.body_markdown || story.line2);
-    } else if (channel.id === "github") {
+    } else if (channel.id === "github" || channel.id === "skills") {
       // READMEs you've already opened are reused for an hour instead of
       // spending another GitHub request, and kept up to a day as a
       // fallback if GitHub says no.
@@ -2650,6 +2751,7 @@ function openSubmit() {
   const staticEl = document.getElementById("boot-static");
   if (staticEl && staticEl.style.display !== "none") stopStaticSilently();
   showSettings = false;
+  guideOpen = false;
   spBuild();
   spReturnFocus = document.activeElement;
   submitOpen = true;
@@ -2667,6 +2769,79 @@ function closeSubmit() {
   if (spReturnFocus && spReturnFocus.focus) { try { spReturnFocus.focus(); } catch (e) {} }
 }
 
+/* Channel guide: an overlay on the screen listing every channel and what is on it right now. */
+let guideOpen = false, guideSel = 0, guideReturnFocus = null;
+
+function openGuide() {
+  if (!power) return;
+  if (readerOpen) closeReader();
+  if (submitOpen) closeSubmit();
+  // Same as flipping channels during a real commercial break: opening the guide escapes the ad.
+  if (adBreakActive) { adBreakActive = false; document.getElementById("ad-break").style.display = "none"; }
+  // The boot static can still be looping over the screen and would swallow taps on the guide.
+  const staticEl = document.getElementById("boot-static");
+  if (staticEl && staticEl.style.display !== "none") stopStaticSilently();
+  showSettings = false;
+  guideReturnFocus = document.activeElement;
+  guideSel = Math.max(0, Math.min(channelIdx, getChannels().length - 1));
+  guideOpen = true;
+  render();
+  const row = document.querySelector("#guide-list .guide-row.sel");
+  if (row) { row.focus({ preventScroll: true }); row.scrollIntoView({ block: "nearest" }); }
+}
+
+function closeGuide() {
+  if (!guideOpen) return;
+  guideOpen = false;
+  render();
+  if (guideReturnFocus && guideReturnFocus.focus) { try { guideReturnFocus.focus(); } catch (e) {} }
+}
+
+function toggleGuide() { if (guideOpen) closeGuide(); else openGuide(); }
+
+function guideMarkSel() {
+  document.querySelectorAll("#guide-list .guide-row").forEach((r, i) => r.classList.toggle("sel", i === guideSel));
+}
+
+function guideMove(delta) {
+  const n = getChannels().length;
+  if (!n) return;
+  guideSel = (guideSel + delta + n) % n;
+  guideMarkSel();
+  const row = document.querySelectorAll("#guide-list .guide-row")[guideSel];
+  if (row) { row.focus({ preventScroll: true }); row.scrollIntoView({ block: "nearest" }); }
+}
+
+function renderGuide() {
+  const listEl = document.getElementById("guide-list");
+  const keepScroll = listEl.scrollTop;
+  const hadFocus = listEl.contains(document.activeElement);
+  const channels = getChannels();
+  if (guideSel >= channels.length) guideSel = 0;
+  listEl.innerHTML = "";
+  channels.forEach((c, idx) => {
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "guide-row" + (idx === channelIdx ? " cur" : "") + (idx === guideSel ? " sel" : "") + (c.status === "error" ? " err" : "");
+    row.style.setProperty("--c", c.color);
+    let now;
+    if (c.status === "loading") now = "Tuning in…";
+    else if (c.status === "error") now = "No signal";
+    else if (!c.stories.length) now = "Nothing on right now";
+    else now = c.stories[(idx === channelIdx ? storyIdx : 0) % c.stories.length].title;
+    const num = document.createElement("span"); num.className = "g-num"; num.textContent = c.num;
+    const name = document.createElement("span"); name.className = "g-name"; name.textContent = c.name;
+    const on = document.createElement("span"); on.className = "g-on"; on.textContent = idx === channelIdx ? "ON NOW" : "";
+    const line = document.createElement("span"); line.className = "g-now"; line.textContent = now;
+    row.append(num, name, on, line);
+    row.onmouseenter = () => { guideSel = idx; guideMarkSel(); };
+    row.onclick = () => manualChangeChannel(idx);
+    listEl.appendChild(row);
+  });
+  listEl.scrollTop = keepScroll;
+  if (hadFocus) { const r = listEl.children[guideSel]; if (r) r.focus({ preventScroll: true }); }
+}
+
 /* render(): paints the screen, buttons and settings from current state. */
 function render() {
   const channels = getChannels();
@@ -2677,6 +2852,10 @@ function render() {
   document.getElementById("gear").classList.toggle("on", showSettings);
   document.getElementById("settings-overlay").style.display = showSettings ? "flex" : "none";
   document.getElementById("reader-overlay").style.display = readerOpen ? "flex" : "none";
+  document.getElementById("guide-overlay").style.display = (guideOpen && power) ? "flex" : "none";
+  document.getElementById("guide-btn").classList.toggle("on", guideOpen && power);
+  document.getElementById("guide-btn").style.opacity = power ? "1" : "0.4";
+  if (guideOpen && power) renderGuide();
   // The antenna is purely decorative and costs real vertical space,
   // especially on mobile where every pixel of reading room matters.
   // Hiding it while reading is free: no functional loss, since it's just
@@ -2901,7 +3080,7 @@ function render() {
   // The overlay sits visually on top, but the ticker's animation keeps
   // compositing every frame underneath it unless explicitly paused — that's
   // wasted GPU work competing with a scroll gesture inside the overlay.
-  tickerEl.style.animationPlayState = (readerOpen || showSettings) ? "paused" : "running";
+  tickerEl.style.animationPlayState = (readerOpen || showSettings || guideOpen) ? "paused" : "running";
 
   const btnsEl = document.getElementById("channel-buttons");
   btnsEl.innerHTML = "";
@@ -3022,7 +3201,16 @@ syncFullscreenState();
 document.addEventListener("keydown", (e) => {
   if (submitOpen) { if (e.key === "Escape") closeSubmit(); return; }
   if (readerOpen && e.key === "Escape") { closeReader(); return; }
+  const isG = (e.key === "g" || e.key === "G") && !e.ctrlKey && !e.metaKey && !e.altKey;
+  if (guideOpen && power) {
+    if (e.key === "Escape" || isG) { e.preventDefault(); closeGuide(); return; }
+    if (e.key === "ArrowDown") { e.preventDefault(); guideMove(1); return; }
+    if (e.key === "ArrowUp") { e.preventDefault(); guideMove(-1); return; }
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); manualChangeChannel(guideSel); return; }
+    // Arrow keys left/right and number keys fall through below and change channel, which also closes the guide.
+  }
   if (!power || showSettings) return;
+  if (isG) { toggleGuide(); return; }
   const channels = getChannels();
   if (e.key === "ArrowRight") manualChangeChannel((channelIdx + 1) % channels.length);
   if (e.key === "ArrowLeft") manualChangeChannel((channelIdx - 1 + channels.length) % channels.length);
@@ -3059,7 +3247,7 @@ document.addEventListener("visibilitychange", () => {
 window.addEventListener("focus", maybeRefreshOnReturn);
 
 /* Button wiring and startup. Loads last. */
-document.getElementById("gear").onclick = () => { if (submitOpen) closeSubmit(); showSettings = !showSettings; render(); };
+document.getElementById("gear").onclick = () => { if (submitOpen) closeSubmit(); guideOpen = false; showSettings = !showSettings; render(); };
 
 document.getElementById("skin-btn").onclick = cycleSkin;
 
@@ -3081,6 +3269,13 @@ spMailLink.textContent = SPOTLIGHT_EMAIL;
 document.getElementById("tv-submit-btn").onclick = () => { if (!power) { togglePower(); setTimeout(openSubmit, 700); } else openSubmit(); };
 
 document.getElementById("watch-btn").onclick = toggleAutoPilot;
+
+document.getElementById("guide-btn").onclick = toggleGuide;
+
+document.getElementById("close-guide").onclick = closeGuide;
+
+// Tapping the channel number or name on the screen opens the guide too.
+["ch-num", "ch-name"].forEach(id => { const el = document.getElementById(id); el.style.cursor = "pointer"; el.title = "Open channel guide"; el.onclick = toggleGuide; });
 
 document.getElementById("speed-btn").onclick = cycleSpeed;
 

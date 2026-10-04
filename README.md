@@ -6,7 +6,7 @@
 
 ### A TV for the developer internet.
 
-10 live channels of developer content. Open it on a second monitor and leave it running.
+13 live channels of developer content. Open it on a second monitor and leave it running.
 
 <a href="https://www.producthunt.com/products/dev-tv?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-dev-tv" target="_blank" rel="noopener noreferrer"><img alt="DEV·TV - A retro TV for GitHub, HN, Hugging Face &amp; more: 10 channels | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1260239&amp;theme=dark&amp;t=1790406451251"></a>
 <a href="https://www.producthunt.com/products/dev-tv?embed=true&amp;utm_source=badge-top-post-badge&amp;utm_medium=badge&amp;utm_campaign=badge-dev-tv" target="_blank" rel="noopener noreferrer"><img alt="DEV·TV - A retro TV for GitHub, HN, Hugging Face &amp; more: 10 channels | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=1260239&amp;theme=dark&amp;period=daily&amp;t=1790406451251"></a>
@@ -14,7 +14,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![No backend](https://img.shields.io/badge/backend-none-brightgreen)]()
 [![Single file](https://img.shields.io/badge/build%20step-none-brightgreen)]()
-[![Channels](https://img.shields.io/badge/channels-10%20live-orange)]()
+[![Channels](https://img.shields.io/badge/channels-13%20live-orange)]()
 [![Mobile friendly](https://img.shields.io/badge/mobile-friendly-blue)]()
 
 Five tabs, checked out of habit, half-read, closed again. That's most people's relationship with GitHub, Hacker News, DEV.to, and Hugging Face. DEV·TV turns it into a TV instead: pick a channel, it plays.
@@ -89,10 +89,22 @@ Things worth knowing:
 
 **AI Video** uses the same source and the same player, but looks back 30 days instead of 14 and keeps only videos whose titles are clearly about AI: LLMs, GPT, Claude, Gemini, DeepSeek, diffusion, fine-tuning, agentic, and similar. Words that are too generic on their own, like "model" or "agent", are left out on purpose, so "Model trains at the museum" doesn't sneak in. The honest tradeoff of keyword matching: it misses AI videos with plain titles, and some weeks the channel is thinner than HN Video.
 
+### 🧰 Models, skills and Spotlight (channels 11 to 13)
+
+| # | Channel | Source | What it shows |
+|---|---------|--------|----------------|
+| 11 | **New Models** | `openrouter.ai/api` | The newest models added to OpenRouter's public catalog, newest first |
+| 12 | **Agent Skills** | `api.github.com` | New agent skills repositories from the last 14 days with at least 20 stars, ranked by stars |
+| 13 | **Spotlight** | `spotlight.json` on this site | Projects built by the community. [Get yours featured](#-community-spotlight) |
+
+**Agent Skills** finds repos tagged `claude-skills` or `agent-skills` (the folders of instructions, `SKILL.md` files, that teach an AI agent how to do a specific job). GitHub's search won't combine two topics with OR, so the channel makes one request per topic, merges the two lists, drops repos that carry both tags, and keeps the top 10 by stars. Each story shows how old the repo is, and opening it shows the repo's README, the same as the GitHub channel. If one of the two requests fails the channel still shows the other half, and it only shows `SIGNAL LOST` when both fail.
+
+Things worth knowing: the topic tags are added by the repo owners themselves, so a few results won't be skills at all. One story is a repo, which is often a bundle of several skills rather than a single one. And the 14-day, 20-star filter means a skill that has been popular for months won't appear here, on purpose: the channel is for what's new.
+
 Every story links to its real source. Click a story and it opens in an in-app reader right on the TV, no new tab:
 
 - **DEV.to**: the full article body
-- **GitHub**: the repo's actual README
+- **GitHub** / **Agent Skills**: the repo's actual README
 - **Hugging Face**: the model's README / model card
 - **Releases**: the real release notes, already fetched, no extra request
 - **AI Papers** / **Latest Papers**: the paper's abstract
@@ -128,14 +140,15 @@ The form asks for a project name, your name or handle, a one-line description, a
 
 | Key / Button | Action |
 |---|---|
-| `←` `→`, `1`–`9`, or `0` | Change channel (`0` is channel 10). Doesn't interrupt playback either way |
+| `←` `→`, `1`–`9`, or `0` | Change channel (`0` is channel 10; channels 11 and up have no number key, so use the arrows, the guide, or tap). Doesn't interrupt playback either way |
+| `GUIDE` or `G` | Opens the channel guide: every channel with what's on it right now. Tap a row, or use `↑` `↓` and `Enter`, to tune. Tapping the channel name on the screen opens it too. Stories and commercial breaks pause while it's open |
 | `❚❚ STOP` / `▶ WATCH` | Playing is the default, like turning on a real TV. STOP freezes on whatever story is currently showing; WATCH resumes from there |
 | `⚙` | Toggle channels on/off. Each shows an explicit **ON** / **OFF** label, not just a switch position (at least one channel must stay on) |
 | Speed button | `1×` `2×` `3×` `0.5×`, how long each story stays on screen |
 | `⛶` | Fullscreen toggle |
 | `★` | Opens this repo on GitHub in a new tab, where you can star it. The TV keeps playing |
 | `⏻` | Power. Green glow means on, dim gray means off, tooltip tells you which way it'll flip. Powering off plays a real CRT-style collapse (screen squishes to a line, then a dot, then dark); powering on reverses it |
-| `Esc` | Close the in-app reader |
+| `Esc` | Close the in-app reader or the channel guide |
 
 Static (real per-pixel noise, not a CSS texture) plays continuously on first load until you pick a channel, and briefly on every channel change afterward, like actually tuning a signal.
 
@@ -195,9 +208,10 @@ It's a static file, so any static host works. No config needed.
 ## 🔧 Tech notes
 
 - Vanilla HTML/CSS/JS. No framework, no build tooling, no npm packages.
-- All state (enabled channels, playback speed) lives in `localStorage`, scoped per browser/origin.
+- All state (enabled channels, playback speed) lives in `localStorage`, scoped per browser/origin. The browser also remembers which channels it has already been offered, so when a release adds a channel, returning visitors get it switched on once. A channel you turn off stays off.
 - Each channel refreshes independently every 10 minutes, regardless of playback state. A channel that fails shows `SIGNAL LOST` with the underlying error, without affecting the others.
 - The `RELEASES` channel makes 7 requests per refresh (one per tracked project) against `api.github.com`, same host as the `GITHUB` channel. Combined, the GitHub-backed channels use 8 requests per 10-minute refresh cycle, which is 48 requests/hour at the default rate. GitHub's unauthenticated core API allows 60 requests/hour/IP, so that leaves roughly 12/hour of headroom for interactive README reads before the shared limit is hit. To stretch that budget, each channel's stories are remembered in your browser for just under 10 minutes, so reloading the page doesn't spend requests again, and READMEs you've already opened are reused for an hour. If the limit is hit anyway, the channel keeps showing its last good stories with a note saying how old they are, and only shows an error if it has nothing saved at all. Note that this limit is tied to the originating IP, so multiple people behind the same public IP (an office, a shared network) share the same budget.
+- `AGENT SKILLS` makes two requests per refresh (one per topic) to GitHub's search endpoint. GitHub counts search requests separately from the core limit that the `RELEASES` channel uses, so it doesn't touch the budget described above. The `GITHUB` channel also uses search, so the two channels together make three search requests per refresh, inside GitHub's unauthenticated search limit of 10 per minute.
 - `CVE` makes one request per refresh to NVD, well inside its keyless limit. `HN Video` and `AI Video` each make one request per refresh to HN's Algolia search API. None of these touch the GitHub budget above.
 - The power-on/off transition is a real CSS keyframe animation (`scale` + `filter: brightness/contrast`) on the screen element, not a fade. It genuinely collapses to a line and a dot, CRT-style.
 
@@ -209,7 +223,7 @@ Kept out of scope for the same reason a v1 TV network doesn't launch with 40 cha
 - AI-generated summaries: every story is real source data, not a rewrite
 - A backend of any kind (several candidate sources, Reddit, Product Hunt, X, LinkedIn, Discord, were evaluated and ruled out specifically because they require one; see below)
 - Community-created channels
-- Dozens of channels: ten is already a lot of TV
+- Dozens of channels: thirteen is already a lot of TV
 
 ## 🔍 Sources considered and ruled out
 
