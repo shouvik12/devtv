@@ -15,6 +15,21 @@
       ],
       "video": "",
       "added": "2026-10-04"
+    },
+    {
+      "id": "astratide",
+      "project": "Astratide",
+      "tagline": "AI powered personal astrology visualizer",
+      "description": "Astratide is a web app that aims to explain complex astrological concepts as simply and visually as possible. It is meant for people who don't want to learn the complexities of astrology, but want to get a clear sense of how the planets are affecting them at any given time.",
+      "by": "cat.builds.astratide",
+      "link": "https://astratide.com/",
+      "tags": [
+        "react",
+        "python",
+        "haiku"
+      ],
+      "video": "https://www.youtube.com/shorts/zX_vYYKfxm4",
+      "added": "2026-10-05"
     }
   ],
   "note": "Sorting through submissions"
