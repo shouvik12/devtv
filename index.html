@@ -1588,8 +1588,8 @@ function cleanSpotlight(e) {
   return { id, project, tagline, description: description || tagline, by, link, tags, videoId, added, excerpt, preview };
 }
 
-// The invitation shown when the channel is empty, and as the last slide of the rotation, so people who watch
-// the channel learn they can be on it.
+// The invitation shown when the channel is empty, so people who watch the channel learn they can be on it.
+// It is no longer added as a last slide to the rotation of featured projects.
 const SPOTLIGHT_INVITE = "**Your project could be here.**\n\nThe Spotlight is a channel by and for developers. Press **Get your project featured**, add a name, a link and a line or two about what you built, and it goes to the DEV\u00b7TV team. Prefer plain email? Send the same to " + SPOTLIGHT_EMAIL + " with the subject \"DEV\u00b7TV Spotlight\".\n\nThe link can go to a repo, a website, a newsletter or a YouTube video.";
 
 async function fetchSpotlightStories() {
@@ -1638,18 +1638,6 @@ async function fetchSpotlightStories() {
     excerpt: e.excerpt,
     preview: e.preview,
   }));
-  // Last slide in the rotation: an invitation. It reuses the empty-state story (so it stays out of the ticker and the reader
-  // shows its text), and clicking the card opens the form directly.
-  stories.push({
-    show: "COMMUNITY SPOTLIGHT",
-    title: "Your project could be here",
-    line1: "Built something? Get on the Spotlight.",
-    line2: "It takes a minute. Press the button below.",
-    url: "https://github.com/shouvik12/devtv",
-    videoId: null, spotlightId: "", by: "", tags: [],
-    empty: true, cta: true,
-    fullText: SPOTLIGHT_INVITE,
-  });
   return stories;
 }
 
