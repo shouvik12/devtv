@@ -506,6 +506,10 @@
   /* ==== Cabinet ==========================================================
      Plate, clock, keys, panel. Reads skin variables only; there
      are no skin-specific selectors below this line. */
+  #tv-tagline { display: flex; align-items: center; gap: 12px; margin: -4px 4px 12px; color: var(--accent); font-family: "Futura", "Avenir Next", "Century Gothic", "Trebuchet MS", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.42em; text-transform: uppercase; white-space: nowrap; opacity: 0.9; }
+  #tv-tagline::before, #tv-tagline::after { content: ""; flex: 1; height: 1px; background: currentColor; opacity: 0.35; }
+  #tv:fullscreen #tv-tagline, #tv:-webkit-full-screen #tv-tagline, #tv.is-fullscreen #tv-tagline { display: none; }
+  @media (max-width: 640px) { #tv-tagline { font-size: 9px; letter-spacing: 0.3em; margin-bottom: 8px; } }
   #tv-logo { font-family: "Futura", "Avenir Next", "Century Gothic", "Trebuchet MS", sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.34em;
     color: var(--plate-ink); padding: 7px 10px 7px 14px; border-radius: 3px; background: var(--plate-bg); box-shadow: var(--plate-shadow); text-shadow: var(--plate-text); }
   #clock { color: var(--clock-ink); letter-spacing: 0.08em; text-shadow: 0 0 6px var(--clock-glow); background: #0f0805; padding: 5px 8px; border-radius: 3px;
@@ -681,6 +685,7 @@
   <div class="antenna-base"></div>
 </div>
 <div id="tv">
+  <div id="tv-tagline">DEV·TV for developers</div>
   <div id="tv-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:0 4px;">
     <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
       <span id="tv-logo" style="flex-shrink:0;">DEV·TV</span>
