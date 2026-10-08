@@ -1691,7 +1691,9 @@ function tidyReadmeHtml(text) {
     if (i % 2 === 1) return seg;
     return seg.split(/(`[^`\n]+`)/).map((part, j) => j % 2 === 1 ? part : part
       .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<\/?(?:big|small|center|font|sub|sup|kbd|u|span)(?:\s[^>]*)?>/gi, "")
+      .replace(/<\/?(?:big|small|center|font|sub|sup|kbd|u|span|details|summary)(?:\s[^>]*)?>/gi, "")
+      .replace(/&rsaquo;/g, "›").replace(/&lsaquo;/g, "‹")
+      .replace(/&(?:thinsp|nbsp);/g, " ")
     ).join("");
   }).join("");
 }
@@ -2323,7 +2325,7 @@ async function openReader(channel, story) {
           throw new Error(githubErrorMessage(res, "This repository has no README, or it couldn't be loaded"));
         }
       }
-      html = mdLite(text);
+      html = mdLite(absolutizeReadmeImages(tidyReadmeHtml(text), story.fullName));
     } else if (channel.id === "hn") {
       // HN's API documents both story `text` and comment `text` as raw
       // HTML. Never inject either directly — strip tags to plain text
