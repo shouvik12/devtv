@@ -604,7 +604,7 @@
    fullscreen, where a wall TV is read from across the room. */
 :root {
   --fs-kicker: clamp(11px, 1.2vw, 13px);
-  --fs-title: clamp(18px, 3.4vw, 30px);
+  --fs-title: clamp(20px, 3.6vw, 36px);
   --fs-line1: clamp(13px, 1.5vw, 15px);
   --fs-line2: clamp(14px, 1.6vw, 16px);
   --fs-hint: clamp(11px, 1.15vw, 12px);
@@ -613,7 +613,7 @@
 }
 #tv.is-fullscreen {
   --fs-kicker: clamp(13px, 1.1vw, 22px);
-  --fs-title: clamp(24px, 3vw, 56px);
+  --fs-title: clamp(26px, 3.3vw, 62px);
   --fs-line1: clamp(15px, 1.5vw, 28px);
   --fs-line2: clamp(16px, 1.6vw, 30px);
   --fs-hint: clamp(12px, 1.1vw, 20px);
@@ -675,6 +675,21 @@
   .sp-close { min-width: 44px; min-height: 44px; }
   .spot-submit, .reader-submit { min-height: 36px; }
 }
+</style>
+<style>
+/* Polished screen: channel bug, live count, readable schedule, action chip, coloured keys */
+  #ch-bug { display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; padding: 3px 9px; border-radius: 4px;
+    border: 1px solid var(--ch-c, #e8e8ea); background: color-mix(in srgb, var(--ch-c, #e8e8ea) 12%, transparent); }
+  #ch-bug #ch-num, #ch-bug #ch-name { color: var(--ch-c, #e8e8ea) !important; margin-left: 0 !important; letter-spacing: 0.06em; }
+  #devtv-live { font-size: 11px; letter-spacing: 0.06em; color: #b4b4bc; margin-left: 4px; white-space: nowrap; }
+  #devtv-live:empty { display: none; }
+  #now-next-later > div:first-child { display: none; }
+  #body-area .story-hint { display: inline-flex; align-items: center; padding: 6px 12px; margin-top: 14px !important; border: 1px solid currentColor; border-radius: 6px; opacity: 1 !important; }
+  .ticker-tag { font-weight: 700; }
+  .chbtn:not(.on) { box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--c) 60%, transparent), inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); }
+  #ch-bug { white-space: nowrap; }
+  @media (max-width: 640px) { #devtv-live { display: none; } #ch-bug { padding: 2px 6px; } #body-area .story-hint { padding: 3px 8px; margin-top: 10px !important; } }
+  @media (max-width: 400px) { #ch-bug { gap: 4px; margin-left: 2px; } #ch-bug #ch-num, #ch-bug #ch-name { font-size: 11px !important; letter-spacing: 0.02em; } }
 </style>
 </head>
 <body>
@@ -780,8 +795,9 @@
           <div style="display:flex; align-items:center; gap:10px;">
             <span id="live-dot" style="width:8px; height:8px; border-radius:50%;"></span>
             <span id="live-text" class="mono" style="font-size:11px; letter-spacing:0.08em; color:#9a9aa2;"></span>
-            <span id="ch-num" class="mono" style="font-size:13px; color:#e8e8ea; margin-left:6px;"></span>
-            <span id="ch-name" style="font-weight:600; font-size:13px; color:#e8e8ea;"></span>
+            <span id="ch-bug"><span id="ch-num" class="mono" style="font-size:13px; color:#e8e8ea; margin-left:6px;"></span>
+            <span id="ch-name" style="font-weight:600; font-size:13px; color:#e8e8ea;"></span></span>
+            <span id="devtv-live" class="mono"></span>
             <span id="speed-badge" class="mono" style="font-size:10px; color:#6a6a72; margin-left:8px; padding:1px 6px; border:1px solid #2a2a2e; border-radius:8px;"></span>
           </div>
           <div id="story-dots" style="display:flex; gap:4px;"></div>
@@ -791,12 +807,12 @@
 
         <div id="now-next-later" style="display:none; flex-direction:column; gap:3px; padding-top:8px; border-top:1px solid #1c1c20; z-index:1;">
           <div style="display:flex; gap:10px; font-size:var(--fs-sched);"><span class="mono" style="color:#e8e8ea; width:3.6em; flex-shrink:0;">NOW</span><span id="now-text" style="color:#d0d0d4;"></span></div>
-          <div style="display:flex; gap:10px; font-size:var(--fs-sched);"><span class="mono" style="color:#55555c; width:3.6em; flex-shrink:0;">NEXT</span><span id="next-text" style="color:#55555c;"></span></div>
-          <div style="display:flex; gap:10px; font-size:var(--fs-sched);"><span class="mono" style="color:#3a3a40; width:3.6em; flex-shrink:0;">LATER</span><span id="later-text" style="color:#3a3a40;"></span></div>
+          <div style="display:flex; gap:10px; font-size:var(--fs-sched);"><span class="mono" style="color:#9a9aa2; width:3.6em; flex-shrink:0;">NEXT</span><span id="next-text" style="color:#c8c8cf;"></span></div>
+          <div style="display:flex; gap:10px; font-size:var(--fs-sched);"><span class="mono" style="color:#8a8a92; width:3.6em; flex-shrink:0;">LATER</span><span id="later-text" style="color:#a8a8b0;"></span></div>
         </div>
 
-        <div style="height:2px; background:#1c1c20; z-index:1; margin-top:8px;">
-          <div id="progress-bar" style="height:100%; width:0%; transition:width 0.1s linear;"></div>
+        <div style="height:3px; background:#1c1c20; z-index:1; margin-top:8px; border-radius:2px; overflow:hidden;">
+          <div id="progress-bar" style="height:100%; width:0%; transition:width 0.1s linear; border-radius:2px;"></div>
         </div>
 
         <div style="margin-top:8px; border-top:1px solid #1c1c20; padding-top:6px; overflow:hidden; white-space:nowrap; z-index:1;">
@@ -3003,6 +3019,7 @@ function render() {
   document.getElementById("live-text").textContent = mode === "autopilot" ? "ON AIR" : "LIVE";
   document.getElementById("ch-num").textContent = channel.num;
   document.getElementById("ch-name").textContent = channel.name;
+  document.getElementById("content").style.setProperty("--ch-c", channel.color);
   document.getElementById("speed-badge").textContent = speed + "×";
   document.getElementById("speed-badge").style.display = speed === 1 ? "none" : "inline";
   document.getElementById("speed-btn").textContent = speed + "×";
@@ -3058,7 +3075,7 @@ function render() {
         <div class="story-title" style="font-weight:700; font-size:var(--fs-title); color:#f5f5f7; line-height:1.2; letter-spacing:-0.01em; margin-top:6px;">${escapeHtml(story.title)}</div>
         <div class="mono" style="font-size:var(--fs-line1); color:${channel.color}; margin-top:6px;">${escapeHtml(story.line1)}</div>
         <div style="font-size:var(--fs-line2); color:#9a9aa2; max-width:46em; line-height:1.4; margin-top:6px;">${escapeHtml(story.line2)}</div>
-        <div class="mono" style="font-size:var(--fs-hint); color:${channel.color}; margin-top:8px; opacity:0.8;">${story.cta ? "▸ click to submit yours" : "▸ click to read in DEV·TV"}</div>
+        <div class="mono story-hint" style="font-size:var(--fs-hint); color:${channel.color}; margin-top:8px; opacity:0.8;">${story.cta ? "▸ click to submit yours" : "▸ click to read in DEV·TV"}</div>
       </div>
       ${channel.id === "spotlight" ? '<button type="button" id="spot-submit-btn" class="spot-submit btn mono">★ Get your project featured</button>' : ""}`;
     document.getElementById("story-open-target").onclick = () => story.cta ? openSubmit() : openReader(channel, story);
@@ -3071,11 +3088,12 @@ function render() {
     bodyEl.innerHTML = "";
   }
 
-  const tickerItems = channels.flatMap(c => c.status === "ready" ? c.stories.filter(s => !s.empty).slice(0, 2).map(s => ({ source: c.tag, text: s.title })) : []);
+  const tickerItems = channels.flatMap(c => c.status === "ready" ? c.stories.filter(s => !s.empty).slice(0, 2).map(s => ({ source: c.tag, color: c.color, text: s.title })) : []);
   const tickerEl = document.getElementById("ticker");
-  tickerEl.textContent = tickerItems.length > 0
-    ? [...tickerItems, ...tickerItems].map(i => `${i.source}: ${i.text}`).join("   •   ") + "   •   "
+  const tickerHtml = tickerItems.length > 0
+    ? [...tickerItems, ...tickerItems].map(i => `<span class="ticker-tag" style="color:${i.color}">${escapeHtml(i.source)}</span> ${escapeHtml(i.text)}`).join("&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;") + "&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;"
     : "loading ticker…";
+  if (tickerEl.innerHTML !== tickerHtml) tickerEl.innerHTML = tickerHtml;
   // The overlay sits visually on top, but the ticker's animation keeps
   // compositing every frame underneath it unless explicitly paused — that's
   // wasted GPU work competing with a scroll gesture inside the overlay.
