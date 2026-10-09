@@ -93,14 +93,7 @@
   .guide-row.sel { background: #111114; }
   .guide-row.err .g-now { color: #ff5c5c; }
   .guide-row:focus-visible { outline: 2px solid var(--c); outline-offset: -2px; }
-  /* GUIDE key colour: change --guide-c to recolour it. The cream skin gets a deeper blue so it reads on the light key. */
-  :root { --guide-c: #7fb2ff; }
-  html[data-skin="cream"] { --guide-c: #1f5fbf; }
-  #guide-btn { color: var(--guide-c) !important; }
-  @supports (color: color-mix(in srgb, red 50%, transparent)) {
-    #guide-btn { background: linear-gradient(180deg, color-mix(in srgb, var(--guide-c) 26%, var(--key-top)), color-mix(in srgb, var(--guide-c) 10%, var(--key-bot))) !important; border-top-color: color-mix(in srgb, var(--guide-c) 55%, var(--key-edge)) !important; }
-  }
-  #guide-btn.on { box-shadow: 0 0 0 2px var(--guide-c), inset 0 1px 3px rgba(0,0,0,0.45) !important; transform: translateY(1px); }
+  #guide-btn.on { box-shadow: 0 0 0 1px var(--key-edge), inset 0 1px 3px rgba(0,0,0,0.45) !important; transform: translateY(1px); }
   #no-signal { width: 100%; height: 100%; display: none; align-items: center; justify-content: center; font-family: 'Courier New', monospace; font-size: 11px; color: #333338; letter-spacing: 0.1em; }
 
 /* Reader overlay and article typography, embedded video frame, Hacker News banner. */
@@ -529,15 +522,12 @@
   .round-btn { width: 44px; height: 44px; }
   #watch-btn { background: linear-gradient(180deg, var(--key-top), var(--key-bot)); color: var(--key-ink); border-top: 1px solid var(--key-edge);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); }
-  #watch-btn.playing { color: var(--stop-ink); }
-  .chbtn.on { transform: translateY(1px); box-shadow: 0 0 0 2px var(--c), inset 0 1px 3px rgba(0,0,0,0.45); }
-  .chbtn.on .num { color: var(--c); }
-  @supports (color: color-mix(in srgb, red 50%, transparent)) {
-    .chbtn.on { background: linear-gradient(180deg, color-mix(in srgb, var(--c) 24%, var(--key-top)), color-mix(in srgb, var(--c) 9%, var(--key-bot)));
-      box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 60%, transparent), inset 0 1px 3px rgba(0,0,0,0.45), 0 0 14px -4px color-mix(in srgb, var(--c) 70%, transparent); }
-    .chbtn.on .num { color: color-mix(in srgb, var(--c) 75%, var(--key-ink)); }
-    #watch-btn.playing { background: linear-gradient(180deg, color-mix(in srgb, var(--stop-ink) 22%, var(--key-top)), color-mix(in srgb, var(--stop-ink) 8%, var(--key-bot))); }
-  }
+  .chbtn.on { transform: translateY(1px); box-shadow: 0 0 0 1px var(--key-edge), inset 0 1px 3px rgba(0,0,0,0.45); }
+  .chbtn.on .num { color: var(--key-ink); }
+  /* Spotlight key: brushed gold */
+  .chbtn.gold { background: linear-gradient(180deg, #e9c76a, #b88a2e); border-top-color: #fbe7a6; }
+  .chbtn.gold .name, .chbtn.gold .num, .chbtn.gold.on .num { color: #2e1f05; }
+  .chbtn.gold.on { box-shadow: 0 0 0 1px #fbe7a6, inset 0 1px 3px rgba(0,0,0,0.35); }
   @media (min-width: 901px) { #controls .chbtn { width: 58px; } #channel-buttons { flex-wrap: nowrap !important; } }
 
   @media (max-width: 640px) {
@@ -677,7 +667,7 @@
 }
 </style>
 <style>
-/* Polished screen: channel bug, live count, readable schedule, action chip, coloured keys */
+/* Polished screen: channel bug, live count, readable schedule, action chip */
   #ch-bug { display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; padding: 3px 9px; border-radius: 4px;
     border: 1px solid var(--ch-c, #e8e8ea); background: color-mix(in srgb, var(--ch-c, #e8e8ea) 12%, transparent); }
   #ch-bug #ch-num, #ch-bug #ch-name { color: var(--ch-c, #e8e8ea) !important; margin-left: 0 !important; letter-spacing: 0.06em; }
@@ -686,7 +676,6 @@
   #now-next-later > div:first-child { display: none; }
   #body-area .story-hint { display: inline-flex; align-items: center; padding: 6px 12px; margin-top: 14px !important; border: 1px solid currentColor; border-radius: 6px; opacity: 1 !important; }
   .ticker-tag { font-weight: 700; }
-  .chbtn:not(.on) { box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--c) 60%, transparent), inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); }
   #ch-bug { white-space: nowrap; }
   @media (max-width: 640px) { #devtv-live { display: none; } #ch-bug { padding: 2px 6px; } #body-area .story-hint { padding: 3px 8px; margin-top: 10px !important; } }
   @media (max-width: 400px) { #ch-bug { gap: 4px; margin-left: 2px; } #ch-bug #ch-num, #ch-bug #ch-name { font-size: 11px !important; letter-spacing: 0.02em; } }
@@ -3104,7 +3093,7 @@ function render() {
   channels.forEach((c, idx) => {
     const active = power && idx === channelIdx;
     const btn = document.createElement("button");
-    btn.className = "chbtn btn" + (active ? " on" : "");
+    btn.className = "chbtn btn" + (active ? " on" : "") + (c.id === "spotlight" ? " gold" : "");
     btn.style.setProperty("--c", c.color);
     btn.style.opacity = power ? "1" : "0.4";
     btn.style.cursor = power ? "pointer" : "not-allowed";
@@ -3118,9 +3107,9 @@ function render() {
   document.getElementById("watch-btn").innerHTML = mode === "autopilot" ? "❚❚ STOP" : "▶ WATCH";
   document.getElementById("watch-btn").classList.toggle("playing", mode === "autopilot");
   document.getElementById("watch-btn").style.opacity = power ? "1" : "0.4";
-  document.getElementById("power-btn").style.background = power ? "linear-gradient(180deg, #1f6b3a, #123d21)" : "linear-gradient(180deg, var(--key-top), var(--key-bot))";
-  document.getElementById("power-btn").style.boxShadow = power ? "0 0 14px rgba(60,220,120,0.55), 0 0 0 1px rgba(60,220,120,0.4), inset 0 1px 0 rgba(255,255,255,0.1)" : "inset 0 1px 0 rgba(255,255,255,0.05)";
-  document.getElementById("power-btn").style.color = power ? "#7dffb0" : "#6a6a72";
+  document.getElementById("power-btn").style.background = "linear-gradient(180deg, var(--key-top), var(--key-bot))";
+  document.getElementById("power-btn").style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4)";
+  document.getElementById("power-btn").style.color = power ? "var(--key-ink)" : "var(--key-num)";
   document.getElementById("power-btn").title = power ? "Turn TV off" : "Turn TV on";
 }
 
