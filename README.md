@@ -127,12 +127,25 @@ Built something? You can send it to the Spotlight in about a minute.
 - **On DEV·TV:** press **Submit your project** in the strip under the channel keys, or **★ Get your project featured** under any Spotlight story. It's also in ⚙ Settings.
 - **Direct link:** `https://shouvik12.github.io/devtv/?submit` opens the form straight away.
 - **Plain email:** write to **devtv.developers@gmail.com** with the subject `DEV·TV Spotlight`.
+- **From your GitHub report:** press **★ YOU ON TV**, type your username and tap **Submit for Spotlight**. See [YOU ON TV](#-you-on-tv) below.
 
 The form asks for a project name, your name or handle, a one-line description, a link (https) and your email. A YouTube demo, a longer description and up to five tags are optional. A live preview shows how your card will look on the channel.
 
 **What happens when you press Send:** by default, DEV·TV opens your email app with the message already addressed to devtv.developers@gmail.com. Nothing leaves the page until you send that email. Every submission is read by hand, and if it fits it goes up on the Spotlight channel.
 
 **For maintainers:** each submission includes a ready-to-paste entry for `spotlight.json`, already checked against the same rules the channel uses. Paste it into the `spotlights` list. The recipient is the `SPOTLIGHT_EMAIL` constant at the top of the script in `index.html`. To receive submissions without opening the sender's email app, create a form endpoint (Formspree, FormSubmit or Web3Forms) that forwards to your inbox, and put its URL in `SPOTLIGHT_SUBMIT_ENDPOINT`. Leave it empty to keep using email links.
+
+---
+
+## ★ YOU ON TV
+
+Put any developer on air. Press **★ YOU ON TV** (next to GUIDE), type a GitHub username, and DEV·TV breaks into a special report built from that person's public profile: when they joined, stars across their own repos, top language, their most-starred project, their latest push and their followers. Forks are left out of every count.
+
+- **Share it.** **Copy link** gives `https://shouvik12.github.io/devtv/?on=username`, which opens the TV straight on that report. **Post on X** opens a ready-made post, and **Download card** saves a 1200×675 PNG with the link printed on it.
+- **Submit to the Spotlight.** The report ends with a **Submit for Spotlight** button. The person picks one of their top three original repos (forks, archived repos and the profile README repo are skipped) and one tap sends it. **Review and edit first** opens the normal Spotlight form instead, filled in from the repo's own description, topics and language, with the same validation and limits. Nothing is sent until they tap, and nothing goes on the channel without a hand review.
+- **No backend, no login, no keys.** Two public GitHub API calls from the visitor's own browser, and nothing stored. They count against GitHub's 60 requests per hour per IP, so a busy network may see "rate limit reached" for a few minutes.
+
+**For maintainers:** a YOU ON TV submission arrives with the credentials first (GitHub profile, public email, account age, followers, public repos, stars, and the chosen repo's stars, forks, license, creation date and last push), followed by the usual `spotlight.json` entry. GitHub ownership is not verified, because anyone can type any username, and the email says so: check before you feature anyone. With `SPOTLIGHT_SUBMIT_ENDPOINT` empty, the button opens the sender's email app, as the form does. With an endpoint set, one tap sends it straight to your inbox, and the payload adds `github` and `source: "you-on-tv"` fields.
 
 ---
 
@@ -147,8 +160,9 @@ The form asks for a project name, your name or handle, a one-line description, a
 | Speed button | `1×` `2×` `3×` `0.5×`, how long each story stays on screen |
 | `⛶` | Fullscreen toggle |
 | `★` | Opens this repo on GitHub in a new tab, where you can star it. The TV keeps playing |
+| `★ YOU ON TV` | Opens a special report on any GitHub user. Type a username and go on air. Typing in its box never changes the channel. See [YOU ON TV](#-you-on-tv) |
 | `⏻` | Power. Green glow means on, dim gray means off, tooltip tells you which way it'll flip. Powering off plays a real CRT-style collapse (screen squishes to a line, then a dot, then dark); powering on reverses it |
-| `Esc` | Close the in-app reader or the channel guide |
+| `Esc` | Close the in-app reader, the channel guide, the Spotlight form or YOU ON TV |
 
 Static (real per-pixel noise, not a CSS texture) plays continuously on first load until you pick a channel, and briefly on every channel change afterward, like actually tuning a signal.
 
@@ -211,6 +225,7 @@ It's a static file, so any static host works. No config needed.
 - All state (enabled channels, playback speed) lives in `localStorage`, scoped per browser/origin. The browser also remembers which channels it has already been offered, so when a release adds a channel, returning visitors get it switched on once. A channel you turn off stays off.
 - Each channel refreshes independently every 10 minutes, regardless of playback state. A channel that fails shows `SIGNAL LOST` with the underlying error, without affecting the others.
 - The `RELEASES` channel makes 7 requests per refresh (one per tracked project) against `api.github.com`, same host as the `GITHUB` channel. Combined, the GitHub-backed channels use 8 requests per 10-minute refresh cycle, which is 48 requests/hour at the default rate. GitHub's unauthenticated core API allows 60 requests/hour/IP, so that leaves roughly 12/hour of headroom for interactive README reads before the shared limit is hit. To stretch that budget, each channel's stories are remembered in your browser for just under 10 minutes, so reloading the page doesn't spend requests again, and READMEs you've already opened are reused for an hour. If the limit is hit anyway, the channel keeps showing its last good stories with a note saying how old they are, and only shows an error if it has nothing saved at all. Note that this limit is tied to the originating IP, so multiple people behind the same public IP (an office, a shared network) share the same budget.
+- `YOU ON TV` makes two core GitHub API requests per lookup (the profile, and up to 100 repos), from the visitor's own browser, so they come out of that visitor's 60 per hour and not out of the TV's refresh budget. Nothing about the lookup is stored.
 - `AGENT SKILLS` makes two requests per refresh (one per topic) to GitHub's search endpoint. GitHub counts search requests separately from the core limit that the `RELEASES` channel uses, so it doesn't touch the budget described above. The `GITHUB` channel also uses search, so the two channels together make three search requests per refresh, inside GitHub's unauthenticated search limit of 10 per minute.
 - `CVE` makes one request per refresh to NVD, well inside its keyless limit. `HN Video` and `AI Video` each make one request per refresh to HN's Algolia search API. None of these touch the GitHub budget above.
 - The power-on/off transition is a real CSS keyframe animation (`scale` + `filter: brightness/contrast`) on the screen element, not a fade. It genuinely collapses to a line and a dot, CRT-style.
