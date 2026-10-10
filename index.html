@@ -242,6 +242,9 @@
     white-space: nowrap;
   }
 
+  #tv:fullscreen #ontv-btn,
+  #tv:-webkit-full-screen #ontv-btn,
+  #tv.is-fullscreen #ontv-btn,
   #tv:fullscreen #guide-btn,
   #tv:-webkit-full-screen #guide-btn,
   #tv.is-fullscreen #guide-btn,
@@ -314,6 +317,7 @@
       font-size: 8px;
     }
     #tv.is-fullscreen #speed-btn,
+    #tv.is-fullscreen #ontv-btn,
     #tv.is-fullscreen #guide-btn {
       padding: 7px 8px !important;
       font-size: 9px !important;
@@ -365,7 +369,7 @@
     .chbtn .name { font-size: 8.5px; }
     .round-btn { width: 44px !important; height: 44px !important; }
     #watch-btn { font-size: 10px !important; padding: 10px 12px !important; flex: 1 1 100%; justify-content: center; order: -1; }
-    #speed-btn, #guide-btn { font-size: 10px !important; padding: 10px 12px !important; }
+    #speed-btn, #guide-btn, #ontv-btn { font-size: 10px !important; padding: 10px 12px !important; }
     #reader-title { font-size: 18px !important; }
     #reader-body { padding: 16px 16px 22px; }
     .desktop-hint { display: none; }
@@ -590,6 +594,78 @@
 .sp-primary { background: #fde68a; border-color: #fde68a; color: #1a1405; }
 .sp-primary:hover { border-color: #fff3bd; filter: brightness(1.06); }
 .sp-primary[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+/* YOU ON TV: a special report built from a visitor's public GitHub profile. It uses the TV screen's own neutral colours (the same ones as the Spotlight panel), so it sits inside DEV·TV rather than on top of it. */
+#ontv-btn.on { box-shadow: 0 0 0 1px var(--key-edge), inset 0 1px 3px rgba(0,0,0,0.45) !important; transform: translateY(1px); }
+/* The YOU ON TV key: a soft newsroom red, so it reads as its own thing next to the plain keys and the gold Spotlight key. */
+#ontv-btn { background: linear-gradient(180deg, #4a2226, #2e1417) !important; color: #ffb4b4 !important; border-top-color: #7a3a40 !important; }
+#ontv-btn.on { box-shadow: 0 0 0 1px #ff7a7a, inset 0 1px 3px rgba(0,0,0,0.45) !important; }
+#ontv-overlay { position: absolute; inset: 0; z-index: 11; display: none; flex-direction: column; background: #07070a; color: #e8e8ea; font-family: system-ui, -apple-system, 'Inter', sans-serif; animation: overlayIn 0.15s ease; }
+.ot-top { display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 22px; border-bottom: 1px solid #1c1c20; flex-shrink: 0; }
+.ot-live { font-size: 11px; letter-spacing: 0.08em; color: #ff7a7a; }
+.ot-x { margin-left: auto; background: none; border: none; color: #9a9aa2; cursor: pointer; font-size: 16px; padding: 6px; }
+.ot-x:hover { color: #f5f5f7; }
+.ot-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 22px 22px; }
+.ot-banner { display: flex; align-items: center; gap: 8px; background: rgba(255,92,92,0.10); border-bottom: 1px solid rgba(255,92,92,0.35); color: #ff7a7a; font-weight: 700; letter-spacing: 0.14em; font-size: 12px; padding: 7px 22px; margin: 0 -22px 16px; }
+.ot-banner i { width: 7px; height: 7px; border-radius: 50%; background: #ff5c5c; box-shadow: 0 0 8px #ff5c5c; animation: otBlink 1.2s steps(2, jump-none) infinite; }
+@keyframes otBlink { 0% { opacity: 1; } 100% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .ot-banner i { animation: none; } }
+.ot-cols { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.ot-h { margin: 0 0 6px; font-size: 20px; line-height: 1.25; letter-spacing: -0.01em; color: #f5f5f7; }
+.ot-lede { margin: 0 0 14px; font-size: 13px; line-height: 1.5; color: #9a9aa2; max-width: 58ch; }
+.ot-form { display: flex; gap: 8px; max-width: 420px; }
+.ot-at { font-family: 'Courier New', monospace; font-size: 20px; color: #fde68a; align-self: center; }
+.ot-input { flex: 1; min-width: 0; font: inherit; font-size: 16px; color: #f5f5f7; background: #0d0d11; border: 1px solid #2a2a30; border-radius: 6px; padding: 10px 12px; }
+.ot-input::placeholder { color: #4a4a52; }
+.ot-input:focus { outline: none; border-color: #fde68a; box-shadow: 0 0 0 2px rgba(253,230,138,0.15); }
+.ot-msg { margin-top: 10px; font-size: 12px; line-height: 1.45; color: #8a8a92; min-height: 1.45em; }
+.ot-err { color: #ff7a7a; }
+.ot-who { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.ot-avatar { width: 72px; height: 72px; border-radius: 50%; border: 2px solid #fde68a; background: #1c1c20; flex-shrink: 0; object-fit: cover; box-shadow: 0 0 18px rgba(253,230,138,0.18); }
+.ot-name { font-size: 22px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; color: #f5f5f7; overflow-wrap: anywhere; }
+.ot-login { display: inline-block; font-size: 14px; color: #fde68a; margin-top: 4px; text-decoration: none; }
+.ot-login:hover { text-decoration: underline; }
+.ot-news { display: block; width: 100%; text-align: left; background: linear-gradient(180deg, #121216, #09090c); border: 1px solid #25252b; border-left: 3px solid #ff5c5c; border-radius: 8px; padding: 12px 14px; min-height: 108px; cursor: pointer; color: inherit; font: inherit; }
+.ot-kicker { font-size: 12px; letter-spacing: 0.14em; color: #ff7a7a; font-weight: 700; }
+.ot-story { margin-top: 6px; font-size: 17px; line-height: 1.4; color: #f5f5f7; overflow-wrap: anywhere; }
+.ot-dots { display: flex; gap: 2px; margin: 0 0 6px; }
+.ot-dot { background: none; border: 0; padding: 14px 5px; cursor: pointer; }
+.ot-dot::before { content: ""; display: block; width: 18px; height: 3px; border-radius: 2px; background: #2a2a30; }
+.ot-dot[aria-current="true"]::before { background: #ff5c5c; }
+.ot-share { display: flex; flex-wrap: wrap; gap: 8px; }
+.ot-btn { display: inline-flex; align-items: center; justify-content: center; padding: 9px 14px; border-radius: 6px; border: 1px solid #3a3a40; background: #17171b; color: #e8e8ea; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; font-family: inherit; min-height: 40px; }
+.ot-btn:hover { border-color: #55555c; }
+.ot-btn.dark { background: #1f1f24; border-color: #55555c; color: #f5f5f7; }
+.ot-btn.gold { background: #fde68a; border-color: #fde68a; color: #1a1405; }
+.ot-btn.gold:hover { border-color: #fff3bd; filter: brightness(1.06); }
+.ot-btn[aria-disabled="true"], .ot-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ot-btn:focus-visible, .ot-dot:focus-visible, .ot-news:focus-visible, .ot-x:focus-visible, .ot-linkbtn:focus-visible { outline: 2px solid #fde68a; outline-offset: 2px; }
+.ot-spot { border-top: 1px solid #1c1c20; padding-top: 14px; }
+.ot-next { font-size: 10px; letter-spacing: 0.1em; color: #6a6a72; margin-bottom: 4px; }
+.ot-repos { border: 0; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ot-repos legend { font-size: 12px; font-weight: 600; color: #d8d8dc; margin-bottom: 6px; padding: 0; }
+.ot-repo { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; background: #0d0d11; border: 1px solid #25252b; border-radius: 6px; cursor: pointer; min-width: 0; }
+.ot-repo:has(input:checked) { border-color: #fde68a; box-shadow: 0 0 0 2px rgba(253,230,138,0.12); }
+.ot-repo input { margin-top: 3px; accent-color: #fde68a; }
+.ot-repo-main { min-width: 0; font-size: 13px; line-height: 1.35; color: #f5f5f7; }
+.ot-repo-main b { overflow-wrap: anywhere; }
+.ot-repo-stars { font-family: 'Courier New', monospace; font-size: 11px; color: #fde68a; margin-left: 6px; }
+.ot-repo-desc { display: block; color: #9a9aa2; font-size: 12px; overflow-wrap: anywhere; }
+.ot-consent { font-size: 12px; line-height: 1.5; color: #9a9aa2; margin: 0 0 12px; }
+.ot-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.ot-linkbtn { background: none; border: 0; padding: 6px 2px; font: inherit; font-size: 12px; color: #c8c8cf; text-decoration: underline; cursor: pointer; }
+.ot-linkbtn:hover { color: #f5f5f7; }
+.ot-status { margin-top: 10px; font-size: 12px; line-height: 1.45; color: #8a8a92; }
+.ot-status.ok { color: #7dffb0; }
+.ot-status.err { color: #ff7a7a; }
+.ot-hint { margin-top: 12px; font-size: 11px; color: #6a6a72; }
+@media (max-width: 760px) {
+  .ot-cols { grid-template-columns: 1fr; gap: 18px; }
+  .ot-body { padding: 0 16px 18px; }
+  .ot-banner { padding: 7px 16px; margin: 0 -16px 14px; }
+  .ot-top { padding: 6px 8px 6px 16px; }
+  .ot-story { font-size: 16px; }
+  .ot-share .ot-btn, .ot-actions .ot-btn { flex: 1 1 auto; }
+}
 /* Story text sizes. They grow a little with the screen, and much more in
    fullscreen, where a wall TV is read from across the room. */
 :root {
@@ -750,6 +826,7 @@
       </div>
 
       <div id="submit-overlay" role="dialog" aria-modal="true" aria-labelledby="submit-title"></div>
+      <div id="ontv-overlay" role="dialog" aria-modal="true" aria-labelledby="ontv-title"></div>
 
       <div id="ad-break" style="display:none;">
         <div class="ad-top"><span class="ad-tag"><span class="ad-tag-long">ADVERTISEMENT</span><span class="ad-tag-short">AD</span></span><span class="ad-countdown" id="ad-countdown"></span></div>
@@ -817,6 +894,7 @@
     <button id="watch-btn" class="btn" style="display:flex; align-items:center; gap:6px; padding:9px 14px; border-radius:6px; border:1px solid #000; font-size:11px; font-weight:600;">❚❚ STOP</button>
     <div id="channel-buttons" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
     <button id="guide-btn" class="btn mono" title="Channel guide (G)" aria-label="Open channel guide" style="padding:9px 10px; border-radius:6px; border:1px solid #000; border-top:1px solid var(--key-edge); background:linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color:var(--key-ink); font-size:11px; font-weight:600;">GUIDE</button>
+    <button id="ontv-btn" class="btn mono" title="Put any developer on TV" aria-label="YOU ON TV: put a developer on air" style="padding:9px 10px; border-radius:6px; border:1px solid #000; border-top:1px solid var(--key-edge); background:linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color:var(--key-ink); font-size:11px; font-weight:600;">★ YOU ON TV</button>
     <button id="speed-btn" class="btn mono" title="Playback speed" style="padding:9px 10px; border-radius:6px; border:1px solid #000; border-top:1px solid var(--key-edge); background:linear-gradient(180deg, var(--key-top), var(--key-bot)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.4); color:var(--key-ink); font-size:11px; font-weight:600;">1×</button>
     <button id="power-btn" class="round-btn btn" title="Turn TV off">⏻</button>
   </div>
@@ -2116,6 +2194,7 @@ function togglePower() {
   guideOpen = false;
   if (readerOpen) closeReader();
   if (submitOpen) closeSubmit();
+  if (onTvOpen) closeOnTv(true);
   const screenEl = document.getElementById("screen");
 
   if (power) {
@@ -2177,6 +2256,7 @@ function showIdent() {
 function manualChangeChannel(idx) {
   if (!power) return;
   guideOpen = false;
+  if (onTvOpen) closeOnTv(true);
   // Switching channels no longer forces a stop — it just changes what's
   // showing, exactly like a real remote. Playback state (playing or
   // stopped) carries over to whatever channel you land on. Picking a new
@@ -2233,7 +2313,7 @@ function startTick() {
   tickInterval = setInterval(() => {
     // Manual mode is now a frozen preview: nothing advances on its own.
     // Auto Pilot is the only thing that moves stories or channels forward.
-    if (!power || readerOpen || submitOpen || guideOpen || adBreakActive || mode !== "autopilot") return;
+    if (!power || readerOpen || submitOpen || onTvOpen || guideOpen || adBreakActive || mode !== "autopilot") return;
     const channels = getChannels();
     const cur = channels[channelIdx];
     const hasStories = cur && cur.status === "ready" && cur.stories.length > 0;
@@ -2570,7 +2650,7 @@ function spRead() {
   return { project: val("project"), by: val("by"), tagline: val("tagline"), link: val("link"), video: val("video"), description: val("description"), tags: val("tags"), email: val("email") };
 }
 
-function spValidate(v) {
+function spValidate(v, opts) {
   const e = {};
   const slug = spSlug(v.project);
   if (!v.project) e.project = "Give your project a name.";
@@ -2596,7 +2676,7 @@ function spValidate(v) {
   const tg = spParseTags(v.tags);
   if (tg.bad.length) e.tags = "Tags can use a-z, 0-9 and + # . - (up to 20 characters).";
   else if (tg.extra) e.tags = "Use at most 5 tags.";
-  if (!v.email) e.email = "Add an email so we can reply.";
+  if (!v.email) { if (!(opts && opts.emailOptional)) e.email = "Add an email so we can reply."; }
   else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email)) e.email = "That email doesn't look right.";
   let entry = null;
   if (!Object.keys(e).length) {
@@ -2782,6 +2862,487 @@ function closeSubmit() {
   if (spReturnFocus && spReturnFocus.focus) { try { spReturnFocus.focus(); } catch (e) {} }
 }
 
+/* YOU ON TV: a special report on any developer, built from their public GitHub profile in the visitor's own browser.
+   Two public API calls, nothing stored. The Spotlight block at the bottom is opt-in: nothing is sent until the visitor taps Submit,
+   and it reuses the Spotlight form's own validation (spValidate), field limits (SP_LIMITS) and delivery settings (SPOTLIGHT_EMAIL / SPOTLIGHT_SUBMIT_ENDPOINT). */
+const ONTV_USER_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/;
+const ONTV_SITE = "https://shouvik12.github.io/devtv/";
+const ONTV_ROTATE_MS = 5500;
+let onTvOpen = false, onTvBuilt = false, onTvReturnFocus = null, onTvData = null, onTvList = [], onTvIdx = 0, onTvTimer = null, onTvRun = 0, onTvSent = "", onTvMailDraft = null;
+
+const ONTV_JOKES = {
+  "JavaScript": "Sources say it is still arguing with undefined.",
+  "TypeScript": "Every claim in this report has been type-checked.",
+  "Python": "Indentation was reported calm and consistent.",
+  "Rust": "The borrow checker has issued a statement of approval.",
+  "Go": "Errors were handled. All of them. Repeatedly.",
+  "Java": "A factory for the factory has been commissioned.",
+  "C": "Memory was managed by hand. No further comment.",
+  "C++": "Templates are involved. Authorities are bracing.",
+  "C#": "LINQ expressions are reportedly flowing.",
+  "Ruby": "Gems were described as shiny and a little magical.",
+  "PHP": "Still serving pages. Still not going anywhere.",
+  "Swift": "Xcode is reportedly still indexing.",
+  "Kotlin": "Null safety is holding. Officials are cautiously optimistic.",
+  "Shell": "One misplaced space away from a very exciting evening.",
+  "HTML": "Every tag is balanced. For now.",
+  "CSS": "Everything is centered. Nobody knows how.",
+  "Lua": "Arrays start at 1. Nobody has been able to stop it.",
+  "Dart": "Widgets, widgets everywhere.",
+  "Scala": "Experts are still debating what it can do. It can do it.",
+  "Haskell": "A monad has been explained. Nobody retained it.",
+  "Elixir": "Processes are running. Some of them are even supervised.",
+  "Jupyter Notebook": "Cells were run out of order. Results may vary.",
+  "Dockerfile": "It works on their machine. Now it works on every machine.",
+};
+
+const otNum = (n) => Number(n || 0).toLocaleString("en-US");
+const otClip = (s, n) => { s = String(s == null ? "" : s).replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n - 1).trimEnd() + "\u2026" : s; };
+const otEl = (id) => document.getElementById("ot-" + id);
+function onTvBase() { return /^https?:$/.test(location.protocol) ? location.origin + location.pathname : ONTV_SITE; }
+function onTvLink(login) { return onTvBase() + "?on=" + encodeURIComponent(login); }
+
+function onTvTemplate() {
+  return `
+  <div class="ot-top"><span class="ot-live mono">\u25cf LIVE \u00b7 YOU ON TV</span><button type="button" class="ot-x" id="ot-close" aria-label="Close">\u2715</button></div>
+  <div class="ot-body" id="ot-body">
+    <div class="ot-banner mono"><i></i>SPECIAL REPORT</div>
+    <div id="ot-form-view">
+      <h2 class="ot-h" id="ontv-title">Who's on air tonight?</h2>
+      <p class="ot-lede">Type any GitHub username and DEV\u00b7TV breaks into a special report about them, built from their public profile.</p>
+      <form class="ot-form" id="ot-form" novalidate>
+        <span class="ot-at" aria-hidden="true">@</span>
+        <input class="ot-input" id="ot-user" type="text" placeholder="octocat" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="GitHub username">
+        <button type="submit" class="ot-btn dark" id="ot-go">Go on air</button>
+      </form>
+      <div class="ot-msg" id="ot-msg" role="status" aria-live="polite"></div>
+    </div>
+    <div id="ot-report" tabindex="-1" style="display:none; outline:none;"></div>
+  </div>`;
+}
+
+async function onTvFetch(login) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 12000);
+  const opts = { headers: { Accept: "application/vnd.github+json" }, signal: ctl.signal };
+  const base = "https://api.github.com/users/" + encodeURIComponent(login);
+  try {
+    const [ru, rr] = await Promise.all([fetch(base, opts), fetch(base + "/repos?per_page=100&sort=pushed", opts)]);
+    if (ru.status === 404) throw new Error("No GitHub user called @" + login + ". Check the spelling.");
+    if (!ru.ok) throw new Error(githubErrorMessage(ru, "GitHub couldn't load that profile"));
+    if (!rr.ok) throw new Error(githubErrorMessage(rr, "GitHub couldn't load their repos"));
+    const u = await ru.json();
+    const repos = await rr.json();
+    return onTvShape(u, Array.isArray(repos) ? repos : []);
+  } catch (err) {
+    if (err && err.name === "AbortError") throw new Error("GitHub took too long to answer. Try again in a moment.");
+    if (err instanceof TypeError) throw new Error("Couldn't reach GitHub. Check your connection and try again.");
+    throw err;
+  } finally { clearTimeout(timer); }
+}
+
+// Turns the two API answers into what the report needs. Forks are left out of every count, and the Spotlight picks also skip archived repos and the profile README repo.
+function onTvShape(u, repos) {
+  const login = String(u.login || "");
+  const originals = repos.filter(r => r && !r.fork);
+  const stars = originals.reduce((s, r) => s + (r.stargazers_count || 0), 0);
+  const langs = {};
+  originals.forEach(r => { if (r.language) langs[r.language] = (langs[r.language] || 0) + 1; });
+  const topLang = Object.keys(langs).sort((a, b) => langs[b] - langs[a])[0] || "";
+  const byPushed = (a, b) => new Date(b.pushed_at) - new Date(a.pushed_at);
+  const eligible = originals
+    .filter(r => !r.archived && !r.disabled && r.name && r.name.toLowerCase() !== login.toLowerCase() && /^https:\/\/github\.com\//.test(r.html_url || ""))
+    .sort((a, b) => ((b.stargazers_count || 0) - (a.stargazers_count || 0)) || byPushed(a, b));
+  const recent = originals.slice().sort(byPushed)[0] || null;
+  return {
+    login, name: otClip(u.name || login, 60),
+    avatar: /^https:\/\/avatars\.githubusercontent\.com\//.test(u.avatar_url || "") ? u.avatar_url : "",
+    created: u.created_at || "", followers: u.followers || 0, publicRepos: u.public_repos || 0, email: u.email || "",
+    stars, starsAtLeast: (u.public_repos || 0) > repos.length, topLang,
+    picks: eligible.slice(0, 3), top: eligible[0] || null, recent,
+    profile: "https://github.com/" + encodeURIComponent(login),
+  };
+}
+
+function onTvStories(d) {
+  const out = [];
+  const since = d.created ? new Date(d.created).getFullYear() : 0;
+  if (since && since < new Date().getFullYear()) out.push(["BREAKING", d.name + " has been shipping on GitHub since " + since + ". Sources confirm they have not stopped."]);
+  else out.push(["BREAKING", d.name + " has just joined GitHub. Sources confirm the first commits are landing."]);
+  out.push(["BY THE NUMBERS", d.stars > 0
+    ? otNum(d.stars) + (d.starsAtLeast ? "+" : "") + " star" + (d.stars === 1 ? "" : "s") + " across their own repos. Astronomers have been alerted."
+    : "No stars on their own repos yet. Every legend has an origin story."]);
+  if (d.topLang) out.push(["LANGUAGE DESK", "Top language: " + d.topLang + ". " + (ONTV_JOKES[d.topLang] || "Analysts call it a strong choice.")]);
+  if (d.top) out.push(["FAN FAVOURITE", (d.top.stargazers_count > 0 ? d.top.name + " leads the lineup with " + otNum(d.top.stargazers_count) + " star" + (d.top.stargazers_count === 1 ? "" : "s") + "." : d.top.name + " is the one to watch. Stars pending.")]);
+  if (d.recent && d.recent.pushed_at) out.push(["DEVELOPING STORY", "Latest push: " + d.recent.name + ", " + timeAgo(d.recent.pushed_at) + ". This story is developing."]);
+  out.push(["AUDIENCE", (d.followers > 0 ? otNum(d.followers) + " follower" + (d.followers === 1 ? "" : "s") + " tuned in." : "No followers yet, but the studio audience is rooting for them.") + " Want your own report? Press \u2605 YOU ON TV."]);
+  return out;
+}
+
+function onTvShowStory(i) {
+  if (!onTvList.length) return;
+  onTvIdx = (i + onTvList.length) % onTvList.length;
+  const k = otEl("kicker"), s = otEl("story");
+  if (k) k.textContent = onTvList[onTvIdx][0];
+  if (s) s.textContent = onTvList[onTvIdx][1];
+  document.querySelectorAll("#ot-dots .ot-dot").forEach((b, j) => b.setAttribute("aria-current", j === onTvIdx ? "true" : "false"));
+}
+function onTvStopRotate() { clearInterval(onTvTimer); onTvTimer = null; }
+function onTvStartRotate() {
+  onTvStopRotate();
+  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;   // the dots and a tap still step through the stories
+  onTvTimer = setInterval(() => { if (onTvOpen) onTvShowStory(onTvIdx + 1); }, ONTV_ROTATE_MS);
+}
+
+function onTvRenderReport(d) {
+  onTvList = onTvStories(d);
+  onTvIdx = 0;
+  onTvSent = "";
+  onTvMailDraft = null;
+  const sel = (id) => otEl(id);
+  const repoHtml = d.picks.map((r, i) => `<label class="ot-repo"><input type="radio" name="ot-repo" value="${i}"${i === 0 ? " checked" : ""}><span class="ot-repo-main"><b>${escapeHtml(r.name)}</b><span class="ot-repo-stars">\u2605 ${otNum(r.stargazers_count)}</span><span class="ot-repo-desc">${r.description ? escapeHtml(otClip(r.description, 100)) : "No description on GitHub yet"}</span></span></label>`).join("");
+  const spot = d.picks.length ? `
+      <section class="ot-spot" aria-labelledby="ot-spot-h">
+        <div class="ot-next mono">NEXT ON DEV\u00b7TV</div>
+        <h3 class="ot-h" id="ot-spot-h">Put a project on the Spotlight</h3>
+        <p class="ot-lede">Spotlight features interesting developer projects on DEV\u00b7TV. It's free, and we choose by hand.</p>
+        <fieldset class="ot-repos"><legend>Which project?</legend>${repoHtml}</fieldset>
+        <p class="ot-consent">Tap Submit and we receive your GitHub username, the numbers on your profile and this repo's details, so we can check them. Nothing is sent before you tap, and nothing goes on the channel without our review. By submitting you confirm this is your GitHub account.</p>
+        <div class="ot-actions">
+          <button type="button" class="ot-btn gold" id="ot-sp-submit">Submit for Spotlight</button>
+          <button type="button" class="ot-linkbtn" id="ot-sp-edit">Review and edit first</button>
+          <button type="button" class="ot-linkbtn" id="ot-sp-copy" style="display:none;">Copy as text</button>
+        </div>
+        <div class="ot-status" id="ot-sp-status" role="status" aria-live="polite"></div>
+      </section>` : "";
+  const avatar = d.avatar ? `<img class="ot-avatar" src="${escapeHtml(d.avatar)}" alt="" width="72" height="72">` : "";
+  otEl("report").innerHTML = `
+    <div class="ot-cols">
+      <div>
+        <div class="ot-who">${avatar}<div><div class="ot-name">${escapeHtml(d.name)}</div><a class="ot-login mono" href="${escapeHtml(d.profile)}" target="_blank" rel="noopener noreferrer">@${escapeHtml(d.login)}</a></div></div>
+        <button type="button" class="ot-news" id="ot-news" aria-label="Next story"><div class="ot-kicker mono" id="ot-kicker"></div><div class="ot-story" id="ot-story"></div></button>
+        <div class="ot-dots" id="ot-dots">${onTvList.map((s, i) => `<button type="button" class="ot-dot" aria-label="Story ${i + 1} of ${onTvList.length}: ${escapeHtml(s[0].toLowerCase())}" aria-current="false"></button>`).join("")}</div>
+        <div class="ot-share">
+          <a class="ot-btn dark" id="ot-post" target="_blank" rel="noopener noreferrer" href="#">Post on X</a>
+          <button type="button" class="ot-btn" id="ot-copy">Copy link</button>
+          <button type="button" class="ot-btn" id="ot-card">Download card</button>
+        </div>
+        <div class="ot-status" id="ot-share-status" role="status" aria-live="polite"></div>
+        <div class="ot-hint"><button type="button" class="ot-linkbtn" id="ot-again">Put someone else on air</button></div>
+      </div>
+      <div>${spot}</div>
+    </div>`;
+  otEl("form-view").style.display = "none";
+  otEl("report").style.display = "block";
+  otEl("post").href = "https://x.com/intent/post?text=" + encodeURIComponent("DEV\u00b7TV just broke into a special report on @" + d.login + ". Get yours:") + "&url=" + encodeURIComponent(onTvLink(d.login));
+  otEl("news").onclick = () => { onTvShowStory(onTvIdx + 1); onTvStartRotate(); };
+  document.querySelectorAll("#ot-dots .ot-dot").forEach((b, i) => { b.onclick = () => { onTvShowStory(i); onTvStartRotate(); }; });
+  otEl("copy").onclick = onTvCopyLink;
+  otEl("card").onclick = onTvDownload;
+  otEl("again").onclick = onTvShowForm;
+  if (d.picks.length) {
+    otEl("sp-submit").onclick = () => onTvSubmit(false);
+    otEl("sp-edit").onclick = () => onTvSubmit(true);
+    otEl("sp-copy").onclick = onTvCopyDraft;
+    onTvSpotIdle();
+    document.querySelectorAll('input[name="ot-repo"]').forEach(r => r.addEventListener("change", () => { onTvSent = ""; otEl("sp-submit").disabled = false; otEl("sp-submit").textContent = onTvSpotLabel(); onTvSpotIdle(); }));
+    otEl("sp-submit").textContent = onTvSpotLabel();
+  }
+  onTvShowStory(0);
+  onTvStartRotate();
+  otEl("report").focus({ preventScroll: true });
+  otEl("body").scrollTop = 0;
+}
+
+function onTvPick() {
+  const r = document.querySelector('input[name="ot-repo"]:checked');
+  return onTvData && onTvData.picks[r ? Number(r.value) : 0] || null;
+}
+
+// What the one-tap send would carry, filled from the repo's own public details. The visitor can change any of it through "Review and edit first".
+function onTvSpotValues(d, r) {
+  const desc = String(r.description || "").replace(/\s+/g, " ").trim();
+  const tags = [];
+  (Array.isArray(r.topics) ? r.topics : []).concat(r.language ? [String(r.language).toLowerCase()] : []).forEach(t => {
+    if (/^[a-z0-9+#.-]{1,20}$/.test(t) && !tags.includes(t) && tags.length < 5) tags.push(t);
+  });
+  return {
+    project: otClip(r.name, SP_LIMITS.project), by: otClip("@" + d.login, SP_LIMITS.by),
+    tagline: otClip(desc, SP_LIMITS.tagline), link: r.html_url, video: "",
+    description: desc.length > SP_LIMITS.tagline ? otClip(desc, SP_LIMITS.description) : "",
+    tags: tags.join(", "), email: /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email) ? d.email : "",
+  };
+}
+// One tap works when the repo already gives everything Spotlight requires (the reply-to email is optional here: the profile has the contact details).
+function onTvSpotReady() {
+  const r = onTvPick();
+  return !!(r && spValidate(onTvSpotValues(onTvData, r), { emailOptional: true }).entry);
+}
+function onTvSpotLabel() { return onTvSpotReady() ? "Submit for Spotlight" : "Add a one-liner and submit"; }
+
+// The email you read: credentials first, then the project, then the same spotlight.json entry the normal form produces.
+function onTvMail(d, r, entry) {
+  const line = (s) => String(s == null ? "" : s).replace(/[\r\n]+/g, " ");
+  const day = (iso) => String(iso || "").slice(0, 10) || "unknown";
+  const years = d.created ? Math.max(0, new Date().getFullYear() - new Date(d.created).getFullYear()) : 0;
+  const lic = r.license && r.license.spdx_id && r.license.spdx_id !== "NOASSERTION" ? r.license.spdx_id : "none listed";
+  const readable = [
+    "Sent from YOU ON TV. The developer tapped Submit themselves. GitHub ownership is not verified: anyone could type this username, so check before featuring.",
+    "",
+    "GitHub: @" + d.login + " - " + d.profile,
+    "Name: " + line(d.name),
+    "Public email: " + (d.email || "none listed"),
+    "Account created: " + day(d.created) + " (" + years + " years)",
+    "Followers: " + d.followers + " | Public repos: " + d.publicRepos + " | Stars on original repos: " + (d.starsAtLeast ? "at least " : "") + d.stars,
+    d.topLang ? "Top language: " + d.topLang : null,
+    "",
+    "Project: " + line(r.name),
+    "Link: " + r.html_url,
+    "Description: " + (r.description ? line(r.description) : "none on GitHub"),
+    "Stars: " + (r.stargazers_count || 0) + " | Forks: " + (r.forks_count || 0) + " | Language: " + (r.language || "n/a") + " | License: " + lic,
+    "Created: " + day(r.created_at) + " | Last push: " + day(r.pushed_at),
+    r.homepage ? "Homepage: " + line(r.homepage) : null,
+    entry.tags.length ? "Tags: " + entry.tags.join(", ") : null,
+    "Sent from: " + onTvBase(),
+  ].filter(x => x !== null).join("\n");
+  return { subject: "DEV\u00b7TV Spotlight: " + line(r.name) + " (@" + d.login + ", from YOU ON TV)", readable, json: JSON.stringify(entry, null, 2) };
+}
+
+function onTvSpotStatus(text, kind) {
+  const el = otEl("sp-status");
+  if (!el) return;
+  el.textContent = text;
+  el.className = "ot-status" + (kind ? " " + kind : "");
+}
+function onTvSpotIdle() {
+  onTvSpotStatus(SPOTLIGHT_SUBMIT_ENDPOINT ? (onTvSpotReady() ? "Goes straight to the DEV\u00b7TV inbox." : "This repo needs a one-line description first, so the form opens with everything else filled in.") : (onTvSpotReady() ? "Opens your email app with everything filled in. Press Send there." : "This repo needs a one-line description first, so the form opens with everything else filled in."));
+}
+
+function onTvOpenMail(url) { window.location.href = url; }
+
+// Both buttons end here. edit=true (or a repo that is missing something Spotlight requires) opens the normal Spotlight form, pre-filled, for review.
+async function onTvSubmit(edit) {
+  const d = onTvData, r = onTvPick();
+  if (!d || !r) return;
+  const v = onTvSpotValues(d, r);
+  const res = spValidate(v, { emailOptional: true });
+  if (edit || !res.entry) { onTvOpenForm(v); return; }
+  let last = 0; try { last = Number(localStorage.getItem(SP_SENT_KEY)) || 0; } catch (e) {}
+  if (Date.now() - last < 60000) { onTvSpotStatus("You just sent one. Please wait a minute before sending another.", "err"); return; }
+  const mail = onTvMail(d, r, res.entry);
+  const body = mail.readable + "\n\n--- spotlight.json entry ---\n" + mail.json;
+  if (!SPOTLIGHT_SUBMIT_ENDPOINT) {
+    onTvMailDraft = "To: " + SPOTLIGHT_EMAIL + "\nSubject: " + mail.subject + "\n\n" + body;
+    otEl("sp-copy").style.display = "inline";
+    onTvSpotStatus("Your email app should open with everything filled in. Press Send there. If nothing opens, use Copy as text and email it to " + SPOTLIGHT_EMAIL + ".", "ok");
+    onTvOpenMail(spMailto(mail));
+    return;
+  }
+  const btn = otEl("sp-submit");
+  btn.disabled = true;
+  onTvSpotStatus("Sending\u2026");
+  try {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 12000);
+    const resp = await fetch(SPOTLIGHT_SUBMIT_ENDPOINT, {
+      method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, signal: ctl.signal,
+      body: JSON.stringify({ _subject: mail.subject, name: "@" + d.login, email: v.email || undefined, message: body, entry: res.entry, github: d.login, source: "you-on-tv" }),
+    });
+    clearTimeout(timer);
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    try { localStorage.setItem(SP_SENT_KEY, String(Date.now())); } catch (e) {}
+    onTvSent = d.login + "/" + r.name;
+    btn.textContent = "Sent";
+    onTvSpotStatus("Sent. Thanks! We read every submission and pick by hand.", "ok");
+  } catch (err) {
+    btn.disabled = false;
+    onTvMailDraft = "To: " + SPOTLIGHT_EMAIL + "\nSubject: " + mail.subject + "\n\n" + body;
+    otEl("sp-copy").style.display = "inline";
+    onTvSpotStatus("Couldn't send it from here. Use Copy as text and email it to " + SPOTLIGHT_EMAIL + ", or Review and edit first.", "err");
+  }
+}
+
+function onTvOpenForm(v) {
+  closeOnTv(true);
+  spBuild();
+  SP_FIELDS.forEach(f => { if (spEl(f) && v[f] !== undefined) spEl(f).value = v[f]; });
+  spTouched.clear();
+  spAttempted = false;
+  spUpdate();
+  openSubmit();
+}
+
+async function onTvCopyText(text) {
+  if (!(navigator.clipboard && navigator.clipboard.writeText)) return spLegacyCopy(text);
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) { return spLegacyCopy(text); }
+}
+async function onTvCopyDraft() {
+  const ok = onTvMailDraft ? await onTvCopyText(onTvMailDraft) : false;
+  onTvSpotStatus(ok ? "Copied. Paste it into an email to " + SPOTLIGHT_EMAIL + "." : "Couldn't copy automatically. Use Review and edit first instead.", ok ? "ok" : "err");
+}
+function onTvShareStatus(text, kind) {
+  const el = otEl("share-status");
+  if (el) { el.textContent = text; el.className = "ot-status" + (kind ? " " + kind : ""); }
+}
+async function onTvCopyLink() {
+  if (!onTvData) return;
+  const ok = await onTvCopyText(onTvLink(onTvData.login));
+  onTvShareStatus(ok ? "Link copied." : "Couldn't copy automatically. Select the address from the top of the browser instead.", ok ? "ok" : "err");
+}
+
+// The downloadable card: the same bright newsroom look as the report, with the link printed on it so anyone who sees the picture can find DEV\u00b7TV.
+function onTvWrap(g, text, x, y, maxW, lineH, maxLines) {
+  const words = String(text).split(" ");
+  let line = "", n = 0;
+  for (let i = 0; i < words.length; i++) {
+    const test = line ? line + " " + words[i] : words[i];
+    if (g.measureText(test).width > maxW && line) {
+      n++;
+      if (n === maxLines) { g.fillText(line.replace(/[ .,;:]+$/, "") + "\u2026", x, y); return; }
+      g.fillText(line, x, y); y += lineH; line = words[i];
+    } else line = test;
+  }
+  g.fillText(line, x, y);
+}
+function onTvDrawCard(d, story, img) {
+  const W = 1200, H = 675, sans = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", mono = "'Courier New', monospace";
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g = c.getContext("2d");
+  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#121216"); bg.addColorStop(1, "#07070a");
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  g.fillStyle = "#2a1215"; g.fillRect(0, 0, W, 72);
+  g.fillStyle = "#ff5c5c"; g.fillRect(0, 69, W, 3);
+  g.textBaseline = "middle"; g.fillStyle = "#ff7a7a"; g.font = "700 28px " + mono;
+  g.textAlign = "left"; g.fillText("● SPECIAL REPORT", 56, 36);
+  g.textAlign = "right"; g.fillStyle = "#e8e8ea"; g.fillText("DEV·TV", W - 56, 36);
+  g.textAlign = "left";
+  const cx = 56 + 84, cy = 112 + 84;
+  g.save(); g.beginPath(); g.arc(cx, cy, 84, 0, Math.PI * 2); g.closePath(); g.clip();
+  if (img) g.drawImage(img, 56, 112, 168, 168);
+  else { g.fillStyle = "#1c1c20"; g.fillRect(56, 112, 168, 168); g.fillStyle = "#fde68a"; g.font = "700 80px " + sans; g.textAlign = "center"; g.fillText((d.login[0] || "?").toUpperCase(), cx, cy + 4); g.textAlign = "left"; }
+  g.restore();
+  g.beginPath(); g.arc(cx, cy, 84, 0, Math.PI * 2); g.lineWidth = 5; g.strokeStyle = "#fde68a"; g.stroke();
+  g.fillStyle = "#f5f5f7"; g.font = "700 56px " + sans; g.fillText(otClip(d.name, 28), 256, 160);
+  g.fillStyle = "#fde68a"; g.font = "30px " + mono; g.fillText("@" + d.login, 256, 220);
+  const pg = g.createLinearGradient(0, 304, 0, 524); pg.addColorStop(0, "#121216"); pg.addColorStop(1, "#09090c");
+  g.fillStyle = pg; g.fillRect(56, 304, 1088, 220);
+  g.strokeStyle = "#25252b"; g.lineWidth = 2; g.strokeRect(56, 304, 1088, 220);
+  g.fillStyle = "#ff5c5c"; g.fillRect(56, 304, 6, 220);
+  g.fillStyle = "#ff7a7a"; g.font = "700 24px " + mono; g.fillText(story[0], 92, 338);
+  g.fillStyle = "#f5f5f7"; g.font = "36px " + sans;
+  onTvWrap(g, story[1], 92, 392, 1010, 46, 3);
+  g.font = "700 28px " + sans; g.fillStyle = "#e8e8ea";
+  g.fillText("★ " + otNum(d.stars) + (d.starsAtLeast ? "+" : "") + " stars   ·   " + otNum(d.followers) + " followers   ·   " + otNum(d.publicRepos) + " repos", 56, 566);
+  g.fillStyle = "#07070a"; g.fillRect(0, 612, W, 63);
+  g.save(); g.beginPath(); g.rect(0, 604, W, 8); g.clip();
+  for (let x = -20; x < W + 20; x += 36) { g.fillStyle = "#ff5c5c"; g.beginPath(); g.moveTo(x, 612); g.lineTo(x + 18, 612); g.lineTo(x + 26, 604); g.lineTo(x + 8, 604); g.closePath(); g.fill(); }
+  g.restore();
+  g.fillStyle = "#9a9aa2"; g.font = "26px " + mono; g.textAlign = "left";
+  const url = onTvBase().replace(/^https?:\/\//, "").replace(/index\.html$/, "").replace(/\/$/, "");
+  g.fillText(otClip(url, 44), 56, 644);
+  g.textAlign = "right"; g.fillStyle = "#fde68a"; g.fillText("Get yours: press ★ YOU ON TV", W - 56, 644);
+  return c;
+}
+async function onTvDownload() {
+  const d = onTvData;
+  if (!d) return;
+  onTvShareStatus("Making your card\u2026");
+  const story = onTvList[onTvIdx] || onTvList[0];
+  const img = d.avatar ? await new Promise(res => {
+    const i = new Image(); i.crossOrigin = "anonymous";
+    const t = setTimeout(() => res(null), 6000);
+    i.onload = () => { clearTimeout(t); res(i); }; i.onerror = () => { clearTimeout(t); res(null); };
+    i.src = d.avatar + (d.avatar.includes("?") ? "&" : "?") + "s=400";
+  }) : null;
+  let blob = null;
+  for (const use of img ? [img, null] : [null]) {   // if the avatar blocks export, redraw without it
+    try { blob = await new Promise(res => onTvDrawCard(d, story, use).toBlob(res, "image/png")); } catch (e) { blob = null; }
+    if (blob) break;
+  }
+  if (!blob) { onTvShareStatus("Couldn't make the card on this browser. Copy the link instead.", "err"); return; }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "devtv-" + d.login + ".png";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  onTvShareStatus("Card saved. Your link is printed on it.", "ok");
+}
+
+function onTvShowForm() {
+  onTvStopRotate();
+  onTvRun++;
+  otEl("report").style.display = "none";
+  otEl("form-view").style.display = "block";
+  otEl("msg").textContent = ""; otEl("msg").className = "ot-msg";
+  otEl("go").disabled = false;
+  otEl("user").select();
+  otEl("user").focus();
+}
+
+async function onTvGo(raw) {
+  const login = String(raw || "").trim().replace(/^@/, "");
+  const msg = otEl("msg"), go = otEl("go");
+  const say = (t, err) => { msg.textContent = t; msg.className = "ot-msg" + (err ? " ot-err" : ""); };
+  if (!login) { say("Type a GitHub username.", true); return; }
+  if (!ONTV_USER_RE.test(login)) { say("That doesn't look like a GitHub username. Use letters, numbers and hyphens.", true); return; }
+  const run = ++onTvRun;
+  otEl("user").value = login;
+  go.disabled = true;
+  say("Going on air\u2026");
+  try {
+    const d = await onTvFetch(login);
+    if (run !== onTvRun || !onTvOpen) return;
+    onTvData = d;
+    onTvRenderReport(d);
+  } catch (err) {
+    if (run !== onTvRun || !onTvOpen) return;
+    say(err && err.message ? err.message : "Something went wrong. Try again.", true);
+  } finally {
+    if (run === onTvRun) go.disabled = false;
+  }
+}
+
+function onTvBuild() {
+  if (onTvBuilt) return;
+  document.getElementById("ontv-overlay").innerHTML = onTvTemplate();
+  otEl("close").onclick = () => closeOnTv();
+  otEl("form").addEventListener("submit", (e) => { e.preventDefault(); onTvGo(otEl("user").value); });
+  onTvBuilt = true;
+}
+
+function openOnTv(login) {
+  if (!power) return;
+  if (readerOpen) closeReader();
+  if (submitOpen) closeSubmit();
+  // Same as the guide: opening this escapes a commercial break, and the boot static would swallow taps.
+  if (adBreakActive) { adBreakActive = false; document.getElementById("ad-break").style.display = "none"; }
+  const staticEl = document.getElementById("boot-static");
+  if (staticEl && staticEl.style.display !== "none") stopStaticSilently();
+  showSettings = false;
+  guideOpen = false;
+  onTvBuild();
+  onTvReturnFocus = document.activeElement;
+  onTvOpen = true;
+  render();
+  // On a phone the keys sit below the screen, so bring the report into view instead of opening it off the top of the page.
+  try { const sc = document.getElementById("screen").getBoundingClientRect(); if (sc.top < 0 || sc.top > window.innerHeight * 0.6) document.getElementById("screen").scrollIntoView({ block: "start" }); } catch (e) {}
+  if (login && ONTV_USER_RE.test(login)) {
+    otEl("report").style.display = "none"; otEl("form-view").style.display = "block";
+    otEl("user").value = login; onTvGo(login); return;
+  }
+  onTvShowForm();
+  // On a touch screen, focusing the box opens the keyboard at once and hides the report area, so let the person tap it.
+  if (window.matchMedia && matchMedia("(pointer: coarse)").matches) document.activeElement && document.activeElement.blur();
+}
+
+function closeOnTv(skipFocus) {
+  if (!onTvOpen) return;
+  onTvOpen = false;
+  onTvRun++;
+  onTvStopRotate();
+  render();
+  if (!skipFocus && onTvReturnFocus && onTvReturnFocus.focus) { try { onTvReturnFocus.focus(); } catch (e) {} }
+}
+
 /* Channel guide: an overlay on the screen listing every channel and what is on it right now. */
 let guideOpen = false, guideSel = 0, guideReturnFocus = null;
 
@@ -2789,6 +3350,7 @@ function openGuide() {
   if (!power) return;
   if (readerOpen) closeReader();
   if (submitOpen) closeSubmit();
+  if (onTvOpen) closeOnTv(true);
   // Same as flipping channels during a real commercial break: opening the guide escapes the ad.
   if (adBreakActive) { adBreakActive = false; document.getElementById("ad-break").style.display = "none"; }
   // The boot static can still be looping over the screen and would swallow taps on the guide.
@@ -2866,6 +3428,9 @@ function render() {
   document.getElementById("settings-overlay").style.display = showSettings ? "flex" : "none";
   document.getElementById("reader-overlay").style.display = readerOpen ? "flex" : "none";
   document.getElementById("guide-overlay").style.display = (guideOpen && power) ? "flex" : "none";
+  document.getElementById("ontv-overlay").style.display = (onTvOpen && power) ? "flex" : "none";
+  document.getElementById("ontv-btn").classList.toggle("on", onTvOpen && power);
+  document.getElementById("ontv-btn").style.opacity = power ? "1" : "0.4";
   document.getElementById("guide-btn").classList.toggle("on", guideOpen && power);
   document.getElementById("guide-btn").style.opacity = power ? "1" : "0.4";
   if (guideOpen && power) renderGuide();
@@ -2874,13 +3439,13 @@ function render() {
   // Hiding it while reading is free: no functional loss, since it's just
   // ornamental, unlike the control deck below (which stays, so channel
   // switching remains available while reading).
-  document.getElementById("antenna").style.display = (readerOpen || submitOpen) ? "none" : "block";
+  document.getElementById("antenna").style.display = (readerOpen || submitOpen || onTvOpen) ? "none" : "block";
   // The outer frame's own padding and the screen's fixed 16:10 aspect
   // ratio both relax while reading — the ratio in particular was capping
   // the screen's height well below what's actually available on a tall
   // mobile viewport, wasting real reading room for no functional reason.
-  document.getElementById("tv").classList.toggle("reading", readerOpen || submitOpen);
-  document.getElementById("screen").classList.toggle("reading", readerOpen || submitOpen);
+  document.getElementById("tv").classList.toggle("reading", readerOpen || submitOpen || onTvOpen);
+  document.getElementById("screen").classList.toggle("reading", readerOpen || submitOpen || onTvOpen);
   document.getElementById("screen").classList.toggle("off", !power);
   document.getElementById("content").style.display = power ? "flex" : "none";
   document.getElementById("no-signal").style.display = power ? "none" : "flex";
@@ -3095,7 +3660,7 @@ function render() {
   // The overlay sits visually on top, but the ticker's animation keeps
   // compositing every frame underneath it unless explicitly paused — that's
   // wasted GPU work competing with a scroll gesture inside the overlay.
-  tickerEl.style.animationPlayState = (readerOpen || showSettings || guideOpen) ? "paused" : "running";
+  tickerEl.style.animationPlayState = (readerOpen || showSettings || guideOpen || onTvOpen) ? "paused" : "running";
 
   const btnsEl = document.getElementById("channel-buttons");
   btnsEl.innerHTML = "";
@@ -3215,6 +3780,7 @@ syncFullscreenState();
 /* Keyboard shortcuts. */
 document.addEventListener("keydown", (e) => {
   if (submitOpen) { if (e.key === "Escape") closeSubmit(); return; }
+  if (onTvOpen) { if (e.key === "Escape") closeOnTv(); return; }
   if (readerOpen && e.key === "Escape") { closeReader(); return; }
   const isG = (e.key === "g" || e.key === "G") && !e.ctrlKey && !e.metaKey && !e.altKey;
   if (guideOpen && power) {
@@ -3262,7 +3828,7 @@ document.addEventListener("visibilitychange", () => {
 window.addEventListener("focus", maybeRefreshOnReturn);
 
 /* Button wiring and startup. Loads last. */
-document.getElementById("gear").onclick = () => { if (submitOpen) closeSubmit(); guideOpen = false; showSettings = !showSettings; render(); };
+document.getElementById("gear").onclick = () => { if (submitOpen) closeSubmit(); if (onTvOpen) closeOnTv(true); guideOpen = false; showSettings = !showSettings; render(); };
 
 document.getElementById("skin-btn").onclick = cycleSkin;
 
@@ -3287,6 +3853,9 @@ document.getElementById("watch-btn").onclick = toggleAutoPilot;
 
 document.getElementById("guide-btn").onclick = toggleGuide;
 
+// If the TV is off, switch it on first so the click is never a silent no-op.
+document.getElementById("ontv-btn").onclick = () => { if (onTvOpen) closeOnTv(); else if (!power) { togglePower(); setTimeout(() => openOnTv(), 700); } else openOnTv(); };
+
 document.getElementById("close-guide").onclick = closeGuide;
 
 // Tapping the channel number or name on the screen opens the guide too.
@@ -3308,6 +3877,9 @@ playStatic(null);
 
 // ?submit in the address opens the Spotlight form straight away, so it can be linked to.
 if (/[?&]submit(=|&|$)/.test(location.search)) openSubmit();
+
+// ?on=username opens that developer's special report straight away, so a shared card or link lands on it.
+(() => { try { const v = new URLSearchParams(location.search).get("on"); if (v && ONTV_USER_RE.test(v)) openOnTv(v); } catch (e) {} })();
 </script>
 </body>
 </html>
