@@ -1187,7 +1187,7 @@ function fmtPerMillion(perToken) {
 }
 
 async function fetchNewModelsStories() {
-  const res = await fetch("https://openrouter.ai/api/v1/models?sort=newest&output_modalities=text,image", { cache: "no-store" });
+  const res = await fetch("https://openrouter.ai/api/v1/models?sort=newest&output_modalities=all", { cache: "no-store" });
   if (!res.ok) throw new Error("OpenRouter API " + res.status);
   const data = await res.json();
   const list = Array.isArray(data.data) ? data.data : [];
@@ -1198,6 +1198,11 @@ async function fetchNewModelsStories() {
   const groups = new Map();
   for (const m of list) {
     if (!m || typeof m.id !== "string" || !(Number(m.created) > 0)) continue;
+    // "all" also returns output types that are not generative (embeddings are
+    // noise on this channel), so those are skipped; text, image, audio,
+    // video and "decisions" models still get through.
+    const outs = (m.architecture && Array.isArray(m.architecture.output_modalities)) ? m.architecture.output_modalities : [];
+    if (outs.length === 1 && outs[0] === "embeddings") continue;
     const base = m.id.split(":")[0];
     const cur = groups.get(base);
     const isBase = m.id === base;
@@ -1210,7 +1215,11 @@ async function fetchNewModelsStories() {
     const inP = m.pricing ? fmtPerMillion(m.pricing.prompt) : null;
     const outP = m.pricing ? fmtPerMillion(m.pricing.completion) : null;
     const price = inP && outP ? (inP === "free" && outP === "free" ? "free" : inP + " in / " + outP + " out per 1M tokens") : "";
-    const facts = [fmtContext(Number(m.context_length)), price].filter(Boolean);
+    // Models that don't output text (image, decisions...) say so, so they
+    // don't read like chatbots.
+    const outMods = (m.architecture && Array.isArray(m.architecture.output_modalities)) ? m.architecture.output_modalities : [];
+    const outTag = (outMods.length && !(outMods.length === 1 && outMods[0] === "text")) ? "outputs " + outMods.join("+") : "";
+    const facts = [outTag, fmtContext(Number(m.context_length)), price].filter(Boolean);
     const desc = (typeof m.description === "string" ? m.description : "").replace(/\s+/g, " ").trim();
     const okId = /^[A-Za-z0-9._~\/-]+(?::[A-Za-z0-9._-]+)?$/.test(m.id);
     return {
