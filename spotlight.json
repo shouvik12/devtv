@@ -30,6 +30,23 @@
       ],
       "video": "https://www.youtube.com/shorts/zX_vYYKfxm4",
       "added": "2026-10-05"
+    },
+    {
+      "id": "cogz",
+      "project": "CogZ",
+      "tagline": "Local-first, code-aware engineering cognition for AI coding agents",
+      "description": "Persistent memory, contextual retrieval, and continuous cognition about your codebase.",
+      "by": "@balaianu",
+      "link": "https://github.com/balaianu/CogZ",
+      "tags": [
+        "agent-memory",
+        "ai-coding-agent",
+        "code-awareness",
+        "code-indexing",
+        "context-engine"
+      ],
+      "video": "",
+      "added": "2026-10-11"
     }
   ],
   "note": "Sorting through submissions"
