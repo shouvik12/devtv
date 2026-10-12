@@ -47,6 +47,23 @@
       ],
       "video": "",
       "added": "2026-10-11"
+    },
+    {
+      "id": "is-kit",
+      "project": "is-kit",
+      "tagline": "Build small guards. Compose them. A lightweight, zero-dependency toolkit for building reusable TypeScript type guards",
+      "description": "is-kit is a lightweight, zero-dependency toolkit for building reusable TypeScript type guards. It's not just a pile of isX helpers: you write small checks, compose them with and / or / not, validate object shapes and collections, and keep TypeScript narrowing natural in regular control flow. Runtime-safe, composable, and ergonomic, without a heavy schema workflow.",
+      "by": "@nyaomaru",
+      "link": "https://github.com/nyaomaru/is-kit",
+      "tags": [
+        "typescript",
+        "opensource",
+        "devtools",
+        "typeguard",
+        "utility"
+      ],
+      "video": "",
+      "added": "2026-10-12"
     }
   ],
   "note": "Sorting through submissions"

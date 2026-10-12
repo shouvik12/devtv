@@ -100,8 +100,8 @@
   #reader-overlay { position: absolute; inset: 0; z-index: 12; background: #08080a; display: none; flex-direction: column; animation: overlayIn 0.15s ease; }
   #reader-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid #1c1c20; flex-shrink: 0; }
   #reader-body { flex: 1; overflow-y: auto; padding: 20px 22px 28px; -webkit-overflow-scrolling: touch; }
-  #reader-body h1, #reader-body h2, #reader-body h3 { color: #f5f5f7; line-height: 1.3; margin: 18px 0 8px; }
-  #reader-body h1 { font-size: 20px; } #reader-body h2 { font-size: 17px; } #reader-body h3 { font-size: 15px; }
+  #reader-body h1, #reader-body h2, #reader-body h3, #reader-body h4 { color: #f5f5f7; line-height: 1.3; margin: 18px 0 8px; }
+  #reader-body h1 { font-size: 20px; } #reader-body h2 { font-size: 17px; } #reader-body h3 { font-size: 15px; } #reader-body h4 { font-size: 14px; }
   #reader-body p { color: #c8c8cc; font-size: 14px; line-height: 1.65; margin: 0 0 12px; }
   #reader-body code { background: #1c1c20; padding: 1px 5px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 13px; color: #d8d8dc; }
   #reader-body a { text-decoration: underline; }
@@ -1016,6 +1016,11 @@ function mdLite(md) {
   // the reader centers images with its own CSS instead.
   const rawImages = [];
   text = text
+    // A whole-line <h1>-<h4> (often <h2 align="center">) becomes a markdown
+    // heading. Only the level and the inner text survive, so attributes
+    // can't ride along. Anchored to whole lines so inline code that merely
+    // mentions an <h2> tag is left alone.
+    .replace(/^[ \t]*<h([1-4])(?:\s[^>]*)?>(.*?)<\/h\1>[ \t]*$/gim, (m, n, inner) => "\n" + "#".repeat(parseInt(n, 10)) + " " + inner.trim() + "\n")
     .replace(/<p\s+align=["']center["']\s*>/gi, "")
     .replace(/<div\s+align=["']center["']\s*>/gi, "")
     .replace(/<\/p>/gi, "")
@@ -1074,14 +1079,22 @@ function mdLite(md) {
     // turned into a broken or unsafe link.
     .replace(/<a\s+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (tag, href, inner) => {
       if (!/^https?:\/\//i.test(href)) return inner;
-      rawImages.push(`<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(inner)}</a>`);
+      // The inner part may already hold image placeholders (a badge is
+      // <a><img></a>). Resolve those right here and escape only the text
+      // around them; otherwise the final single-pass replace never reaches
+      // the nested placeholder and it shows up as literal "RAWIMG1" text.
+      const innerHtml = inner.split(/(\u0000RAWIMG\d+\u0000)/).map((part) => {
+        const t = part.match(/^\u0000RAWIMG(\d+)\u0000$/);
+        return t ? rawImages[parseInt(t[1], 10)] : escapeHtml(part);
+      }).join("");
+      rawImages.push(`<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${innerHtml}</a>`);
       return `\u0000RAWIMG${rawImages.length - 1}\u0000`;
     });
 
   text = escapeHtml(text);
 
   const inlineFormat = (s) => s
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g, '<img src="$2" alt="$1" loading="lazy">')
@@ -1149,6 +1162,7 @@ function mdLite(md) {
     }
 
     let m;
+    if ((m = line.match(/^#### (.*)$/))) { out.push(`<h4>${inlineFormat(m[1])}</h4>`); i++; continue; }
     if ((m = line.match(/^### (.*)$/))) { out.push(`<h3>${inlineFormat(m[1])}</h3>`); i++; continue; }
     if ((m = line.match(/^## (.*)$/))) { out.push(`<h2>${inlineFormat(m[1])}</h2>`); i++; continue; }
     if ((m = line.match(/^# (.*)$/))) { out.push(`<h1>${inlineFormat(m[1])}</h1>`); i++; continue; }
@@ -1159,13 +1173,15 @@ function mdLite(md) {
     while (
       i < lines.length && lines[i].trim() !== "" &&
       !/^\s*[-*+]\s+/.test(lines[i]) && !/^\s*\d+\.\s+/.test(lines[i]) &&
-      !/^#{1,3}\s/.test(lines[i]) && !/^\u0000CODEBLOCK\d+\u0000$/.test(lines[i]) &&
+      !/^#{1,4}\s/.test(lines[i]) && !/^\u0000CODEBLOCK\d+\u0000$/.test(lines[i]) &&
       !(lines[i].includes("|") && i + 1 < lines.length && isTableSeparator(lines[i + 1]))
     ) {
       paraLines.push(lines[i]);
       i++;
     }
-    if (paraLines.length) out.push(`<p>${paraLines.map(inlineFormat).join("<br>")}</p>`);
+    // Format the whole paragraph at once so **bold** that wraps across a
+    // source line break still pairs up, then turn the line breaks into <br>.
+    if (paraLines.length) out.push(`<p>${inlineFormat(paraLines.join("\n")).replace(/\n/g, "<br>")}</p>`);
   }
 
   return out.join("")
@@ -1767,10 +1783,20 @@ function resolveReadmeImage(repo, path) {
   return `https://raw.githubusercontent.com/${repo}/HEAD/${clean}`;
 }
 
+// Relative links to other files in the repo ([docs](./docs/agent-rules.md))
+// point at the repo's page on GitHub. Same narrow path check as images.
+function resolveReadmeLink(repo, path) {
+  if (/^(https?:|data:|mailto:|\/\/|#)/i.test(path)) return null;
+  const clean = path.replace(/^\.?\/+/, "");
+  if (!clean || clean.includes("..") || !/^[A-Za-z0-9._\/@+#-]+$/.test(clean)) return null;
+  return `https://github.com/${repo}/blob/HEAD/${clean}`;
+}
+
 function absolutizeReadmeImages(text, repo) {
   return String(text)
     .replace(/(<img\b[^>]*?\bsrc\s*=\s*)(["'])([^"']+)\2/gi, (m, pre, q, path) => { const u = resolveReadmeImage(repo, path); return u ? pre + q + u + q : m; })
-    .replace(/(!\[[^\]]*\]\()([^)\s]+)(\))/g, (m, pre, path, post) => { const u = resolveReadmeImage(repo, path); return u ? pre + u + post : m; });
+    .replace(/(!\[[^\]]*\]\()([^)\s]+)(\))/g, (m, pre, path, post) => { const u = resolveReadmeImage(repo, path); return u ? pre + u + post : m; })
+    .replace(/(^|[^!])(\[[^\]]+\]\()([^)\s]+)(\))/gm, (m, lead, pre, path, post) => { const u = resolveReadmeLink(repo, path); return u ? lead + pre + u + post : m; });
 }
 
 // READMEs often use small presentational HTML (<br>, <big>, <center>) that
