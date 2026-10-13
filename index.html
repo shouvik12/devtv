@@ -279,6 +279,7 @@
       gap: 6px !important;
     }
     #tv.is-fullscreen #ph-badge,
+    #tv.is-fullscreen #il-badge,
     #tv.is-fullscreen #star-link {
       display: none !important;
     }
@@ -755,6 +756,14 @@
   #ch-bug { white-space: nowrap; }
   @media (max-width: 640px) { #devtv-live { display: none; } #ch-bug { padding: 2px 6px; } #body-area .story-hint { padding: 3px 8px; margin-top: 10px !important; } }
   @media (max-width: 400px) { #ch-bug { gap: 4px; margin-left: 2px; } #ch-bug #ch-num, #ch-bug #ch-name { font-size: 11px !important; letter-spacing: 0.02em; } }
+  #il-badge { -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+  #il-badge:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (max-width: 640px) {
+    #il-badge { height: 24px !important; padding: 0 8px !important; gap: 5px !important; border-radius: 6px !important; }
+    #il-badge .il-label, #il-badge .il-long { display: none !important; }
+    #il-badge .il-text { font-size: 11px !important; }
+  }
+  @media (max-width: 340px) { #il-badge { height: 20px !important; padding: 0 6px !important; } #il-badge .il-text { font-size: 10px !important; } }
 </style>
 </head>
 <body>
@@ -770,6 +779,7 @@
     <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
       <span id="tv-logo" style="flex-shrink:0;">DEV·TV</span>
       <a id="ph-badge" href="https://www.producthunt.com/products/dev-tv?launch=dev-tv&amp;utm_source=badge-top-post-badge&amp;utm_medium=badge&amp;utm_campaign=badge-dev-tv" target="_blank" rel="noopener noreferrer" title="#5 Product of the Day on Product Hunt" aria-label="#5 Product of the Day on Product Hunt" style="display:inline-flex; align-items:center; line-height:0; flex-shrink:0;"><img src="https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=1260239&amp;theme=dark&amp;period=daily" alt="DEV·TV - #5 Product of the Day | Product Hunt" style="height:32px; width:auto; opacity:0.9;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.9"></a>
+      <a id="il-badge" href="https://www.indieneed.com/weekly-winners" target="_blank" rel="noopener noreferrer" title="#1 on IndieLink" aria-label="#1 on IndieLink" style="display:inline-flex; align-items:center; gap:8px; height:32px; box-sizing:border-box; padding:0 12px; border:1px solid rgba(255,255,255,0.18); border-radius:8px; background:rgba(255,255,255,0.04); color:#f5f5f7; text-decoration:none; flex-shrink:0; opacity:0.9; line-height:1;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.9"><span aria-hidden="true" style="font-size:14px; line-height:1;">🏆</span><span style="display:flex; flex-direction:column; gap:2px;"><span class="mono il-label" style="font-size:8px; letter-spacing:0.12em; color:#8a8a92; text-transform:uppercase;">IndieLink</span><span class="il-text" style="font-size:11px; font-weight:700; letter-spacing:0.02em;">#1<span class="il-long"> Product</span></span></span></a>
     </div>
     <div id="tv-right-group" style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
       <span id="clock" class="mono" style="font-size:11px; white-space:nowrap; flex-shrink:0;"></span>
