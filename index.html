@@ -1378,26 +1378,33 @@ async function fetchDevToStories() {
 
 /* HUGGING FACE channel. */
 async function fetchHuggingFaceStories() {
-  // Fetch a larger pool than we need, then filter to models created within
-  // the last 14 days before ranking by trendingScore — same idea as the
-  // GitHub channel's fix: narrow the candidate pool by recency first, then
-  // let quality/momentum decide the order within it. Unlike GitHub's API,
-  // Hugging Face has no server-side "created after date X" filter, so this
-  // is done client-side against the createdAt field each model returns.
-  const res = await fetch("https://huggingface.co/api/models?sort=trendingScore&direction=-1&limit=30", { cache: "no-store" });
-  if (!res.ok) throw new Error("Hugging Face API " + res.status);
-  const data = await res.json();
+  // The trending list alone is dominated by long-established models, so
+  // filtering its top 30 by recency left only a handful (or none) of slides.
+  // Instead, pull two pools in parallel: what is trending, and what was just
+  // created. Merge them by model id, keep models created in the last 14 days,
+  // then rank by trendingScore (likes as tiebreaker). Hugging Face has no
+  // server-side "created after" filter, so recency is applied client-side.
+  const base = "https://huggingface.co/api/models?limit=100&direction=-1";
+  const get = sort => fetch(base + "&sort=" + sort, { cache: "no-store" })
+    .then(r => (r.ok ? r.json() : []))
+    .catch(() => []);
+  const [trending, fresh] = await Promise.all([get("trendingScore"), get("createdAt")]);
+  if (!trending.length && !fresh.length) throw new Error("Hugging Face API unavailable");
+
+  const byId = new Map();
+  [...trending, ...fresh].forEach(m => {
+    if (m && m.id) byId.set(m.id, { ...byId.get(m.id), ...m });
+  });
 
   const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
-  const recent = data.filter(m => m.createdAt && new Date(m.createdAt).getTime() >= fourteenDaysAgo);
-  // Graceful fallback: if literally nothing trending was created in the
-  // last 14 days (unlikely, but not impossible), fall back to the
-  // unfiltered list rather than show SIGNAL LOST for something that isn't
-  // actually a fetch failure.
-  const pool = recent.length > 0 ? recent : data;
+  let pool = [...byId.values()].filter(m => m.createdAt && new Date(m.createdAt).getTime() >= fourteenDaysAgo);
+  pool.sort((a, b) => ((b.trendingScore ?? 0) - (a.trendingScore ?? 0)) || ((b.likes ?? 0) - (a.likes ?? 0)));
+  // Graceful fallback: if nothing recent came back, show plain trending
+  // rather than SIGNAL LOST for something that isn't a fetch failure.
+  if (pool.length === 0) pool = trending;
 
   return pool.slice(0, 10).map(m => ({
-    show: "TRENDING MODEL",
+    show: "NEW & TRENDING",
     title: m.id,
     line1: (m.likes ?? 0).toLocaleString() + " likes · " + (m.downloads ?? 0).toLocaleString() + " downloads",
     line2: m.pipeline_tag ? ("Task: " + m.pipeline_tag) : ((m.tags || []).slice(0, 3).join(", ") || "Model card on Hugging Face Hub"),
