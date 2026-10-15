@@ -837,6 +837,47 @@
   .sp-close { min-width: 44px; min-height: 44px; }
   .spot-submit, .reader-submit { min-height: 36px; }
 }
+
+/* Per-channel animated backgrounds. --ch and data-fx are set by setChannelFx() in render(). Each channel has its own effect. */
+@property --ch { syntax: '<color>'; inherits: true; initial-value: #7c8cff; }
+@property --ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@property --sw { syntax: '<angle>'; inherits: false; initial-value: -16deg; }
+html { transition: --ch 0.6s ease; }
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse 700px 500px at 50% 42%, color-mix(in srgb, var(--ch) 26%, transparent), transparent 70%); }
+html[data-fx] body::before { opacity: 1; animation: fxPulse 8s ease-in-out infinite alternate; }
+@keyframes fxPulse { to { opacity: 0.55; transform: scale(1.08); } }
+#screen::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; }
+html[data-fx] #screen::before { opacity: 0.8; background: radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--ch) 20%, transparent), transparent 70%); animation: fxPulse 8s ease-in-out infinite alternate; }
+html[data-fx="grid"] body::before, html[data-fx="grid"] #screen::before { background: linear-gradient(color-mix(in srgb, var(--ch) 15%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--ch) 15%, transparent) 1px, transparent 1px); background-size: 44px 44px; animation: fxGrid 8s linear infinite; }
+@keyframes fxGrid { to { background-position: 44px 44px; } }
+html[data-fx="sweep"] body::before, html[data-fx="sweep"] #screen::before { background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--ch) 26%, transparent) 50%, transparent 70%); background-size: 250% 100%; animation: fxSweep 7s ease-in-out infinite alternate; }
+@keyframes fxSweep { from { background-position: 100% 0; } to { background-position: 0 0; } }
+html[data-fx="aurora"] body::before, html[data-fx="aurora"] #screen::before { background: radial-gradient(ellipse 45% 55% at 20% 30%, color-mix(in srgb, var(--ch) 36%, transparent), transparent 70%), radial-gradient(ellipse 40% 50% at 80% 65%, color-mix(in srgb, var(--ch) 26%, transparent), transparent 70%), radial-gradient(ellipse 35% 40% at 50% 90%, color-mix(in srgb, var(--ch) 20%, #fff 0%), transparent 70%); background-size: 160% 160%; animation: fxAurora 16s ease-in-out infinite alternate; }
+@keyframes fxAurora { from { background-position: 0% 0%, 100% 100%, 50% 100%; } to { background-position: 100% 100%, 0% 0%, 50% 0%; } }
+html[data-fx="dots"] body::before, html[data-fx="dots"] #screen::before { background: radial-gradient(color-mix(in srgb, var(--ch) 55%, transparent) 1.5px, transparent 2px), radial-gradient(color-mix(in srgb, var(--ch) 30%, transparent) 1px, transparent 1.5px); background-size: 90px 90px, 55px 55px; animation: fxDots 14s linear infinite; }
+@keyframes fxDots { to { background-position: 0 -90px, 0 -55px; } }
+html[data-fx="stripes"] body::before, html[data-fx="stripes"] #screen::before { background: linear-gradient(45deg, color-mix(in srgb, var(--ch) 8%, transparent) 25%, transparent 25%, transparent 50%, color-mix(in srgb, var(--ch) 8%, transparent) 50%, color-mix(in srgb, var(--ch) 8%, transparent) 75%, transparent 75%, transparent); background-size: 64px 64px; animation: fxStripes 6s linear infinite; }
+@keyframes fxStripes { to { background-position: 64px 0; } }
+html[data-fx="rings"] body::before, html[data-fx="rings"] #screen::before { background: repeating-radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--ch) 17%, transparent) 0 2px, transparent 2px 46px); animation: fxRings 9s ease-in-out infinite alternate; }
+@keyframes fxRings { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.25); opacity: 0.45; } }
+html[data-fx="ruled"] body::before, html[data-fx="ruled"] #screen::before { background: linear-gradient(90deg, transparent calc(9% - 1px), color-mix(in srgb, var(--ch) 32%, transparent) calc(9% - 1px) 9%, transparent 9%), linear-gradient(color-mix(in srgb, var(--ch) 14%, transparent) 1px, transparent 1px); background-size: 100% 100%, 100% 34px; animation: fxRuled 9s linear infinite; }
+@keyframes fxRuled { to { background-position: 0 0, 0 -34px; } }
+html[data-fx="radar"] body::before, html[data-fx="radar"] #screen::before { background: conic-gradient(from var(--ang) at 50% 50%, transparent 0deg 290deg, color-mix(in srgb, var(--ch) 34%, transparent) 359deg, transparent 360deg), repeating-radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--ch) 12%, transparent) 0 1px, transparent 1px 60px); animation: fxRadar 6s linear infinite; }
+@keyframes fxRadar { to { --ang: 360deg; } }
+html[data-fx="vhs"] body::before, html[data-fx="vhs"] #screen::before { background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--ch) 9%, transparent) 0 1px, transparent 1px 4px), linear-gradient(180deg, transparent, color-mix(in srgb, var(--ch) 22%, transparent) 50%, transparent); background-size: 100% 100%, 100% 38%; background-repeat: repeat, no-repeat; animation: fxVhs 5s linear infinite; }
+@keyframes fxVhs { from { background-position: 0 0, 0 -70%; } to { background-position: 0 0, 0 170%; } }
+html[data-fx="checker"] body::before, html[data-fx="checker"] #screen::before { background: conic-gradient(color-mix(in srgb, var(--ch) 8%, transparent) 25%, transparent 0 50%, color-mix(in srgb, var(--ch) 8%, transparent) 0 75%, transparent 0); background-size: 60px 60px; animation: fxChecker 10s linear infinite; }
+@keyframes fxChecker { to { background-position: 60px 60px; } }
+/* New Models: rain only in the room behind the TV, so the stories stay clean. */
+html[data-fx="rain"] body::before { background-color: transparent; background-image: linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%); background-repeat: repeat-y; background-size: 2px 90px, 2px 140px, 2px 110px, 2px 170px, 2px 120px, 2px 150px, 2px 100px, 2px 130px; background-position: 7% 0, 18% 0, 29% 0, 41% 0, 53% 0, 64% 0, 76% 0, 88% 0; animation: fxRain 7s linear infinite; }
+@keyframes fxRain { to { background-position: 7% 90px, 18% 140px, 29% 110px, 41% 170px, 53% 120px, 64% 150px, 76% 100px, 88% 130px; } }
+html[data-fx="twinkle"] body::before, html[data-fx="twinkle"] #screen::before { background: radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--ch) 70%, transparent) 1px, transparent 2.6px), radial-gradient(circle at 72% 64%, color-mix(in srgb, var(--ch) 70%, transparent) 1px, transparent 2.6px), radial-gradient(circle at 48% 88%, color-mix(in srgb, var(--ch) 70%, transparent) 1px, transparent 2.6px), radial-gradient(circle at 12% 70%, color-mix(in srgb, var(--ch) 70%, transparent) 1.2px, transparent 2.8px), radial-gradient(circle at 58% 22%, color-mix(in srgb, var(--ch) 70%, transparent) 1.2px, transparent 2.8px), radial-gradient(circle at 86% 50%, color-mix(in srgb, var(--ch) 70%, transparent) 1.2px, transparent 2.8px), radial-gradient(circle at 35% 45%, color-mix(in srgb, var(--ch) 70%, transparent) 1.6px, transparent 3.2px), radial-gradient(circle at 80% 12%, color-mix(in srgb, var(--ch) 70%, transparent) 1.6px, transparent 3.2px), radial-gradient(circle at 64% 82%, color-mix(in srgb, var(--ch) 70%, transparent) 1.6px, transparent 3.2px); background-size: 97px 97px, 97px 97px, 97px 97px, 131px 131px, 131px 131px, 131px 131px, 173px 173px, 173px 173px, 173px 173px; background-repeat: repeat; animation: fxDrift 60s linear infinite, fxTwinkle 3s ease-in-out infinite alternate; }
+@keyframes fxDrift { from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; } to { background-position: 97px 97px, 97px 97px, 97px 97px, 131px 131px, 131px 131px, 131px 131px, 173px 173px, 173px 173px, 173px 173px; } }
+@keyframes fxTwinkle { from { opacity: 0.45; } to { opacity: 1; } }
+html[data-fx="beam"] body::before, html[data-fx="beam"] #screen::before { background: conic-gradient(from calc(var(--sw) + 166deg) at 50% -8%, transparent 0deg, color-mix(in srgb, var(--ch) 36%, transparent) 14deg, transparent 28deg, transparent 360deg), radial-gradient(ellipse 60% 40% at 50% 0%, color-mix(in srgb, var(--ch) 22%, transparent), transparent 70%); animation: fxBeam 6s ease-in-out infinite alternate; }
+@keyframes fxBeam { from { --sw: -16deg; } to { --sw: 16deg; } }
+@media (prefers-reduced-motion: reduce) { body::before, #screen::before { animation: none !important; } }
 </style>
 <style>
 /* Polished screen: channel bug, live count, readable schedule, action chip */
@@ -3562,6 +3603,16 @@ function renderGuide() {
 }
 
 /* render(): paints the screen, buttons and settings from current state. */
+/* Per-channel background: effect per channel id, colour comes from the channel itself. */
+const CHANNEL_FX = { github: "grid", hn: "sweep", devto: "aurora", huggingface: "dots", releases: "stripes", aipapers: "rings",
+  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", aivideo: "checker", models: "rain", skills: "twinkle", spotlight: "beam" };
+function setChannelFx(color, fx) {
+  const r = document.documentElement;
+  if (!color) { r.removeAttribute("data-fx"); return; }
+  r.style.setProperty("--ch", color);
+  r.setAttribute("data-fx", fx || "glow");
+}
+
 function render() {
   const channels = getChannels();
   if (channelIdx >= channels.length) { channelIdx = 0; storyIdx = 0; }
@@ -3596,6 +3647,7 @@ function render() {
   if (power && channel) {
     document.getElementById("screen").style.boxShadow = `0 0 60px -10px ${channel.color}33`;
   }
+  setChannelFx(power && channel ? channel.color : null, channel ? CHANNEL_FX[channel.id] : null);
 
   if (readerOpen && readerStory && readerChannel) {
     document.getElementById("reader-ch-dot").style.background = readerChannel.color;
