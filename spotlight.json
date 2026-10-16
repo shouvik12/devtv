@@ -48,6 +48,23 @@
       ],
       "video": "",
       "added": "2026-10-12"
+    },
+    {
+      "id": "ponytail",
+      "project": "Ponytail",
+      "tagline": "Makes your AI coding agent think like the laziest senior dev in the room, so it writes less code",
+      "description": "Ponytail is an open-source skill for AI coding agents. Before writing code, it climbs a ladder of checks: is the feature needed, does the codebase or standard library already do it, would a one-liner work? It keeps validation, error handling, security and accessibility intact. It comes with slash commands for review, repo audits and tracking deferred shortcuts, and installs into Claude Code, Codex, Cursor and more.",
+      "by": "@DietrichGebert",
+      "link": "https://github.com/DietrichGebert/ponytail",
+      "tags": [
+        "claude-code",
+        "ai-coding-agent",
+        "agent-skills",
+        "cursor-rules",
+        "llm"
+      ],
+      "video": "",
+      "added": "2026-10-16"
     }
   ],
   "note": "Sorting through submissions"
