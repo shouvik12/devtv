@@ -2521,11 +2521,24 @@ const AD_BREAKS = [
   { brand: "Legacy Code Archaeology", logo: "\u26CF", slogan: "Digging up TODOs from 2009.", body: "No docs? No tests? No original author? Our experts have seen worse, and left comments about it.", offer: "NO DOCS NEEDED", cta: "START DIGGING", bg: "#78350f", accent: "#fbbf24", ink: "#fff7ed" },
 ];
 
+// DEV·TV's own ads. They run in the same break slot as the fake ads, every other break,
+// alternating, and (unlike the fake ones) their button does something.
+const HOUSE_ADS = [
+  { brand: "Spotlight", logo: "\u{1F526}", slogan: "Your project. On TV.", body: "Built something developers should see? Get it featured on the Spotlight channel. It's free.", offer: "FREE!", cta: "SUBMIT YOUR PROJECT", bg: "#1e1b4b", accent: "#fde68a", ink: "#ffffff", seconds: 9, action: "submit" },
+  { brand: "Star DEV·TV", logo: "\u2605", slogan: "Enjoying the show? Give it a star.", body: "DEV·TV is free and open source. A GitHub star helps more developers find it.", offer: "FREE", cta: "\u2605 STAR ON GITHUB", bg: "#0f172a", accent: "#facc15", ink: "#ffffff", seconds: 9, action: "star" }
+];
+const STAR_URL = "https://github.com/shouvik12/devtv";
+let adCount = 0, houseIdx = 0;
+
 const AD_BREAK_SECONDS = 6;
 
 function showAdBreak() {
   adBreakActive = true;
-  const ad = AD_BREAKS[Math.floor(Math.random() * AD_BREAKS.length)];
+  adCount++;
+  const ad = (adCount % 2 === 0)
+    ? HOUSE_ADS[houseIdx++ % HOUSE_ADS.length]
+    : AD_BREAKS[Math.floor(Math.random() * AD_BREAKS.length)];
+  const secs = ad.seconds || AD_BREAK_SECONDS;
   const box = document.getElementById("ad-break");
   box.style.setProperty("--ad-bg", ad.bg);
   box.style.setProperty("--ad-accent", ad.accent);
@@ -2536,7 +2549,27 @@ function showAdBreak() {
   document.getElementById("ad-body").textContent = ad.body;
   document.getElementById("ad-offer").textContent = ad.offer;
   document.getElementById("ad-cta").textContent = ad.cta;
-  document.getElementById("ad-countdown").textContent = `BACK IN ${AD_BREAK_SECONDS}`;
+  document.getElementById("ad-countdown").textContent = `BACK IN ${secs}`;
+  // The "not a real advertisement" line is for the joke ads only. House ads are real.
+  const discEl = document.querySelector("#ad-break .ad-disclaimer");
+  if (discEl) discEl.style.display = ad.action ? "none" : "";
+  const ctaEl = document.getElementById("ad-cta");
+  if (ad.action) {
+    ctaEl.style.cursor = "pointer";
+    ctaEl.setAttribute("role", "button");
+    ctaEl.setAttribute("tabindex", "0");
+    ctaEl.onclick = () => {
+      adBreakActive = false;
+      document.getElementById("ad-break").style.display = "none";
+      if (ad.action === "star") window.open(STAR_URL, "_blank", "noopener");
+      else if (ad.action === "submit") openSubmit();
+    };
+  } else {
+    ctaEl.style.cursor = "";
+    ctaEl.removeAttribute("role");
+    ctaEl.removeAttribute("tabindex");
+    ctaEl.onclick = null;
+  }
   const progressEl = document.getElementById("ad-break-progress");
   progressEl.style.width = "0%";
   playStatic(420, () => {
@@ -2545,10 +2578,10 @@ function showAdBreak() {
     const tick = () => {
       if (!adBreakActive) return;
       const elapsed = (Date.now() - start) / 1000;
-      const pct = Math.min(100, (elapsed / AD_BREAK_SECONDS) * 100);
+      const pct = Math.min(100, (elapsed / secs) * 100);
       progressEl.style.width = pct + "%";
-      document.getElementById("ad-countdown").textContent = `BACK IN ${Math.max(1, Math.ceil(AD_BREAK_SECONDS - elapsed))}`;
-      if (elapsed >= AD_BREAK_SECONDS) {
+      document.getElementById("ad-countdown").textContent = `BACK IN ${Math.max(1, Math.ceil(secs - elapsed))}`;
+      if (elapsed >= secs) {
         endAdBreak();
       } else {
         requestAnimationFrame(tick);
