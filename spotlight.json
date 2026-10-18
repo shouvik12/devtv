@@ -65,6 +65,23 @@
       ],
       "video": "",
       "added": "2026-10-16"
+    },
+    {
+      "id": "montage",
+      "project": "Montage",
+      "tagline": "Describe the video you want. Montage makes it.",
+      "description": "Montage is an experimental AI-powered video production tool that aims to make creating polished videos as simple as describing what you want. Give it your website, tell it what you'd like to make, and refine the result through natural-language feedback. Montage handles the complexity of putting everything together.",
+      "by": "Connor",
+      "link": "https://madewithmontage.com",
+      "tags": [
+        "ai",
+        "video",
+        "video-production",
+        "generative-ai",
+        "experimental"
+      ],
+      "video": "https://www.youtube.com/watch?v=GDN0xLXsd9M",
+      "added": "2026-10-18"
     }
   ],
   "note": "Sorting through submissions"
