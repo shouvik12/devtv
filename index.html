@@ -869,6 +869,9 @@ html[data-fx="vhs"] body::before, html[data-fx="vhs"] #screen::before { backgrou
 @keyframes fxVhs { from { background-position: 0 0, 0 -70%; } to { background-position: 0 0, 0 170%; } }
 html[data-fx="checker"] body::before, html[data-fx="checker"] #screen::before { background: conic-gradient(color-mix(in srgb, var(--ch) 8%, transparent) 25%, transparent 0 50%, color-mix(in srgb, var(--ch) 8%, transparent) 0 75%, transparent 0); background-size: 60px 60px; animation: fxChecker 10s linear infinite; }
 @keyframes fxChecker { to { background-position: 60px 60px; } }
+/* Model Face-Off: two corner spotlights facing each other across the ring. */
+html[data-fx="versus"] body::before, html[data-fx="versus"] #screen::before { background: radial-gradient(ellipse 55% 70% at 0% 50%, color-mix(in srgb, var(--ch) 20%, transparent), transparent 70%), radial-gradient(ellipse 55% 70% at 100% 50%, color-mix(in srgb, var(--ch) 20%, transparent), transparent 70%); animation: fxVersus 4s ease-in-out infinite alternate; }
+@keyframes fxVersus { from { opacity: 0.55; } to { opacity: 1; } }
 /* New Models: rain only in the room behind the TV, so the stories stay clean. */
 html[data-fx="rain"] body::before { background-color: transparent; background-image: linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%), linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--ch) 38%, transparent) 100%); background-repeat: repeat-y; background-size: 2px 90px, 2px 140px, 2px 110px, 2px 170px, 2px 120px, 2px 150px, 2px 100px, 2px 130px; background-position: 7% 0, 18% 0, 29% 0, 41% 0, 53% 0, 64% 0, 76% 0, 88% 0; animation: fxRain 7s linear infinite; }
 @keyframes fxRain { to { background-position: 7% 90px, 18% 140px, 29% 110px, 41% 170px, 53% 120px, 64% 150px, 76% 100px, 88% 130px; } }
@@ -1471,6 +1474,225 @@ async function fetchNewModelsStories() {
       fullText: "**" + name + "**\n\n" + (desc || "No description provided.") + "\n\nModel id: `" + m.id + "`" + (facts.length ? "\n\n" + facts.join(" \u00b7 ") : ""),
     };
   });
+}
+
+/* MODEL FACE-OFF channel. */
+// This week's new OpenRouter models, head to head. Same public catalog as
+// NEW MODELS, but instead of one story per model it groups them by type
+// (reasoning, coding, vision...) and price tier, pairs the closest prices,
+// and scores a "tale of the tape": input price, output price, context,
+// max output and input modalities. A row win is 1 point, tied winners
+// split it. This is specs and price only; OpenRouter's catalog has no
+// quality benchmarks, so a slide says "wins on specs", never "better".
+const FACEOFF_TIERS = ["Free", "Budget", "Mid", "Premium", "Per-use pricing"];
+
+function faceoffType(m) {
+  const id = m.id.toLowerCase();
+  const arch = m.architecture || {};
+  const inp = Array.isArray(arch.input_modalities) ? arch.input_modalities : [];
+  const out = Array.isArray(arch.output_modalities) && arch.output_modalities.length ? arch.output_modalities : ["text"];
+  const params = Array.isArray(m.supported_parameters) ? m.supported_parameters : [];
+  if (out.includes("image")) return "\u{1F3A8} IMAGE GEN";
+  if (out.includes("video")) return "\u{1F3AC} VIDEO";
+  if (out.includes("audio") || inp.includes("audio")) return "\u{1F50A} AUDIO";
+  if (out.includes("embeddings") || id.includes("embed")) return "\u{1F4D0} EMBEDDING";
+  if (!out.includes("text")) return "\u2699\uFE0F OTHER";
+  if (params.includes("reasoning") || params.includes("include_reasoning")) return "\u{1F9E0} REASONING";
+  if (/coder|code/.test(id)) return "\u{1F4BB} CODING";
+  if (inp.includes("image")) return "\u{1F441}\uFE0F VISION";
+  return "\u{1F4AC} CHAT";
+}
+
+function faceoffPrice(v) {
+  const n = Number(v);
+  return isFinite(n) && n >= 0 ? n * 1000000 : null;
+}
+
+function faceoffMoney(n) {
+  if (n === null) return "?";
+  if (n === 0) return "free";
+  return "$" + (n >= 10 ? n.toFixed(0) : n.toFixed(2).replace(/\.?0+$/, ""));
+}
+
+function faceoffCtx(n) {
+  if (!n) return "?";
+  if (n >= 1000000) return (Math.round(n / 100000) / 10) + "M";
+  return Math.round(n / 1000) + "K";
+}
+
+function faceoffShort(name) {
+  const bare = name.includes(": ") ? name.slice(name.indexOf(": ") + 2) : name;
+  return bare.replace(/\s*\([^)]*\)\s*/g, " ").trim() || name;
+}
+
+function faceoffPts(n) {
+  const whole = Math.floor(n), half = n - whole >= 0.5;
+  return (whole || !half ? String(whole) : "") + (half ? "\u00BD" : "");
+}
+
+async function fetchFaceoffStories() {
+  const res = await fetch("https://openrouter.ai/api/v1/models?sort=newest&output_modalities=all", { cache: "no-store" });
+  if (!res.ok) throw new Error("OpenRouter API " + res.status);
+  const data = await res.json();
+  const list = Array.isArray(data.data) ? data.data : [];
+
+  // One entry per base model, like NEW MODELS. A ":free" variant only adds
+  // a "free tier available" note, so a model never fights itself.
+  const groups = new Map();
+  const hasFreeVariant = new Set();
+  for (const m of list) {
+    if (!m || typeof m.id !== "string" || !(Number(m.created) > 0)) continue;
+    const base = m.id.split(":")[0];
+    if (m.id.endsWith(":free")) hasFreeVariant.add(base);
+    const cur = groups.get(base);
+    const isBase = m.id === base;
+    if (!cur || (isBase && cur.id !== base) || (!isBase && cur.id !== base && Number(m.created) < Number(cur.created))) groups.set(base, m);
+  }
+  const all = Array.from(groups.values()).sort((a, b) => Number(b.created) - Number(a.created));
+  if (all.length === 0) throw new Error("No models returned by OpenRouter");
+
+  // This week's arrivals; a quiet week widens to 14 days, then to the newest 12.
+  const now = Date.now() / 1000;
+  let pool = all.filter(m => Number(m.created) > now - 7 * 86400);
+  let windowLabel = "this week";
+  if (pool.length < 2) { pool = all.filter(m => Number(m.created) > now - 14 * 86400); windowLabel = "the last 2 weeks"; }
+  if (pool.length < 2) { pool = all.slice(0, 12); windowLabel = "recently"; }
+
+  const models = pool.map(m => {
+    const p = m.pricing || {};
+    const priceVals = Object.values(p).map(Number).filter(n => isFinite(n));
+    const free = m.id.endsWith(":free") || (priceVals.length > 0 && priceVals.every(n => n === 0));
+    const inP = free ? 0 : faceoffPrice(p.prompt);
+    const outP = free ? 0 : faceoffPrice(p.completion);
+    const arch = m.architecture || {};
+    const mods = Array.isArray(arch.input_modalities) ? arch.input_modalities : ["text"];
+    const maxOut = Number(m.top_provider && m.top_provider.max_completion_tokens) || null;
+    const ctx = Number(m.context_length) || null;
+    let tier;
+    if (free) tier = "Free";
+    else if (inP === null || (inP === 0 && outP === 0)) tier = "Per-use pricing";
+    else tier = inP < 1 ? "Budget" : inP <= 5 ? "Mid" : "Premium";
+    const perUse = tier === "Per-use pricing";
+    const blended = (!perUse && inP !== null && outP !== null) ? (inP + 3 * outP) / 4 : null;
+    const name = (typeof m.name === "string" && m.name.trim()) ? m.name.trim() : m.id;
+    const okId = /^[A-Za-z0-9._~\/-]+(?::[A-Za-z0-9._-]+)?$/.test(m.id);
+    return {
+      id: m.id, name, created: Number(m.created), type: faceoffType(m), tier, free, perUse,
+      freeVariant: !free && hasFreeVariant.has(m.id.split(":")[0]),
+      inP, outP, ctx, maxOut, mods,
+      value: (ctx && blended) ? ctx / blended : null,
+      url: okId ? "https://openrouter.ai/" + m.id.split(":")[0] : "https://openrouter.ai/models",
+    };
+  });
+
+  // Group by type, then price tier; pair neighbours by input price.
+  const buckets = new Map();
+  for (const m of models) {
+    const k = m.type + "|" + m.tier;
+    if (!buckets.has(k)) buckets.set(k, []);
+    buckets.get(k).push(m);
+  }
+  const TYPE_ORDER = ["REASONING", "CODING", "VISION", "CHAT", "IMAGE GEN", "VIDEO", "AUDIO", "EMBEDDING", "OTHER"];
+  const typeRank = t => TYPE_ORDER.findIndex(x => t.endsWith(x));
+  const keys = Array.from(buckets.keys()).sort((a, b) => {
+    const [ta, ra] = a.split("|"), [tb, rb] = b.split("|");
+    return typeRank(ta) - typeRank(tb) || FACEOFF_TIERS.indexOf(ra) - FACEOFF_TIERS.indexOf(rb);
+  });
+  const bouts = [];
+  for (const k of keys) {
+    const g = buckets.get(k).sort((a, b) => (a.inP ?? 1e9) - (b.inP ?? 1e9));
+    if (g.length === 1) { bouts.push(g); continue; }
+    for (let i = 0; i < g.length; i += 2) {
+      if (g.length - i === 3) { bouts.push(g.slice(i, i + 3)); break; }
+      bouts.push(g.slice(i, i + 2));
+    }
+  }
+
+  const ROWS = [
+    { label: "Input price", get: m => m.perUse ? null : m.inP, better: "low", fmt: (n, m) => m.perUse ? "per use" : faceoffMoney(n) },
+    { label: "Output price", get: m => m.perUse ? null : m.outP, better: "low", fmt: (n, m) => m.perUse ? "per use" : faceoffMoney(n) },
+    { label: "Context", get: m => m.ctx, better: "high", fmt: faceoffCtx },
+    { label: "Max output", get: m => m.maxOut, better: "high", fmt: faceoffCtx },
+    { label: "Inputs", get: m => m.mods.length, better: "high", fmt: (n, m) => m.mods.join(" + ") },
+  ];
+  const cell = s => String(s).replace(/\|/g, "/");
+
+  // Real fights air first; single-model "new contender" cards follow.
+  bouts.sort((a, b) => (b.length > 1) - (a.length > 1));
+  const stories = bouts.slice(0, 11).map(bout => {
+    const [type, tier] = [bout[0].type, bout[0].tier];
+    const show = type + " \u00B7 " + tier.toUpperCase();
+    if (bout.length === 1) {
+      const m = bout[0];
+      return {
+        show,
+        title: faceoffShort(m.name) + " \u2014 new contender",
+        line1: "No rival in this division " + windowLabel + " \u00B7 added " + timeAgo(m.created * 1000),
+        line2: [m.perUse ? "per-use pricing" : faceoffMoney(m.inP) + " in / " + faceoffMoney(m.outP) + " out per 1M",
+                m.ctx ? faceoffCtx(m.ctx) + " context" : "", m.mods.join("+") + " in"].filter(Boolean).join(" \u00B7 "),
+        url: m.url,
+        fullText: m.name + " steps into the ring with no rival in its division (" + type + ", " + tier + ") " + windowLabel + ". Prices are per 1M tokens.\n\n"
+          + "| Stat | " + cell(faceoffShort(m.name)) + " |\n|---|---|\n"
+          + ROWS.map(r => "| " + r.label + " | " + r.fmt(r.get(m), m) + " |").join("\n")
+          + "\n\nModel id: `" + m.id + "`\n\n*Specs and price from OpenRouter's catalog. This doesn't measure quality.*",
+      };
+    }
+    const score = bout.map(() => 0);
+    const marks = ROWS.map(r => {
+      const vals = bout.map(r.get);
+      if (vals.some(v => v === null || v === undefined)) return bout.map(() => false);
+      const best = r.better === "low" ? Math.min(...vals) : Math.max(...vals);
+      const winners = vals.map(v => v === best);
+      const n = winners.filter(Boolean).length;
+      if (n === bout.length) return bout.map(() => false); // everyone level: no point awarded
+      winners.forEach((w, i) => { if (w) score[i] += 1 / n; });
+      return winners;
+    });
+    const top = Math.max(...score);
+    const leaders = bout.filter((_, i) => score[i] === top);
+    const tally = score.map(faceoffPts).join("\u2013");
+    const verdict = leaders.length === 1
+      ? "\u{1F3C6} " + faceoffShort(leaders[0].name) + " wins on specs, " + tally
+      : "Draw on specs, " + tally;
+    const table = "| Stat | " + bout.map(m => cell(faceoffShort(m.name))).join(" | ") + " |\n|---|" + bout.map(() => "---").join("|") + "|\n"
+      + ROWS.map((r, ri) => "| " + r.label + " | " + bout.map((m, i) => r.fmt(r.get(m), m) + (marks[ri][i] ? "\u00A0\u2713" : "")).join(" | ") + " |").join("\n")
+      + "\n| **Points** | " + score.map(s => "**" + faceoffPts(s) + "**").join(" | ") + " |";
+    const notes = bout.filter(m => m.freeVariant).map(m => m.name + " also has a free tier.");
+    return {
+      show,
+      title: bout.map(m => faceoffShort(m.name)).join(" vs "),
+      line1: verdict,
+      line2: bout.map(m => (m.perUse ? "per use" : faceoffMoney(m.inP) + " / " + faceoffMoney(m.outP) + " per 1M") + ", " + faceoffCtx(m.ctx) + " context").join("  vs  "),
+      url: leaders[0].url,
+      fullText: type + " \u00B7 " + tier + " division \u00B7 new on OpenRouter " + windowLabel + ". Prices are per 1M tokens.\n\n"
+        + table + "\n\n" + verdict + ". Each row is worth 1 point; tied winners split it, and a row is skipped when a stat is missing."
+        + (notes.length ? "\n\n" + notes.join(" ") : "")
+        + "\n\n" + bout.map(m => m.name + ": `" + m.id + "`").join("\n\n")
+        + "\n\n*Specs and price from OpenRouter's catalog. This doesn't measure quality.*",
+    };
+  });
+
+  // Closing leaderboard: context per dollar (blended price weights output 3:1).
+  const ranked = models.filter(m => m.value !== null && !m.free).sort((a, b) => b.value - a.value);
+  const cheapest = models.filter(m => !m.free && m.inP).sort((a, b) => a.inP - b.inP)[0];
+  const biggest = models.filter(m => m.ctx).sort((a, b) => b.ctx - a.ctx)[0];
+  if (ranked.length >= 2) {
+    const topFive = ranked.slice(0, 5);
+    stories.push({
+      show: "WEEKLY LEADERBOARD",
+      title: "Best value: " + faceoffShort(topFive[0].name),
+      line1: "Most context per dollar among " + models.length + " new models " + windowLabel,
+      line2: [cheapest ? "Cheapest: " + faceoffShort(cheapest.name) + " (" + faceoffMoney(cheapest.inP) + " in)" : "",
+              biggest ? "Biggest context: " + faceoffShort(biggest.name) + " (" + faceoffCtx(biggest.ctx) + ")" : ""].filter(Boolean).join("  \u00B7  "),
+      url: topFive[0].url,
+      fullText: "**Weekly leaderboard: context per dollar**\n\nNew on OpenRouter " + windowLabel + ", ranked by context window divided by blended price per 1M tokens (input + 3 \u00D7 output, divided by 4, since output usually dominates real use). Free models are listed separately.\n\n"
+        + "| # | Model | Type | Blended / 1M | Context |\n|---|---|---|---|---|\n"
+        + topFive.map((m, i) => "| " + (i + 1) + " | " + cell(faceoffShort(m.name)) + " | " + m.type + " | " + faceoffMoney((m.inP + 3 * m.outP) / 4) + " | " + faceoffCtx(m.ctx) + " |").join("\n")
+        + (models.some(m => m.free) ? "\n\nFree this week: " + models.filter(m => m.free).map(m => m.name).join(", ") + "." : "")
+        + "\n\n*Specs and price from OpenRouter's catalog. This doesn't measure quality.*",
+    });
+  }
+  return stories;
 }
 
 /* HACKER NEWS channel. */
@@ -2076,6 +2298,7 @@ const ALL_CHANNELS = [
   // Channels 11 and up have no number key (1-9 and 0 are taken): arrows or click.
   { id: "models", name: "NEW MODELS", color: "#e879f9", key: "", fetcher: fetchNewModelsStories, tag: "MOD" },
   { id: "skills", name: "AGENT SKILLS", color: "#a3e635", key: "", fetcher: fetchSkillsStories, tag: "SKL" },
+  { id: "faceoff", name: "MODEL FACE-OFF", color: "#cbd5e1", key: "", fetcher: fetchFaceoffStories, tag: "VS" },
   { id: "spotlight", name: "SPOTLIGHT", color: "#fde68a", key: "", fetcher: fetchSpotlightStories, tag: "SPOT" },
 ];
 
@@ -2111,7 +2334,7 @@ function loadEnabledIds() {
         let seen = null;
         try { seen = JSON.parse(localStorage.getItem(SEEN_KEY)); } catch (e) {}
         // No seen list yet means this browser predates it: it has seen every channel except "skills".
-        if (!Array.isArray(seen)) seen = allIds.filter(id => id !== "skills");
+        if (!Array.isArray(seen)) seen = allIds.filter(id => id !== "skills" && id !== "faceoff");
         const fresh = allIds.filter(id => !seen.includes(id) && !valid.includes(id));
         try { localStorage.setItem(SEEN_KEY, JSON.stringify(allIds)); } catch (e) {}
         if (fresh.length > 0) {
@@ -2714,7 +2937,7 @@ async function openReader(channel, story) {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "cve") {
       html = mdLite(story.fullText || story.line2);
-    } else if (channel.id === "models") {
+    } else if (channel.id === "models" || channel.id === "faceoff") {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "spotlight" && story.empty) {
       html = SPOT_BEAM_HTML + `<div class="hn-article-banner"><div>Community Spotlight</div></div>` + safeMd(story.fullText);
@@ -3638,7 +3861,7 @@ function renderGuide() {
 /* render(): paints the screen, buttons and settings from current state. */
 /* Per-channel background: effect per channel id, colour comes from the channel itself. */
 const CHANNEL_FX = { github: "grid", hn: "sweep", devto: "aurora", huggingface: "dots", releases: "stripes", aipapers: "rings",
-  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", aivideo: "checker", models: "rain", skills: "twinkle", spotlight: "beam" };
+  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", aivideo: "checker", models: "rain", skills: "twinkle", faceoff: "versus", spotlight: "beam" };
 function setChannelFx(color, fx) {
   const r = document.documentElement;
   if (!color) { r.removeAttribute("data-fx"); return; }
