@@ -1665,7 +1665,7 @@ async function fetchFaceoffStories() {
       line2: bout.map(m => (m.perUse ? "per use" : faceoffMoney(m.inP) + " / " + faceoffMoney(m.outP) + " per 1M") + ", " + faceoffCtx(m.ctx) + " context").join("  vs  "),
       url: leaders[0].url,
       fullText: type + " \u00B7 " + tier + " division \u00B7 new on OpenRouter " + windowLabel + ". Prices are per 1M tokens.\n\n"
-        + table + "\n\n" + verdict + ". Each row is worth 1 point; tied winners split it, and a row is skipped when a stat is missing."
+        + table + "\n\n" + verdict + ". Each row is worth 1 point. A row where every model is level scores nothing, and a row is skipped when a stat is missing."
         + (notes.length ? "\n\n" + notes.join(" ") : "")
         + "\n\n" + bout.map(m => m.name + ": `" + m.id + "`").join("\n\n")
         + "\n\n*Specs and price from OpenRouter's catalog. This doesn't measure quality.*",
