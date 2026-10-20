@@ -82,6 +82,23 @@
       ],
       "video": "https://www.youtube.com/watch?v=GDN0xLXsd9M",
       "added": "2026-10-18"
+    },
+    {
+      "id": "mandana",
+      "project": "Mandana AI",
+      "tagline": "An AI that argues both sides before it answers",
+      "description": "Mandana answers every question in five parts: a Lean (the clearest position it can defend), a Tension (the strongest opposing point), a Take (what holds up once both are weighed), a confidence label (Grounded, Inference, Speculative or Unknown) and one follow-up question. It's built for research, decisions under uncertainty, debate prep and stress-testing your own opinions. Named after Mandana Mishra, the 8th-century master of dialectical debate.",
+      "by": "KriyagniAI",
+      "link": "https://kriyagniai.com/",
+      "tags": [
+        "ai",
+        "reasoning",
+        "llm",
+        "debate",
+        "critical-thinking"
+      ],
+      "video": "https://youtube.com/shorts/Zx6Oc9Yx2Fk",
+      "added": "2026-10-20"
     }
   ],
   "note": "Sorting through submissions"
