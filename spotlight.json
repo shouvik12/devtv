@@ -99,6 +99,41 @@
       ],
       "video": "https://youtube.com/shorts/Zx6Oc9Yx2Fk",
       "added": "2026-10-20"
+    },
+    {
+      "id": "seoloupe",
+      "project": "SeoLoupe",
+      "tagline": "Find and fix the SEO issues holding your website back.",
+      "description": "SeoLoupe scans your website for the SEO issues holding it back and shows you how to fix them, so your project gets found by the people looking for it.",
+      "by": "megatech_official",
+      "link": "https://www.seoloupe.com/",
+      "tags": [
+        "seo",
+        "webdev",
+        "marketing",
+        "devtools",
+        "indie"
+      ],
+      "video": "",
+      "added": "2026-10-24"
+    },
+    {
+      "id": "augur",
+      "project": "Augur",
+      "tagline": "In-app feedback for React apps: find out where your users get stuck",
+      "description": "Augur is a free, open-source tool that asks one quick question after key actions and tracks rage taps, with the data kept in your own database. It runs in the browser and writes through a small store interface, working with Supabase or plain Postgres via an HTTP endpoint on your server. Source: github.com/kaezee/Augur",
+      "by": "kaezee13",
+      "link": "https://kaezee.github.io/Augur/",
+      "tags": [
+        "opensource",
+        "ux",
+        "feedback",
+        "analytics",
+        "self-hosted"
+      ],
+      "video": "",
+      "added": "2026-10-24",
+      "preview": "https://kaezee.github.io/Augur/"
     }
   ],
   "note": "Sorting through submissions"
