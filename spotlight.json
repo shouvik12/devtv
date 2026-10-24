@@ -134,6 +134,23 @@
       "video": "",
       "added": "2026-10-24",
       "preview": "https://kaezee.github.io/Augur/"
+    },
+    {
+      "id": "founderpulse",
+      "project": "FounderPulse",
+      "tagline": "Find real people who need what you sell, in one minute.",
+      "description": "Paste your website and FounderPulse finds real people who need what you sell, then writes a message for each one. Free to try, no signup.",
+      "by": "Kevan",
+      "link": "https://founder-pulse.com",
+      "tags": [
+        "startup",
+        "outreach",
+        "marketing",
+        "indie",
+        "saas"
+      ],
+      "video": "",
+      "added": "2026-10-24"
     }
   ],
   "note": "Sorting through submissions"
