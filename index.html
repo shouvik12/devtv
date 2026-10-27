@@ -2749,10 +2749,12 @@ const AD_BREAKS = [
 const HOUSE_ADS = [
   { brand: "Spotlight", logo: "\u{1F526}", slogan: "Your project. On TV.", body: "Built something developers should see? Get it featured on the Spotlight channel. It's free.", offer: "FREE!", cta: "SUBMIT YOUR PROJECT", bg: "#1e1b4b", accent: "#fde68a", ink: "#ffffff", seconds: 9, action: "submit" },
   { brand: "Star DEV·TV", logo: "\u2605", slogan: "Enjoying the show? Give it a star.", body: "DEV·TV is free and open source. A GitHub star helps more developers find it.", offer: "FREE", cta: "\u2605 STAR ON GITHUB", bg: "#0f172a", accent: "#facc15", ink: "#ffffff", seconds: 9, action: "star" },
-  { brand: "leantext", logo: "\u{1F4C4}", slogan: "Your agent reads the web. Make it read less.", body: "From the maker of DEV\u00B7TV. Web pages, PDFs, screenshots and Office files become lean Markdown before your agent reads them, and it falls back to the original when a conversion looks wrong.", offer: "UP TO 99% FEWER TOKENS", cta: "GET LEANTEXT", bg: "#0E4B57", accent: "#E8A93A", ink: "#F4EAD2", seconds: 9, action: "leantext" }
+  { brand: "leantext", logo: "\u{1F4C4}", slogan: "Your agent reads the web. Make it read less.", body: "From the maker of DEV\u00B7TV. Web pages, PDFs, screenshots and Office files become lean Markdown before your agent reads them, and it falls back to the original when a conversion looks wrong.", offer: "UP TO 99% FEWER TOKENS", cta: "GET LEANTEXT", bg: "#0E4B57", accent: "#E8A93A", ink: "#F4EAD2", seconds: 9, action: "leantext" },
+  { brand: "living-canvas", logo: "\u{1F3A8}", slogan: "Your README, in motion.", body: "From the maker of DEV\u00B7TV. A Claude skill that turns any repo, doc or idea into an animated README banner: one self-contained SVG, no JavaScript, usually under 10 KB.", offer: "FREE CLAUDE SKILL", cta: "GET LIVING-CANVAS", bg: "#1B1035", accent: "#FF7AB6", ink: "#F3ECFF", seconds: 9, action: "livingcanvas" }
 ];
 const STAR_URL = "https://github.com/shouvik12/devtv";
 const LEANTEXT_URL = "https://github.com/shouvik12/leantext";
+const LIVING_CANVAS_URL = "https://github.com/shouvik12/living-canvas";
 let adCount = 0, houseIdx = 0;
 
 const AD_BREAK_SECONDS = 6;
@@ -2789,6 +2791,7 @@ function showAdBreak() {
       if (ad.action === "star") window.open(STAR_URL, "_blank", "noopener");
       else if (ad.action === "submit") openSubmit();
       else if (ad.action === "leantext") window.open(LEANTEXT_URL, "_blank", "noopener");
+      else if (ad.action === "livingcanvas") window.open(LIVING_CANVAS_URL, "_blank", "noopener");
     };
   } else {
     ctaEl.style.cursor = "";
