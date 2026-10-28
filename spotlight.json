@@ -151,6 +151,23 @@
       ],
       "video": "",
       "added": "2026-10-24"
+    },
+    {
+      "id": "living-canvas",
+      "project": "living-canvas",
+      "tagline": "Turn any repo, doc or idea into an animated README banner",
+      "description": "living-canvas is an open-source Claude skill that turns anything (a GitHub repo, a URL, a doc, a concept or a single sentence) into a beautiful animated canvas: a README-ready animated SVG and/or an interactive canvas page. Point it at your project and get a banner that moves, no design tools needed.",
+      "by": "@shouvik12",
+      "link": "https://github.com/shouvik12/living-canvas",
+      "tags": [
+        "claude-code",
+        "agent-skills",
+        "svg",
+        "readme",
+        "animation"
+      ],
+      "video": "",
+      "added": "2026-10-28"
     }
   ],
   "note": "Sorting through submissions"
