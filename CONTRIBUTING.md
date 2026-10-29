@@ -2,7 +2,30 @@
 
 Thanks for wanting to add to this. Before opening a PR, read the constraints below, they're not suggestions, they're what makes this project what it is.
 
+## Help build the next release
+
+Came here from the ad on DEV·TV? Welcome. The next, stronger DEV·TV is being planned in the open, and contributors get credited on air.
+
+DEV·TV now has two tracks:
+
+- **v2: the TV you're watching.** It stays a single `index.html` with no backend, forever. Every rule below applies to it.
+- **v3: a separate, bare-minimum backend track.** Accounts, likes and dislikes, and a channel picked for you. It's at the planning stage, so the roadmap is still open to ideas.
+
+Ways to help:
+
+1. **Shape v3.** Open an issue titled `v3: <your idea>` with what it would do for viewers and the smallest way to build it. Backend, data model and privacy ideas are all welcome here.
+2. **Pick up a v2 starter task.** These are small, useful and a good way to learn the codebase:
+   - **RELEASES: Python never loads.** The channel asks GitHub for `python/cpython`'s latest release, but CPython only publishes tags, so it returns 404 every time. Find a keyless source for the latest Python release.
+   - **RELEASES: "Vue" is Vue 2.** `vuejs/vue` is the retired Vue 2 repo. Point it at `vuejs/core`.
+   - **README: catch up on channels.** It still says 13 channels and leaves out MODEL FACE-OFF (channel 13), with Spotlight now on 14.
+   - **CHANGELOG: log everything since 2.0.0.**
+3. **Propose a channel.** Follow [Proposing a new channel](#proposing-a-new-channel) below.
+
+Not sure where you fit? Open an issue and say what you'd like to work on.
+
 ## The rules that can't bend
+
+These apply to v2, the single-file TV. v3 has its own design, and its rules will be written with the people who build it.
 
 - **One HTML file.** No build step, no framework, no npm packages, no second file except the license and README. If your change needs a bundler, it doesn't belong here.
 - **No backend, ever.** Every channel is a direct `fetch()` from the browser. If a source needs a server-held API key or a token exchange that has no CORS support, it's not a candidate, no matter how good the data is. See the "Sources considered and ruled out" table in the README before proposing one, it's likely already been checked.
