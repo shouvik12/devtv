@@ -1506,7 +1506,7 @@ async function fetchLocalModelsStories() {
       show: "LOCAL MODEL \u00b7 OLLAMA",
       title: m.name,
       line1: facts.join(" \u00b7 ") || "New in the Ollama library",
-      line2: (desc ? (desc.length > 170 ? desc.slice(0, 167) + "..." : desc) + "  " : "") + "\u25B6 " + cmd,
+      line2: desc ? (desc.length > 220 ? desc.slice(0, 217) + "..." : desc) : "Run it locally with: " + cmd,
       url: "https://ollama.com/library/" + m.name,
       fullText: "**" + m.name + "**\n\n" + (desc || "No description provided.")
         + "\n\nRun it locally:\n\n```\n" + cmd + "\n```"
