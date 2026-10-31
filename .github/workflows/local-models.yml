@@ -1,0 +1,30 @@
+name: Update LOCAL MODELS
+
+on:
+  schedule:
+    - cron: "30 4 * * *"   # once a day, 04:30 UTC
+  workflow_dispatch:        # "Run workflow" button for a manual refresh
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build local-models.json
+        run: python scripts/local_models.py
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- local-models.json && git ls-files --error-unmatch local-models.json >/dev/null 2>&1; then
+            echo "No change"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add local-models.json
+          git commit -m "LOCAL MODELS: daily update"
+          git push

@@ -1466,12 +1466,54 @@ async function fetchNewModelsStories() {
     const desc = (typeof m.description === "string" ? m.description : "").replace(/\s+/g, " ").trim();
     const okId = /^[A-Za-z0-9._~\/-]+(?::[A-Za-z0-9._-]+)?$/.test(m.id);
     return {
-      show: "NEW MODEL \u00b7 OPENROUTER",
+      show: "CLOUD MODEL \u00b7 OPENROUTER",
       title: name,
       line1: "added " + timeAgo(Number(m.created) * 1000) + (facts.length ? " \u00b7 " + facts.join(" \u00b7 ") : ""),
       line2: desc ? (desc.length > 220 ? desc.slice(0, 217) + "..." : desc) : "Model id: " + m.id,
       url: okId ? "https://openrouter.ai/" + m.id.split(":")[0] : "https://openrouter.ai/models",
       fullText: "**" + name + "**\n\n" + (desc || "No description provided.") + "\n\nModel id: `" + m.id + "`" + (facts.length ? "\n\n" + facts.join(" \u00b7 ") : ""),
+    };
+  });
+}
+
+/* LOCAL MODELS channel. */
+// The newest models you can run on your own machine, from the Ollama
+// library. Ollama has no public JSON feed for its library, so a daily GitHub
+// Action (scripts/local_models.py) reads ollama.com's newest-first list and
+// saves local-models.json next to this file; the channel loads it like
+// spotlight.json. Every story ends with the ollama run command to try it.
+async function fetchLocalModelsStories() {
+  if (!/^https?:$/.test(location.protocol)) throw new Error("The LOCAL MODELS channel needs the live site. It can't load from a downloaded copy of the file.");
+  const res = await fetch("local-models.json", { cache: "no-store" });
+  if (!res.ok) throw new Error("local-models.json " + res.status);
+  const data = await res.json();
+  const list = Array.isArray(data.models) ? data.models : [];
+  const okName = n => typeof n === "string" && /^[A-Za-z0-9._-]{1,80}$/.test(n);
+  const str = v => (typeof v === "string" ? v.replace(/\s+/g, " ").trim() : "");
+  const arr = v => (Array.isArray(v) ? v.map(str).filter(Boolean).slice(0, 12) : []);
+  const models = list.filter(m => m && okName(m.name));
+  if (models.length === 0) throw new Error("No models in local-models.json");
+  return models.slice(0, 10).map(m => {
+    const sizes = arr(m.sizes);
+    const caps = arr(m.capabilities);
+    const updated = str(m.updated);
+    const pulls = str(m.pulls);
+    const desc = str(m.description);
+    // Smallest size first in the command, so the suggested pull fits most machines.
+    const cmd = "ollama run " + m.name + (sizes.length > 1 ? ":" + sizes[0] : "");
+    const facts = [updated ? "updated " + updated : "", sizes.length ? sizes.join(", ") : "", caps.join(", "), pulls ? pulls + " pulls" : ""].filter(Boolean);
+    return {
+      show: "LOCAL MODEL \u00b7 OLLAMA",
+      title: m.name,
+      line1: facts.join(" \u00b7 ") || "New in the Ollama library",
+      line2: (desc ? (desc.length > 170 ? desc.slice(0, 167) + "..." : desc) + "  " : "") + "\u25B6 " + cmd,
+      url: "https://ollama.com/library/" + m.name,
+      fullText: "**" + m.name + "**\n\n" + (desc || "No description provided.")
+        + "\n\nRun it locally:\n\n```\n" + cmd + "\n```"
+        + (sizes.length ? "\n\nSizes: " + sizes.join(", ") : "")
+        + (caps.length ? "\n\nCan do: " + caps.join(", ") : "")
+        + (pulls ? "\n\n" + pulls + " pulls" : "")
+        + "\n\nNeed Ollama? Get it at ollama.com/download",
     };
   });
 }
@@ -2296,9 +2338,10 @@ const ALL_CHANNELS = [
   { id: "hnvideo", name: "HN VIDEO", color: "#fb923c", key: "9", fetcher: fetchHNVideoStories, tag: "VID" },
   { id: "aivideo", name: "AI VIDEO", color: "#38bdf8", key: "0", fetcher: fetchAIVideoStories, tag: "AIV" },
   // Channels 11 and up have no number key (1-9 and 0 are taken): arrows or click.
-  { id: "models", name: "NEW MODELS", color: "#e879f9", key: "", fetcher: fetchNewModelsStories, tag: "MOD" },
+  { id: "models", name: "CLOUD MODELS", color: "#e879f9", key: "", fetcher: fetchNewModelsStories, tag: "MOD" },
   { id: "skills", name: "AGENT SKILLS", color: "#a3e635", key: "", fetcher: fetchSkillsStories, tag: "SKL" },
   { id: "faceoff", name: "MODEL FACE-OFF", color: "#cbd5e1", key: "", fetcher: fetchFaceoffStories, tag: "VS" },
+  { id: "local", name: "LOCAL MODELS", color: "#2dd4bf", key: "", fetcher: fetchLocalModelsStories, tag: "LOC" },
   { id: "spotlight", name: "SPOTLIGHT", color: "#fde68a", key: "", fetcher: fetchSpotlightStories, tag: "SPOT" },
 ];
 
@@ -2334,7 +2377,7 @@ function loadEnabledIds() {
         let seen = null;
         try { seen = JSON.parse(localStorage.getItem(SEEN_KEY)); } catch (e) {}
         // No seen list yet means this browser predates it: it has seen every channel except "skills".
-        if (!Array.isArray(seen)) seen = allIds.filter(id => id !== "skills" && id !== "faceoff");
+        if (!Array.isArray(seen)) seen = allIds.filter(id => id !== "skills" && id !== "faceoff" && id !== "local");
         const fresh = allIds.filter(id => !seen.includes(id) && !valid.includes(id));
         try { localStorage.setItem(SEEN_KEY, JSON.stringify(allIds)); } catch (e) {}
         if (fresh.length > 0) {
@@ -2946,7 +2989,7 @@ async function openReader(channel, story) {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "cve") {
       html = mdLite(story.fullText || story.line2);
-    } else if (channel.id === "models" || channel.id === "faceoff") {
+    } else if (channel.id === "models" || channel.id === "faceoff" || channel.id === "local") {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "spotlight" && story.empty) {
       html = SPOT_BEAM_HTML + `<div class="hn-article-banner"><div>Community Spotlight</div></div>` + safeMd(story.fullText);

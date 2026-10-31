@@ -1,0 +1,216 @@
+{
+  "source": "https://ollama.com/search?o=newest",
+  "generated": "2026-10-31T08:12:01Z",
+  "models": [
+    {
+      "name": "lfm3",
+      "description": "LFM3-1.7B is a tri-hybrid model for local agents and specialized applications.",
+      "capabilities": [
+        "tools",
+        "thinking"
+      ],
+      "sizes": [
+        "1.7b"
+      ],
+      "pulls": "23.9K",
+      "updated": "Oct 29, 2026"
+    },
+    {
+      "name": "lfm3-audio",
+      "description": "LFM3-Audio-2B is a compact, fully featured audio model.",
+      "capabilities": [
+        "tools",
+        "vision",
+        "audio"
+      ],
+      "sizes": [
+        "2b"
+      ],
+      "pulls": "6,085",
+      "updated": "Oct 29, 2026"
+    },
+    {
+      "name": "lfm3-omni",
+      "description": "a single end-to-end model that understands text, images, video and audio, and answers in text and speech",
+      "capabilities": [
+        "tools",
+        "vision",
+        "audio"
+      ],
+      "sizes": [
+        "2b"
+      ],
+      "pulls": "13K",
+      "updated": "Oct 29, 2026"
+    },
+    {
+      "name": "lfm3-vl",
+      "description": "LFM3-VL-2B is a vision-language model for on-device visual understanding.",
+      "capabilities": [
+        "tools",
+        "vision",
+        "thinking"
+      ],
+      "sizes": [
+        "2b"
+      ],
+      "pulls": "7,616",
+      "updated": "Oct 29, 2026"
+    },
+    {
+      "name": "d3",
+      "description": "Turn text, structured data, and images into scored choices, yes/no answers, and ratings.",
+      "capabilities": [
+        "vision"
+      ],
+      "sizes": [
+        "2b",
+        "4b",
+        "9b",
+        "27b"
+      ],
+      "pulls": "28.3K",
+      "updated": "Oct 30, 2026"
+    },
+    {
+      "name": "phonon",
+      "description": "Phonon is Gradium’s text-to-speech family. It turns written text into spoken audio as it generates, making it useful for reading assistant replies, narrating passages, and adding a voice to local apps.",
+      "capabilities": [],
+      "sizes": [],
+      "pulls": "24K",
+      "updated": "Oct 24, 2026"
+    },
+    {
+      "name": "flint",
+      "description": "Flint is a 39.8 billion-parameter mixture-of-experts model from Recursive, built for coding agents.",
+      "capabilities": [
+        "tools",
+        "thinking"
+      ],
+      "sizes": [
+        "40b"
+      ],
+      "pulls": "40.1K",
+      "updated": "Oct 22, 2026"
+    },
+    {
+      "name": "d1-omni",
+      "description": "d1-omni is a multimodal 600M decision model from Liquid AI",
+      "capabilities": [
+        "vision",
+        "audio"
+      ],
+      "sizes": [
+        "600m",
+        "2b"
+      ],
+      "pulls": "17.9K",
+      "updated": "Oct 27, 2026"
+    },
+    {
+      "name": "bonsai-2",
+      "description": "Bonsai 2 from Prism ML is a family of vision models built for ternary weights – smaller models with close to full-precision quality.",
+      "capabilities": [
+        "tools",
+        "vision",
+        "thinking"
+      ],
+      "sizes": [
+        "2b",
+        "4b",
+        "9b",
+        "27b"
+      ],
+      "pulls": "89.2K",
+      "updated": "Oct 16, 2026"
+    },
+    {
+      "name": "pplx-decider",
+      "description": "pplx-decider is a 27B decision model from Perplexity, fine-tuned from Qwen3.8-27B",
+      "capabilities": [
+        "vision"
+      ],
+      "sizes": [
+        "27b"
+      ],
+      "pulls": "15.4K",
+      "updated": "Oct 17, 2026"
+    },
+    {
+      "name": "d1",
+      "description": "d1 is a 3B decision model from Liquid AI, built on LFM2.5-VL-3B",
+      "capabilities": [
+        "vision"
+      ],
+      "sizes": [
+        "2b",
+        "3b"
+      ],
+      "pulls": "27.6K",
+      "updated": "Oct 27, 2026"
+    },
+    {
+      "name": "kev",
+      "description": "Kev scores answers to structured questions about a supplied text state in a single forward pass.",
+      "capabilities": [],
+      "sizes": [],
+      "pulls": "17.4K",
+      "updated": "Oct 17, 2026"
+    },
+    {
+      "name": "nimble-v3",
+      "description": "A 9B decision model from Bespoke Labs for fast classification, routing, and scoring.",
+      "capabilities": [
+        "tools",
+        "thinking"
+      ],
+      "sizes": [
+        "9b"
+      ],
+      "pulls": "20.6K",
+      "updated": "Oct 13, 2026"
+    },
+    {
+      "name": "nemotron-3.5-bolt",
+      "description": "Nemotron 3.5 Bolt is NVIDIA’s compact vision-language model for local coding, reasoning, and tool use.",
+      "capabilities": [
+        "tools",
+        "vision",
+        "thinking",
+        "audio"
+      ],
+      "sizes": [
+        "e4b"
+      ],
+      "pulls": "37.4K",
+      "updated": "Oct 23, 2026"
+    },
+    {
+      "name": "embeddinggemma-2",
+      "description": "EmbeddingGemma 2 is a multimodal embedding model from Google built on the Gemma 4 architecture.",
+      "capabilities": [
+        "vision",
+        "embedding",
+        "audio"
+      ],
+      "sizes": [
+        "270m",
+        "440m",
+        "570m",
+        "740m"
+      ],
+      "pulls": "108.1K",
+      "updated": "Oct 15, 2026"
+    },
+    {
+      "name": "strands-decider",
+      "description": "A 2B decision model from Strands Agents for fast classification, routing, and scoring.",
+      "capabilities": [],
+      "sizes": [
+        "2b"
+      ],
+      "pulls": "9,244",
+      "updated": "Oct 13, 2026"
+    }
+  ]
+}
