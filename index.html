@@ -628,7 +628,13 @@
   .chbtn.gold { background: linear-gradient(180deg, #e9c76a, #b88a2e); border-top-color: #fbe7a6; }
   .chbtn.gold .name, .chbtn.gold .num, .chbtn.gold.on .num { color: #2e1f05; }
   .chbtn.gold.on { box-shadow: 0 0 0 1px #fbe7a6, inset 0 1px 3px rgba(0,0,0,0.35); }
-  @media (min-width: 901px) { #controls .chbtn { width: 58px; } #channel-buttons { flex-wrap: nowrap !important; } }
+  @media (min-width: 901px) {
+    /* One row that always fits: keys share the width, however many channels are on. */
+    #channel-buttons { flex: 1 1 100%; flex-wrap: nowrap !important; width: 100%; max-width: 100%; min-width: 0; justify-content: center; }
+    #controls .chbtn { flex: 1 1 0; width: auto; min-width: 0; max-width: 92px; padding-left: 2px; padding-right: 2px; }
+    #controls .chbtn .name { font-size: clamp(7px, 0.62vw, 10px); line-height: 1.15; text-align: center; overflow-wrap: normal; word-break: keep-all; hyphens: none; white-space: normal; }
+    #controls .chbtn .num { font-size: clamp(8px, 0.65vw, 11px); }
+  }
 
   @media (max-width: 640px) {
     #tv-logo { padding: 5px 8px 5px 10px; }
@@ -2056,6 +2062,56 @@ async function fetchAIVideoStories() {
   return videos.slice(0, 10).map(h => hnVideoToStory(h, "AI VIDEO · HACKER NEWS"));
 }
 
+// HN PICKS: videos HN users recommend *inside comments*, inspired by
+// Karpathy's HackerTube. Comments linking YouTube are pulled from HN's
+// Algolia API, then each video is ranked by how many DIFFERENT people
+// recommended it. Titles come from YouTube's public oEmbed endpoint.
+async function fetchHNPicksStories() {
+  const pages = await Promise.all([0, 1, 2].map(async (page) => {
+    const url = "https://hn.algolia.com/api/v1/search?tags=comment&query=youtube.com%20watch"
+      + `&hitsPerPage=1000&page=${page}&attributesToRetrieve=comment_text,author,story_id,story_title&attributesToHighlight=&numericFilters=created_at_i>${Math.floor(Date.now() / 1000) - 730 * 86400}`;
+    try { const r = await fetch(url); return r.ok ? (await r.json()).hits || [] : []; } catch (e) { return []; }
+  }));
+  const byVideo = new Map();
+  for (const h of pages.flat()) {
+    const text = (h.comment_text || "").replace(/&#x2F;/g, "/").replace(/&amp;/g, "&");
+    const links = text.match(/https?:\/\/(?:www\.|m\.)?(?:youtube\.com|youtu\.be)\/[^\s"<]+/g) || [];
+    const ids = new Set(links.map(extractYouTubeId).filter(Boolean));
+    for (const id of ids) {
+      if (!byVideo.has(id)) byVideo.set(id, { videoId: id, people: new Set(), quote: "", storyId: null });
+      const v = byVideo.get(id);
+      v.people.add(h.author);
+      if (!v.quote) {
+        const plain = text.replace(/<[^>]+>/g, " ").replace(/https?:\/\/\S+/g, "").replace(/&[#\w]+;/g, " ").replace(/\s+/g, " ").trim();
+        if (plain.length > 30) { v.quote = plain.length > 140 ? plain.slice(0, 137) + "…" : plain; v.storyId = h.story_id; v.storyTitle = h.story_title; }
+      }
+    }
+  }
+  const ranked = [...byVideo.values()].filter(v => v.people.size >= 2)
+    .sort((a, b) => b.people.size - a.people.size).slice(0, 25);
+  // Shuffle the rest behind the top 5 so every visit feels fresh.
+  const top = ranked.slice(0, 5), rest = ranked.slice(5).sort(() => Math.random() - 0.5);
+  const picks = [...top, ...rest].slice(0, 12);
+  if (picks.length === 0) throw new Error("No HN-recommended videos found right now");
+  return Promise.all(picks.map(async (v) => {
+    let title = "A video HN keeps recommending";
+    try {
+      const r = await fetch(`https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v=${v.videoId}`);
+      if (r.ok) title = (await r.json()).title || title;
+    } catch (e) {}
+    return {
+      show: "HN PICKS · RECOMMENDED IN COMMENTS",
+      title,
+      line1: `Recommended by ${v.people.size} HN users`,
+      line2: v.quote ? `“${v.quote}”` : (v.storyTitle ? "Mentioned under: " + v.storyTitle : "Click to watch on the TV"),
+      url: `https://www.youtube.com/watch?v=${v.videoId}`,
+      videoId: v.videoId,
+      hnId: v.storyId ? String(v.storyId) : null,
+      credit: "Inspired by HackerTube by @karpathy",
+    };
+  }));
+}
+
 /* SPOTLIGHT channel: community projects, safe markdown, README loading, share links. */
 // COMMUNITY SPOTLIGHT: developer projects curated by hand. The entries live
 // in spotlight.json next to index.html, so GitHub Pages serves them from the
@@ -2342,6 +2398,7 @@ const ALL_CHANNELS = [
   { id: "skills", name: "AGENT SKILLS", color: "#a3e635", key: "", fetcher: fetchSkillsStories, tag: "SKL" },
   { id: "faceoff", name: "MODEL FACE-OFF", color: "#cbd5e1", key: "", fetcher: fetchFaceoffStories, tag: "VS" },
   { id: "local", name: "LOCAL MODELS", color: "#2dd4bf", key: "", fetcher: fetchLocalModelsStories, tag: "LOC" },
+  { id: "hnpicks", name: "HN PICKS", color: "#f59e0b", key: "", fetcher: fetchHNPicksStories, tag: "PIX" },
   { id: "spotlight", name: "SPOTLIGHT", color: "#fde68a", key: "", fetcher: fetchSpotlightStories, tag: "SPOT" },
 ];
 
@@ -3014,7 +3071,7 @@ async function openReader(channel, story) {
         + (readme ? (readme.text
             ? `<div class="spot-readme-head mono">README \u00b7 FROM GITHUB</div>` + mdLite(absolutizeReadmeImages(tidyReadmeHtml(readme.text), repo))
             : `<p class="hn-discussion-note">${escapeHtml(readme.note)}</p>`) : "");
-    } else if (channel.id === "hnvideo" || channel.id === "aivideo") {
+    } else if (channel.id === "hnvideo" || channel.id === "aivideo" || channel.id === "hnpicks") {
       // Re-validate the ID right before it touches an iframe src, even
       // though the fetcher already did, so nothing unexpected can ever
       // be injected here.
@@ -3913,7 +3970,7 @@ function renderGuide() {
 /* render(): paints the screen, buttons and settings from current state. */
 /* Per-channel background: effect per channel id, colour comes from the channel itself. */
 const CHANNEL_FX = { github: "grid", hn: "sweep", devto: "aurora", huggingface: "dots", releases: "stripes", aipapers: "rings",
-  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", aivideo: "checker", models: "rain", skills: "twinkle", faceoff: "versus", spotlight: "beam" };
+  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", hnpicks: "vhs", aivideo: "checker", models: "rain", skills: "twinkle", faceoff: "versus", spotlight: "beam" };
 function setChannelFx(color, fx) {
   const r = document.documentElement;
   if (!color) { r.removeAttribute("data-fx"); return; }
@@ -3972,6 +4029,7 @@ function render() {
       statusEl.style.cssText = "display:flex; align-items:center; gap:10px; margin:10px 0;";
       statusEl.innerHTML = `<div style="width:14px; height:14px; border-radius:50%; border:2px solid ${readerChannel.color}33; border-top-color:${readerChannel.color}; animation: spin 0.8s linear infinite;"></div><span class="mono" style="font-size:12px; color:#6a6a72;">LOADING FULL STORY…</span>`;
       document.getElementById("reader-content").innerHTML = "";
+      if (story.credit) html += `<p class="mono" style="font-size:11px; color:#8a8a92;">${escapeHtml(story.credit)} · <a href="https://karpathy.bearblog.dev/hacker-tube/" target="_blank" rel="noopener noreferrer">hackertube.org</a></p>`;
     } else if (readerError) {
       statusEl.style.display = "block";
       statusEl.innerHTML = `<div style="font-size:14px; color:#9a9aa2; line-height:1.5; margin:10px 0;">${escapeHtml(readerError)}</div>`;
