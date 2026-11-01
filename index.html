@@ -3091,6 +3091,7 @@ async function openReader(channel, story) {
           + `<p style="color:#8a8a92; font-size:12px; margin-top:12px;">In-TV playback needs the live site (YouTube blocks players on pages opened as local files). Tap the thumbnail to watch on YouTube.</p>`;
       }
       html += (discuss ? `<p style="font-size:12px;"><a href="${discuss}" target="_blank" rel="noopener noreferrer">Read the Hacker News discussion</a></p>` : "");
+      if (story.credit) html += `<p class="mono" style="font-size:11px; color:#8a8a92;">${escapeHtml(story.credit)} · <a href="https://karpathy.bearblog.dev/hacker-tube/" target="_blank" rel="noopener noreferrer">hackertube.org</a></p>`;
     } else {
       throw new Error("No in-app reader available for this source yet.");
     }
@@ -4029,7 +4030,6 @@ function render() {
       statusEl.style.cssText = "display:flex; align-items:center; gap:10px; margin:10px 0;";
       statusEl.innerHTML = `<div style="width:14px; height:14px; border-radius:50%; border:2px solid ${readerChannel.color}33; border-top-color:${readerChannel.color}; animation: spin 0.8s linear infinite;"></div><span class="mono" style="font-size:12px; color:#6a6a72;">LOADING FULL STORY…</span>`;
       document.getElementById("reader-content").innerHTML = "";
-      if (story.credit) html += `<p class="mono" style="font-size:11px; color:#8a8a92;">${escapeHtml(story.credit)} · <a href="https://karpathy.bearblog.dev/hacker-tube/" target="_blank" rel="noopener noreferrer">hackertube.org</a></p>`;
     } else if (readerError) {
       statusEl.style.display = "block";
       statusEl.innerHTML = `<div style="font-size:14px; color:#9a9aa2; line-height:1.5; margin:10px 0;">${escapeHtml(readerError)}</div>`;
