@@ -3157,7 +3157,8 @@ async function openReader(channel, story) {
           + `<p style="color:#8a8a92; font-size:12px; margin-top:12px;">In-TV playback needs the live site (YouTube blocks players on pages opened as local files). Tap the thumbnail to watch on YouTube.</p>`;
       }
       html += (discuss ? `<p style="font-size:12px;"><a href="${discuss}" target="_blank" rel="noopener noreferrer">Read the Hacker News discussion</a></p>` : "");
-      if (story.receipts && story.receipts.length) html += `<div class="spot-readme-head mono">WHO RECOMMENDED IT</div><ul style="font-size:13px;">` + story.receipts.map(r => `<li><a href="${escapeHtml(r.url)}" target="_blank" rel="noopener noreferrer">@${escapeHtml(r.by)}</a> ${r.type === "comment" ? "in a comment on" : "in"} <a href="${escapeHtml(r.article_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(r.article_title)}</a></li>`).join("") + `</ul><p style="font-size:12px;"><a href="https://shouvik12.github.io/devtube/" target="_blank" rel="noopener noreferrer">See the full DEVTube chart ↗</a></p>`;
+      // Receipts go first, above the player, so they're seen without scrolling.
+      if (story.receipts && story.receipts.length) html = `<p style="font-size:13px; margin:0 0 12px; color:#a8a8b0;">Recommended by ` + story.receipts.map(r => `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener noreferrer" title="${r.type === "comment" ? "In a comment on" : "In"} ${escapeHtml(r.article_title)}">@${escapeHtml(r.by)}</a>`).join(", ") + `</p>` + html;
       if (story.credit && channel.id === "hnpicks") html += `<p class="mono" style="font-size:11px; color:#8a8a92;">${escapeHtml(story.credit)} · <a href="https://karpathy.bearblog.dev/hacker-tube/" target="_blank" rel="noopener noreferrer">hackertube.org</a></p>`;
     } else {
       throw new Error("No in-app reader available for this source yet.");

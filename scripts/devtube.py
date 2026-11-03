@@ -16,7 +16,7 @@ YT_PATTERNS = [
     # DEV liquid tag: {% youtube VIDEO_ID %}
     re.compile(r"\{%\s*youtube\s+[\"']?([A-Za-z0-9_-]{11})", re.I),
     # Plain links and iframes: watch?v=, youtu.be/, embed/, shorts/, live/
-    re.compile(r"(?:youtube(?:-nocookie)?\.com/(?:watch\?(?:[^\s\"'<>]*?[&;])?v=|embed/|shorts/|live/|v/)"
+    re.compile(r"(?:youtube(?:-nocookie)?\.com/(?:watch\?(?:[^\s\"'<>]*?[&;])?v=|embed/|live/|v/)"
                r"|youtu\.be/)([A-Za-z0-9_-]{11})", re.I),
 ]
 
@@ -70,6 +70,13 @@ def timestamps(text):
     return out
 
 
+def real_text(html):
+    """Words in a comment once tags and links are removed. Spam is usually just a link."""
+    t = re.sub(r"<[^>]+>", " ", html or "")
+    t = re.sub(r"https?://\S+", " ", t)
+    return len(t.split())
+
+
 def walk(comments):
     for c in comments or []:
         yield c
@@ -88,6 +95,7 @@ def main():
     DELAY = args.delay
 
     videos = {}  # id -> {"people": set, "sources": []}
+    stats = {"articles": 0, "comments": 0, "words": 0, "links": 0, "authors": set(), "commenters": set(), "oldest": None}
 
     def add(vid, person, source, text=""):
         v = videos.setdefault(vid, {"people": set(), "sources": [], "starts": []})
@@ -108,6 +116,12 @@ def main():
             ctx = {"article_title": title, "article_url": aurl, "tags": tags}
 
             full = cached("articles", aid, f"{API}/articles/{aid}") or {}
+            stats["articles"] += 1
+            stats["authors"].add(author)
+            stats["words"] += len((full.get("body_markdown") or "").split())
+            pub = (meta.get("published_at") or "")[:10]
+            if pub and (not stats["oldest"] or pub < stats["oldest"]):
+                stats["oldest"] = pub
             for vid in video_ids(full.get("body_markdown")):
                 add(vid, author, {**ctx, "type": "article", "by": author, "url": aurl}, full.get("body_markdown"))
 
@@ -115,12 +129,21 @@ def main():
                 comments = cached("comments", aid, f"{API}/comments?a_id={aid}") or []
                 for c in walk(comments):
                     who = (c.get("user") or {}).get("username", "unknown")
+                    stats["comments"] += 1
+                    stats["commenters"].add(who)
+                    stats["words"] += len(re.sub(r"<[^>]+>", " ", c.get("body_html") or "").split())
                     curl = f"https://dev.to/{who}/comment/{c.get('id_code', '')}"
+                    if real_text(c.get("body_html")) < 8:
+                        continue  # link-only comment: usually spam or self-promo
                     for vid in video_ids(c.get("body_html")):
                         add(vid, who, {**ctx, "type": "comment", "by": who, "url": curl}, c.get("body_html"))
 
             if i % 100 == 0:
                 print(f"  {i} articles scanned, {len(videos)} videos found")
+
+    stats["links"] = sum(len(v["sources"]) for v in videos.values())
+    people = stats["authors"] | stats["commenters"]
+    recommenders = set().union(*(v["people"] for v in videos.values())) if videos else set()
 
     # Rank by number of distinct people recommending, then total mentions
     ranked = sorted(videos.items(), key=lambda kv: (len(kv[1]["people"]), len(kv[1]["sources"])), reverse=True)
@@ -148,8 +171,21 @@ def main():
         })
 
     with open("devtube.json", "w") as f:
-        json.dump({"generated": time.strftime("%Y-%m-%d"), "videos": out}, f, indent=2)
-    print(f"Done: {len(out)} videos written to devtube.json")
+        summary = {
+            "articles_scanned": stats["articles"],
+            "comments_scanned": stats["comments"],
+            "words_read": stats["words"],
+            "developers_scanned": len(people),
+            "video_recommendations": stats["links"],
+            "unique_videos": len(videos),
+            "developers_recommending": len(recommenders),
+            "videos_on_channel": len(out),
+            "oldest_article": stats["oldest"],
+        }
+        json.dump({"generated": time.strftime("%Y-%m-%d"), "stats": summary, "videos": out}, f, indent=2)
+    print(f"Done: {len(out)} videos written to devtube.json\n")
+    for k, v in summary.items():
+        print(f"  {k.replace('_', ' '):26} {v:,}" if isinstance(v, int) else f"  {k.replace('_', ' '):26} {v}")
 
 
 if __name__ == "__main__":
