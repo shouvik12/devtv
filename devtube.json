@@ -1,0 +1,914 @@
+{
+  "generated": "2026-11-03",
+  "videos": [
+    {
+      "id": "arLWMxMSlFI",
+      "title": "Energizing and Clarifying Forem",
+      "channel": "The Practical Dev",
+      "thumbnail": "https://i.ytimg.com/vi/arLWMxMSlFI/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=arLWMxMSlFI",
+      "start": 0,
+      "people": 2,
+      "mentions": 2,
+      "sources": [
+        {
+          "article_title": "A New Chapter: DEV is Joining Forces with Major League Hacking (MLH)",
+          "article_url": "https://dev.to/devteam/a-new-chapter-dev-is-joining-forces-with-major-league-hacking-mlh-3kfd",
+          "tags": [
+            "news",
+            "devto",
+            "hackathon",
+            "discuss"
+          ],
+          "type": "article",
+          "by": "ben",
+          "url": "https://dev.to/devteam/a-new-chapter-dev-is-joining-forces-with-major-league-hacking-mlh-3kfd"
+        },
+        {
+          "article_title": "Get Started on Dev.to! A Beginner's Guide to Engage with the Community! \ud83d\udca1",
+          "article_url": "https://dev.to/francistrdev/get-started-on-devto-a-beginners-guide-to-engage-with-the-community-4ach",
+          "tags": [
+            "discuss",
+            "community",
+            "beginners",
+            "howtodevto"
+          ],
+          "type": "article",
+          "by": "francistrdev",
+          "url": "https://dev.to/francistrdev/get-started-on-devto-a-beginners-guide-to-engage-with-the-community-4ach"
+        }
+      ]
+    },
+    {
+      "id": "lYokVtPglaY",
+      "title": "Magical Rainbow Fairy World \u2013 Peaceful Relaxing Music for Sleep & Meditation",
+      "channel": "Tiny Magic World",
+      "thumbnail": "https://i.ytimg.com/vi/lYokVtPglaY/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=lYokVtPglaY",
+      "start": 0,
+      "people": 1,
+      "mentions": 4,
+      "sources": [
+        {
+          "article_title": "Congrats to the GitHub Copilot CLI Challenge Winners!",
+          "article_url": "https://dev.to/devteam/congrats-to-the-github-copilot-cli-challenge-winners-2240",
+          "tags": [
+            "devchallenge",
+            "githubchallenge",
+            "cli",
+            "ai"
+          ],
+          "type": "comment",
+          "by": "se_b6634cf15ea5ea758",
+          "url": "https://dev.to/se_b6634cf15ea5ea758/comment/35gkh"
+        },
+        {
+          "article_title": "Congrats to the GitHub Copilot CLI Challenge Winners!",
+          "article_url": "https://dev.to/devteam/congrats-to-the-github-copilot-cli-challenge-winners-2240",
+          "tags": [
+            "devchallenge",
+            "githubchallenge",
+            "cli",
+            "ai"
+          ],
+          "type": "comment",
+          "by": "se_b6634cf15ea5ea758",
+          "url": "https://dev.to/se_b6634cf15ea5ea758/comment/35gki"
+        },
+        {
+          "article_title": "Congrats to the GitHub Copilot CLI Challenge Winners!",
+          "article_url": "https://dev.to/devteam/congrats-to-the-github-copilot-cli-challenge-winners-2240",
+          "tags": [
+            "devchallenge",
+            "githubchallenge",
+            "cli",
+            "ai"
+          ],
+          "type": "comment",
+          "by": "se_b6634cf15ea5ea758",
+          "url": "https://dev.to/se_b6634cf15ea5ea758/comment/35gkj"
+        },
+        {
+          "article_title": "Congrats to the GitHub Copilot CLI Challenge Winners!",
+          "article_url": "https://dev.to/devteam/congrats-to-the-github-copilot-cli-challenge-winners-2240",
+          "tags": [
+            "devchallenge",
+            "githubchallenge",
+            "cli",
+            "ai"
+          ],
+          "type": "comment",
+          "by": "se_b6634cf15ea5ea758",
+          "url": "https://dev.to/se_b6634cf15ea5ea758/comment/35gkk"
+        }
+      ]
+    },
+    {
+      "id": "gx35z1QypT8",
+      "title": "Claw Agents AI Review 2026 \ud83d\udd25 The Best AI Business Automation Tool?",
+      "channel": "TOP online tools",
+      "thumbnail": "https://i.ytimg.com/vi/gx35z1QypT8/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=gx35z1QypT8",
+      "start": 0,
+      "people": 1,
+      "mentions": 3,
+      "sources": [
+        {
+          "article_title": "It's You.",
+          "article_url": "https://dev.to/francistrdev/its-you-29k0",
+          "tags": [
+            "discuss",
+            "community",
+            "productivity",
+            "mentalhealth"
+          ],
+          "type": "comment",
+          "by": "elalami_bouryache_95c1acd",
+          "url": "https://dev.to/elalami_bouryache_95c1acd/comment/3ao7a"
+        },
+        {
+          "article_title": "It's You.",
+          "article_url": "https://dev.to/francistrdev/its-you-29k0",
+          "tags": [
+            "discuss",
+            "community",
+            "productivity",
+            "mentalhealth"
+          ],
+          "type": "comment",
+          "by": "elalami_bouryache_95c1acd",
+          "url": "https://dev.to/elalami_bouryache_95c1acd/comment/3ao79"
+        },
+        {
+          "article_title": "It's You.",
+          "article_url": "https://dev.to/francistrdev/its-you-29k0",
+          "tags": [
+            "discuss",
+            "community",
+            "productivity",
+            "mentalhealth"
+          ],
+          "type": "comment",
+          "by": "elalami_bouryache_95c1acd",
+          "url": "https://dev.to/elalami_bouryache_95c1acd/comment/3ao78"
+        }
+      ]
+    },
+    {
+      "id": "X_Pw4tjK-B8",
+      "title": "mordorjs the world first 1D programming language.",
+      "channel": "P\u00e9ter V\u00edv\u00f3",
+      "thumbnail": "https://i.ytimg.com/vi/X_Pw4tjK-B8/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=X_Pw4tjK-B8",
+      "start": 0,
+      "people": 1,
+      "mentions": 2,
+      "sources": [
+        {
+          "article_title": "Join our April Fools Challenge for a chance at TEA-RRIFIC prizes!!!",
+          "article_url": "https://dev.to/devteam/join-our-april-fools-challenge-for-a-chance-at-tea-rrific-prizes-1ofa",
+          "tags": [
+            "devchallenge",
+            "418challenge",
+            "jokes"
+          ],
+          "type": "comment",
+          "by": "pengeszikra",
+          "url": "https://dev.to/pengeszikra/comment/36lda"
+        },
+        {
+          "article_title": "You\u2019re a Real Software Developer Only If\u2026",
+          "article_url": "https://dev.to/sylwia-lask/youre-a-real-software-developer-only-if-2mo8",
+          "tags": [
+            "jokes",
+            "devlive"
+          ],
+          "type": "comment",
+          "by": "pengeszikra",
+          "url": "https://dev.to/pengeszikra/comment/36ld6"
+        }
+      ]
+    },
+    {
+      "id": "VQQiUCJmOG0",
+      "title": "Qu\u00e9 es el protocolo MCP \u2060#Shorts #MCP #ClaudeAI",
+      "channel": "Umbrella Academy | IA y Desarrollo",
+      "thumbnail": "https://i.ytimg.com/vi/VQQiUCJmOG0/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=VQQiUCJmOG0",
+      "start": 0,
+      "people": 1,
+      "mentions": 2,
+      "sources": [
+        {
+          "article_title": "Your DEV posts have a beautiful new share card \u2728",
+          "article_url": "https://dev.to/devteam/your-dev-posts-have-a-beautiful-new-share-card-4be8",
+          "tags": [
+            "devto",
+            "showdev",
+            "opensource",
+            "design"
+          ],
+          "type": "comment",
+          "by": "janer_ruiz_fd24192a589cee",
+          "url": "https://dev.to/janer_ruiz_fd24192a589cee/comment/3je37"
+        },
+        {
+          "article_title": "I Earned a Seat at GitHub Universe. It'll Stay Empty, and That's Not Fair",
+          "article_url": "https://dev.to/georgekobaidze/i-earned-a-seat-at-github-universe-itll-stay-empty-and-thats-not-fair-3d7k",
+          "tags": [
+            "conference",
+            "github"
+          ],
+          "type": "comment",
+          "by": "janer_ruiz_fd24192a589cee",
+          "url": "https://dev.to/janer_ruiz_fd24192a589cee/comment/3je34"
+        }
+      ]
+    },
+    {
+      "id": "HuZUmhGcg-I",
+      "title": "AI Mode in Chrome",
+      "channel": "Google",
+      "thumbnail": "https://i.ytimg.com/vi/HuZUmhGcg-I/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=HuZUmhGcg-I",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "A New Chapter: DEV is Joining Forces with Major League Hacking (MLH)",
+          "article_url": "https://dev.to/devteam/a-new-chapter-dev-is-joining-forces-with-major-league-hacking-mlh-3kfd",
+          "tags": [
+            "news",
+            "devto",
+            "hackathon",
+            "discuss"
+          ],
+          "type": "comment",
+          "by": "md_dilbarhussain_40d64aa",
+          "url": "https://dev.to/md_dilbarhussain_40d64aa/comment/3gi43"
+        }
+      ]
+    },
+    {
+      "id": "aG9hd2a3sPM",
+      "title": "Party #fbis(5)",
+      "channel": "Jessi Elizabeth",
+      "thumbnail": "https://i.ytimg.com/vi/aG9hd2a3sPM/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=aG9hd2a3sPM",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "How to Become a Tech Conference Speaker (And Why You Might Regret It)",
+          "article_url": "https://dev.to/sylwia-lask/how-to-become-a-tech-conference-speaker-and-why-you-might-regret-it-2ink",
+          "tags": [
+            "career",
+            "speaking",
+            "techtalks"
+          ],
+          "type": "comment",
+          "by": "adamthedeveloper",
+          "url": "https://dev.to/adamthedeveloper/comment/3igdn"
+        }
+      ]
+    },
+    {
+      "id": "cIu9yYESSf8",
+      "title": "Rewrite or Refactor? Choosing Your Migration Strategy | Sylwia Laskowska",
+      "channel": "JS Poland Conf",
+      "thumbnail": "https://i.ytimg.com/vi/cIu9yYESSf8/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=cIu9yYESSf8",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "How to Become a Tech Conference Speaker (And Why You Might Regret It)",
+          "article_url": "https://dev.to/sylwia-lask/how-to-become-a-tech-conference-speaker-and-why-you-might-regret-it-2ink",
+          "tags": [
+            "career",
+            "speaking",
+            "techtalks"
+          ],
+          "type": "comment",
+          "by": "sylwia-lask",
+          "url": "https://dev.to/sylwia-lask/comment/3ind1"
+        }
+      ]
+    },
+    {
+      "id": "Jvop1cggUYg",
+      "title": "BrewOps: I built a production-grade HTCPCP server because nobody else would",
+      "channel": "Niko from Axrisi",
+      "thumbnail": "https://i.ytimg.com/vi/Jvop1cggUYg/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=Jvop1cggUYg",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Join our April Fools Challenge for a chance at TEA-RRIFIC prizes!!!",
+          "article_url": "https://dev.to/devteam/join-our-april-fools-challenge-for-a-chance-at-tea-rrific-prizes-1ofa",
+          "tags": [
+            "devchallenge",
+            "418challenge",
+            "jokes"
+          ],
+          "type": "comment",
+          "by": "axrisi",
+          "url": "https://dev.to/axrisi/comment/36a3p"
+        }
+      ]
+    },
+    {
+      "id": "rvBXobETSqg",
+      "title": "Bug Hunter Chrome Extension Demo | Squash Bugs on Any Webpage",
+      "channel": "Nudgen",
+      "thumbnail": "https://i.ytimg.com/vi/rvBXobETSqg/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=rvBXobETSqg",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Join our April Fools Challenge for a chance at TEA-RRIFIC prizes!!!",
+          "article_url": "https://dev.to/devteam/join-our-april-fools-challenge-for-a-chance-at-tea-rrific-prizes-1ofa",
+          "tags": [
+            "devchallenge",
+            "418challenge",
+            "jokes"
+          ],
+          "type": "comment",
+          "by": "toannhu",
+          "url": "https://dev.to/toannhu/comment/36ac2"
+        }
+      ]
+    },
+    {
+      "id": "xo3vpvbA8p8",
+      "title": "AI IS MERGING GAMES #shorts",
+      "channel": "jacobweeby",
+      "thumbnail": "https://i.ytimg.com/vi/xo3vpvbA8p8/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=xo3vpvbA8p8",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Why you still need a Website Portfolio, even though everyone can Vibe Code it.",
+          "article_url": "https://dev.to/francistrdev/why-you-still-need-a-website-portfolio-even-though-everyone-can-vibe-code-it-e63",
+          "tags": [
+            "discuss",
+            "community",
+            "showdev",
+            "a11y"
+          ],
+          "type": "article",
+          "by": "francistrdev",
+          "url": "https://dev.to/francistrdev/why-you-still-need-a-website-portfolio-even-though-everyone-can-vibe-code-it-e63"
+        }
+      ]
+    },
+    {
+      "id": "l5TKysLw3ms",
+      "title": "dev portfolios are getting worse - Roasting your dev sites #11",
+      "channel": "Anthony Sistilli",
+      "thumbnail": "https://i.ytimg.com/vi/l5TKysLw3ms/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=l5TKysLw3ms",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Why you still need a Website Portfolio, even though everyone can Vibe Code it.",
+          "article_url": "https://dev.to/francistrdev/why-you-still-need-a-website-portfolio-even-though-everyone-can-vibe-code-it-e63",
+          "tags": [
+            "discuss",
+            "community",
+            "showdev",
+            "a11y"
+          ],
+          "type": "comment",
+          "by": "francistrdev",
+          "url": "https://dev.to/francistrdev/comment/3gh9i"
+        }
+      ]
+    },
+    {
+      "id": "Kd7j418EhLk",
+      "title": "\ud83e\udd16 PLAY  \ud83c\udf5c $OPASPADES !\ud83d\udd2b\ud83c\udf7a",
+      "channel": "Anderson Torres",
+      "thumbnail": "https://i.ytimg.com/vi/Kd7j418EhLk/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=Kd7j418EhLk",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Join the GitHub Finish-Up-A-Thon Challenge: $3,000 Prize Pool!",
+          "article_url": "https://dev.to/devteam/join-the-github-finish-up-a-thon-challenge-3000-prize-pool-f41",
+          "tags": [
+            "githubchallenge",
+            "devchallenge",
+            "githubcopilot"
+          ],
+          "type": "comment",
+          "by": "atorresbr",
+          "url": "https://dev.to/atorresbr/comment/38a3i"
+        }
+      ]
+    },
+    {
+      "id": "sJ1GaeaeZ7Y",
+      "title": "playing \ud83c\udf5c SOPA SPADES \ud83d\udd2b",
+      "channel": "Anderson Torres",
+      "thumbnail": "https://i.ytimg.com/vi/sJ1GaeaeZ7Y/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=sJ1GaeaeZ7Y",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Join the GitHub Finish-Up-A-Thon Challenge: $3,000 Prize Pool!",
+          "article_url": "https://dev.to/devteam/join-the-github-finish-up-a-thon-challenge-3000-prize-pool-f41",
+          "tags": [
+            "githubchallenge",
+            "devchallenge",
+            "githubcopilot"
+          ],
+          "type": "comment",
+          "by": "atorresbr",
+          "url": "https://dev.to/atorresbr/comment/38a3i"
+        }
+      ]
+    },
+    {
+      "id": "u8223YPpLbI",
+      "title": "Odysseus Self-Hosted AI Workspace Full Installation & Production Setup Support",
+      "channel": "Anything Linux",
+      "thumbnail": "https://i.ytimg.com/vi/u8223YPpLbI/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=u8223YPpLbI",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Join the GitHub Finish-Up-A-Thon Challenge: $3,000 Prize Pool!",
+          "article_url": "https://dev.to/devteam/join-the-github-finish-up-a-thon-challenge-3000-prize-pool-f41",
+          "tags": [
+            "githubchallenge",
+            "devchallenge",
+            "githubcopilot"
+          ],
+          "type": "comment",
+          "by": "terminalaitrader",
+          "url": "https://dev.to/terminalaitrader/comment/394ag"
+        }
+      ]
+    },
+    {
+      "id": "Rui7jSKNJNk",
+      "title": "\ud83e\uddde\u200d\u2642\ufe0fTransform unstructured PDFs Job Offers into a well structured dataset w. gemma4:2b",
+      "channel": "DevOPS LABS",
+      "thumbnail": "https://i.ytimg.com/vi/Rui7jSKNJNk/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=Rui7jSKNJNk",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Join the Gemma 4 Challenge: $3,000 prize pool for TEN winners!",
+          "article_url": "https://dev.to/devteam/join-the-gemma-4-challenge-3000-prize-pool-for-ten-winners-23in",
+          "tags": [
+            "devchallenge",
+            "gemmachallenge",
+            "gemma"
+          ],
+          "type": "comment",
+          "by": "adriens",
+          "url": "https://dev.to/adriens/comment/387i4"
+        }
+      ]
+    },
+    {
+      "id": "lNcCu8bmsd8",
+      "title": "AiA 206: The Origin of JavaScript with Brendan Eich",
+      "channel": "Top End Devs",
+      "thumbnail": "https://i.ytimg.com/vi/lNcCu8bmsd8/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=lNcCu8bmsd8",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Yes, {} + [] = 0. No, JavaScript Isn\u2019t Broken",
+          "article_url": "https://dev.to/sylwia-lask/yes-0-no-javascript-isnt-broken-14ob",
+          "tags": [
+            "javascript",
+            "webdev",
+            "node",
+            "programming"
+          ],
+          "type": "comment",
+          "by": "dhiraj-shrotri",
+          "url": "https://dev.to/dhiraj-shrotri/comment/3jenm"
+        }
+      ]
+    },
+    {
+      "id": "vIfJ5FDho_U",
+      "title": "Wait 6 years for pipeline operator in JS",
+      "channel": "P\u00e9ter V\u00edv\u00f3",
+      "thumbnail": "https://i.ytimg.com/vi/vIfJ5FDho_U/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=vIfJ5FDho_U",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Natural Languages Have Design Trade-offs Too: Georgian Is Dynamically Typed, English Is Statically Typed",
+          "article_url": "https://dev.to/georgekobaidze/natural-languages-have-design-trade-offs-too-georgian-is-dynamically-typed-english-is-statically-emi",
+          "tags": [
+            "programming",
+            "writing",
+            "design",
+            "languages"
+          ],
+          "type": "comment",
+          "by": "pengeszikra",
+          "url": "https://dev.to/pengeszikra/comment/3i1p2"
+        }
+      ]
+    },
+    {
+      "id": "anwy2MPT5RE",
+      "title": "Monty Python - Spam",
+      "channel": "zumpzump",
+      "thumbnail": "https://i.ytimg.com/vi/anwy2MPT5RE/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=anwy2MPT5RE",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Fighting Spam at Scale: How We Use Gemini to Protect the DEV Community",
+          "article_url": "https://dev.to/devteam/fighting-spam-at-scale-how-we-use-gemini-to-protect-the-dev-community-277j",
+          "tags": [
+            "ai",
+            "gemini",
+            "devto",
+            "security"
+          ],
+          "type": "comment",
+          "by": "rkeeves",
+          "url": "https://dev.to/rkeeves/comment/34254"
+        }
+      ]
+    },
+    {
+      "id": "7IJzQzsvAUE",
+      "title": "ORCHESTRATE Active Inference Workbench",
+      "channel": "ORCHESTRATE Master",
+      "thumbnail": "https://i.ytimg.com/vi/7IJzQzsvAUE/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=7IJzQzsvAUE",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Announcing the Winners of the DEV Weekend Challenge: Earth Day Edition \ud83c\udf0d",
+          "article_url": "https://dev.to/devteam/announcing-the-winners-of-the-dev-weekend-challenge-earth-day-edition-1n4",
+          "tags": [
+            "devchallenge",
+            "weekendchallenge"
+          ],
+          "type": "comment",
+          "by": "tmdlrg",
+          "url": "https://dev.to/tmdlrg/comment/37lhg"
+        }
+      ]
+    },
+    {
+      "id": "SQlEpjZXfRU",
+      "title": "What is 'black joy' and why do we need it in our lives? | BBC Ideas",
+      "channel": "BBC Ideas",
+      "thumbnail": "https://i.ytimg.com/vi/SQlEpjZXfRU/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=SQlEpjZXfRU",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Join the June Solstice Game Jam: $1,000 in prizes!",
+          "article_url": "https://dev.to/devteam/join-the-june-solstice-game-jam-1000-in-prizes-3jla",
+          "tags": [
+            "devchallenge",
+            "gamechallenge",
+            "gamedev"
+          ],
+          "type": "article",
+          "by": "jess",
+          "url": "https://dev.to/devteam/join-the-june-solstice-game-jam-1000-in-prizes-3jla"
+        }
+      ]
+    },
+    {
+      "id": "9e5tNkNgzL4",
+      "title": "MINECRAFT ENDERMAN RAP|ELEMENT VERSION",
+      "channel": "Element Animation",
+      "thumbnail": "https://i.ytimg.com/vi/9e5tNkNgzL4/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=9e5tNkNgzL4",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "I Joined dev.to because...",
+          "article_url": "https://dev.to/francistrdev/i-joined-devto-because-fl0",
+          "tags": [
+            "discuss",
+            "community",
+            "writing",
+            "motivation"
+          ],
+          "type": "comment",
+          "by": "francistrdev",
+          "url": "https://dev.to/francistrdev/comment/3codm"
+        }
+      ]
+    },
+    {
+      "id": "A01DQ8_xy7Q",
+      "title": "Google Cloud Next '26 Developer Keynote",
+      "channel": "Google Cloud",
+      "thumbnail": "https://i.ytimg.com/vi/A01DQ8_xy7Q/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=A01DQ8_xy7Q",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Tune In and Join the Google Cloud NEXT '26 Writing Challenge: $1,000 in Prizes!",
+          "article_url": "https://dev.to/devteam/tune-in-and-join-the-google-cloud-next-26-writing-challenge-1000-in-prizes-21bd",
+          "tags": [
+            "devchallenge",
+            "googlecloud",
+            "cloudnextchallenge"
+          ],
+          "type": "article",
+          "by": "jess",
+          "url": "https://dev.to/devteam/tune-in-and-join-the-google-cloud-next-26-writing-challenge-1000-in-prizes-21bd"
+        }
+      ]
+    },
+    {
+      "id": "11PBno-cJ1g",
+      "title": "Google Cloud Next '26 Opening Keynote",
+      "channel": "Google Cloud",
+      "thumbnail": "https://i.ytimg.com/vi/11PBno-cJ1g/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=11PBno-cJ1g",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Tune In and Join the Google Cloud NEXT '26 Writing Challenge: $1,000 in Prizes!",
+          "article_url": "https://dev.to/devteam/tune-in-and-join-the-google-cloud-next-26-writing-challenge-1000-in-prizes-21bd",
+          "tags": [
+            "devchallenge",
+            "googlecloud",
+            "cloudnextchallenge"
+          ],
+          "type": "article",
+          "by": "jess",
+          "url": "https://dev.to/devteam/tune-in-and-join-the-google-cloud-next-26-writing-challenge-1000-in-prizes-21bd"
+        }
+      ]
+    },
+    {
+      "id": "j51uMah-3js",
+      "title": "Attacking AI - Jason Haddix - NDC Security 2026",
+      "channel": "NDC Conferences",
+      "thumbnail": "https://i.ytimg.com/vi/j51uMah-3js/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=j51uMah-3js",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Every Developer Is Lying About Something \u2014 And AI Won\u2019t Fix It",
+          "article_url": "https://dev.to/sylwia-lask/every-developer-is-lying-about-something-and-ai-wont-fix-it-4im0",
+          "tags": [
+            "discuss",
+            "productivity"
+          ],
+          "type": "comment",
+          "by": "_hm",
+          "url": "https://dev.to/_hm/comment/3890n"
+        }
+      ]
+    },
+    {
+      "id": "VCE7mcnb48I",
+      "title": "We Offer Swift Crypto Recovery Services. Tracking And Reversing Crypto And Bank Transactions Is %100",
+      "channel": "Rescue Team Recovery Company",
+      "thumbnail": "https://i.ytimg.com/vi/VCE7mcnb48I/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=VCE7mcnb48I",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "The Invisible Developer: Why Caring Burns You Out",
+          "article_url": "https://dev.to/junothreadborne/the-invisible-developer-why-caring-burns-you-out-p8o",
+          "tags": [
+            "devculture",
+            "programming",
+            "career",
+            "productivity"
+          ],
+          "type": "comment",
+          "by": "filip_truta_0081a5990d5fa",
+          "url": "https://dev.to/filip_truta_0081a5990d5fa/comment/329ed"
+        }
+      ]
+    },
+    {
+      "id": "vlwLenoj6hc",
+      "title": "ur not crazy, everyone sounds like chatgpt",
+      "channel": "laith",
+      "thumbnail": "https://i.ytimg.com/vi/vlwLenoj6hc/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=vlwLenoj6hc",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "How would you decide, whether the content is good or bad?",
+          "article_url": "https://dev.to/francistrdev/how-would-you-decide-whether-the-content-is-good-or-bad-295p",
+          "tags": [
+            "discuss",
+            "community",
+            "ai",
+            "writing"
+          ],
+          "type": "comment",
+          "by": "francistrdev",
+          "url": "https://dev.to/francistrdev/comment/3cfap"
+        }
+      ]
+    },
+    {
+      "id": "Ob3NoMUIqAg",
+      "title": "why everyone hates YC companies",
+      "channel": "Anthony Sistilli",
+      "thumbnail": "https://i.ytimg.com/vi/Ob3NoMUIqAg/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=Ob3NoMUIqAg",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "How would you decide, whether the content is good or bad?",
+          "article_url": "https://dev.to/francistrdev/how-would-you-decide-whether-the-content-is-good-or-bad-295p",
+          "tags": [
+            "discuss",
+            "community",
+            "ai",
+            "writing"
+          ],
+          "type": "comment",
+          "by": "francistrdev",
+          "url": "https://dev.to/francistrdev/comment/3cdnh"
+        }
+      ]
+    },
+    {
+      "id": "eItv45Mrqug",
+      "title": "That Guy in Your Comp Sci Class Be Like",
+      "channel": "Nicholas T.",
+      "thumbnail": "https://i.ytimg.com/vi/eItv45Mrqug/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=eItv45Mrqug",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "I am that I am.",
+          "article_url": "https://dev.to/francistrdev/i-am-that-i-am-5j",
+          "tags": [
+            "discuss",
+            "community",
+            "mentalhealth",
+            "learning"
+          ],
+          "type": "article",
+          "by": "francistrdev",
+          "url": "https://dev.to/francistrdev/i-am-that-i-am-5j"
+        }
+      ]
+    },
+    {
+      "id": "WJLgneOuVsI",
+      "title": "The Flash 1x23 - Barry talking to his dad",
+      "channel": "Show Time",
+      "thumbnail": "https://i.ytimg.com/vi/WJLgneOuVsI/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=WJLgneOuVsI",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "I am that I am.",
+          "article_url": "https://dev.to/francistrdev/i-am-that-i-am-5j",
+          "tags": [
+            "discuss",
+            "community",
+            "mentalhealth",
+            "learning"
+          ],
+          "type": "article",
+          "by": "francistrdev",
+          "url": "https://dev.to/francistrdev/i-am-that-i-am-5j"
+        }
+      ]
+    },
+    {
+      "id": "nFTp8ypsa4Q",
+      "title": "Look what my Son built using Magic",
+      "channel": "AINIRO",
+      "thumbnail": "https://i.ytimg.com/vi/nFTp8ypsa4Q/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=nFTp8ypsa4Q",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "The Junior Developer is Extinct (And we are creating a disaster)",
+          "article_url": "https://dev.to/the_nortern_dev/the-junior-developer-is-extinct-and-we-are-creating-a-disaster-3jh2",
+          "tags": [
+            "career",
+            "ai",
+            "discuss",
+            "future"
+          ],
+          "type": "comment",
+          "by": "polterguy",
+          "url": "https://dev.to/polterguy/comment/34adn"
+        }
+      ]
+    },
+    {
+      "id": "z1hLLDMkdlM",
+      "title": "Ip Man (2010) - Ip Man vs. Master Shin Scene (3/10) | Movieclips",
+      "channel": "Movieclips",
+      "thumbnail": "https://i.ytimg.com/vi/z1hLLDMkdlM/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=z1hLLDMkdlM",
+      "start": 237,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "It's You.",
+          "article_url": "https://dev.to/francistrdev/its-you-29k0",
+          "tags": [
+            "discuss",
+            "community",
+            "productivity",
+            "mentalhealth"
+          ],
+          "type": "article",
+          "by": "francistrdev",
+          "url": "https://dev.to/francistrdev/its-you-29k0"
+        }
+      ]
+    },
+    {
+      "id": "g7gPegf76Mw",
+      "title": "Tenet - Opera Siege - (HDR - 4K - 5.1)",
+      "channel": "4K HDR Media",
+      "thumbnail": "https://i.ytimg.com/vi/g7gPegf76Mw/hqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=g7gPegf76Mw",
+      "start": 0,
+      "people": 1,
+      "mentions": 1,
+      "sources": [
+        {
+          "article_title": "Should Junior Developers Still Learn JavaScript the Hard Way?",
+          "article_url": "https://dev.to/antfarm-tech/should-junior-developers-still-learn-javascript-the-hard-way-4j0l",
+          "tags": [
+            "programming",
+            "webdev",
+            "javascript",
+            "beginners"
+          ],
+          "type": "comment",
+          "by": "rkeeves",
+          "url": "https://dev.to/rkeeves/comment/344p7"
+        }
+      ]
+    }
+  ]
+}

@@ -630,10 +630,12 @@
   .chbtn.gold.on { box-shadow: 0 0 0 1px #fbe7a6, inset 0 1px 3px rgba(0,0,0,0.35); }
   @media (min-width: 901px) {
     /* One row that always fits: keys share the width, however many channels are on. */
-    #channel-buttons { flex: 1 1 100%; flex-wrap: nowrap !important; width: 100%; max-width: 100%; min-width: 0; justify-content: center; }
-    #controls .chbtn { flex: 1 1 0; width: auto; min-width: 0; max-width: 92px; padding-left: 2px; padding-right: 2px; }
-    #controls .chbtn .name { font-size: clamp(7px, 0.62vw, 10px); line-height: 1.15; text-align: center; overflow-wrap: normal; word-break: keep-all; hyphens: none; white-space: normal; }
-    #controls .chbtn .num { font-size: clamp(8px, 0.65vw, 11px); }
+    /* Remote keypad: equal keys in two even rows, so labels never clip and the active key never grows. */
+    #channel-buttons { flex: 1 1 100%; display: grid !important; grid-template-columns: repeat(var(--cols, 8), minmax(0, 1fr)); gap: 8px; width: 100%; max-width: 980px; margin: 0 auto; }
+    #controls .chbtn { width: auto; min-width: 0; max-width: none; height: 62px; padding: 8px 4px; justify-content: center; gap: 5px; }
+    #controls .chbtn .name { font-size: 11px; line-height: 1.15; letter-spacing: 0.02em; text-align: center; white-space: normal; overflow-wrap: normal; word-break: keep-all; }
+    #controls .chbtn .num { font-size: 11px; }
+    #controls .chbtn.on { transform: none; }
   }
 
   @media (max-width: 640px) {
@@ -2112,6 +2114,69 @@ async function fetchHNPicksStories() {
   }));
 }
 
+/* DEVTUBE channel. */
+// Videos DEV developers recommend in articles and comments, ranked by how
+// many different people shared them. scripts/devtube.py saves devtube.json next to
+// this file (like local-models.json); this channel reads it, starts each
+// video at the moment people cited (if any), and shows the receipts.
+const DEVTUBE_URL = "devtube.json";
+async function fetchDevTubeStories() {
+  if (!/^https?:$/.test(location.protocol)) throw new Error("The DEVTUBE channel needs the live site. It can't load from a downloaded copy of the file.");
+  const res = await fetch(DEVTUBE_URL, { cache: "no-store" });
+  if (!res.ok) throw new Error("DEVTube videos.json " + res.status);
+  let list = ((await res.json()).videos || []).filter(v => v && /^[A-Za-z0-9_-]{11}$/.test(v.id || ""));
+  if (!list.length) throw new Error("No DEVTube videos yet");
+  // Like HN PICKS: only videos at least two different developers vouched for.
+  // Falls back to the full list only while the data is still small.
+  const vouched = list.filter(v => (v.people || 0) >= 2);
+  if (vouched.length >= 5) list = vouched;
+  const top = list.slice(0, 5), rest = list.slice(5, 30).sort(() => Math.random() - 0.5);
+  const httpsOnly = u => (typeof u === "string" && /^https:\/\//.test(u) ? u : "https://dev.to");
+  return [...top, ...rest].slice(0, 12).map((v, i) => {
+    const seen = new Set();
+    const receipts = (v.sources || []).filter(r => r && !seen.has(r.url) && seen.add(r.url)).slice(0, 8)
+      .map(r => ({ by: String(r.by || "someone"), type: r.type, url: httpsOnly(r.url), article_url: httpsOnly(r.article_url), article_title: String(r.article_title || "a DEV article") }));
+    const first = receipts[0];
+    const start = Number.isFinite(+v.start) && +v.start > 0 ? Math.floor(+v.start) : 0;
+    const mm = start ? ` · starts at ${Math.floor(start / 60)}:${String(start % 60).padStart(2, "0")}, the moment people cited` : "";
+    return {
+      show: "DEVTUBE · RECOMMENDED ON DEV",
+      title: String(v.title || "A video DEV keeps recommending"),
+      line1: `Recommended by ${v.people || 1} DEV developer${(v.people || 1) === 1 ? "" : "s"}${mm}`,
+      line2: first ? `@${first.by} ${first.type === "comment" ? "in a comment on" : "in"} “${first.article_title}”` : (v.channel || ""),
+      url: `https://www.youtube.com/watch?v=${v.id}${start ? "&t=" + start + "s" : ""}`,
+      videoId: v.id, start, receipts,
+    };
+  });
+}
+
+/* HACKERTOOLS channel. */
+// Developer tools HN commenters recommend, from the HackerTools site on the
+// same GitHub Pages origin. Accepts {tools:[...]} or a bare array.
+const HACKERTOOLS_URL = "https://shouvik12.github.io/hackertools/tools.json";
+async function fetchHackerToolsStories() {
+  const res = await fetch(HACKERTOOLS_URL, { cache: "no-store" });
+  if (!res.ok) throw new Error("HackerTools tools.json " + res.status);
+  const data = await res.json();
+  const list = (Array.isArray(data) ? data : data.tools || []).filter(t => t && (t.name || t.title));
+  if (!list.length) throw new Error("No HackerTools entries yet");
+  const top = list.slice(0, 5), rest = list.slice(5, 40).sort(() => Math.random() - 0.5);
+  return [...top, ...rest].slice(0, 12).map(t => {
+    const name = String(t.name || t.title);
+    const n = t.people || t.mentions || t.count || t.score;
+    const url = typeof t.url === "string" && /^https?:\/\//.test(t.url) ? t.url : "https://shouvik12.github.io/hackertools/";
+    const desc = String(t.description || t.desc || t.quote || "");
+    return {
+      show: "HACKERTOOLS · RECOMMENDED ON HN",
+      title: name,
+      line1: n ? `Recommended by ${n} HN commenters` : "Recommended in Hacker News comments",
+      line2: desc ? (desc.length > 200 ? desc.slice(0, 197) + "..." : desc) : "See it on HackerTools",
+      url,
+      fullText: "**" + name + "**\n\n" + (desc || "") + (n ? "\n\nRecommended by " + n + " HN commenters." : "") + "\n\n[Browse all HackerTools](https://shouvik12.github.io/hackertools/)",
+    };
+  });
+}
+
 /* SPOTLIGHT channel: community projects, safe markdown, README loading, share links. */
 // COMMUNITY SPOTLIGHT: developer projects curated by hand. The entries live
 // in spotlight.json next to index.html, so GitHub Pages serves them from the
@@ -2386,19 +2451,20 @@ const ALL_CHANNELS = [
   { id: "github", name: "GITHUB", color: "#7c8cff", key: "1", fetcher: fetchGithubStories, tag: "GH" },
   { id: "hn", name: "HACKER NEWS", color: "#ff6b47", key: "2", fetcher: fetchHNStories, tag: "HN" },
   { id: "devto", name: "DEV", color: "#3dd6a3", key: "3", fetcher: fetchDevToStories, tag: "DEV" },
-  { id: "huggingface", name: "HUGGING FACE", color: "#ffcc4d", key: "4", fetcher: fetchHuggingFaceStories, tag: "HF" },
+  { id: "huggingface", name: "HUGGING FACE", short: "HUGGING FACE", color: "#ffcc4d", key: "4", fetcher: fetchHuggingFaceStories, tag: "HF" },
   { id: "releases", name: "RELEASES", color: "#22c55e", key: "5", fetcher: fetchReleasesStories, tag: "REL" },
   { id: "aipapers", name: "AI PAPERS", color: "#a78bfa", key: "6", fetcher: fetchAIPapersStories, tag: "PAP" },
-  { id: "latestpapers", name: "LATEST PAPERS", color: "#f472b6", key: "7", fetcher: fetchLatestPapersStories, tag: "NEW" },
+  { id: "latestpapers", name: "LATEST PAPERS", short: "NEW PAPERS", color: "#f472b6", key: "7", fetcher: fetchLatestPapersStories, tag: "NEW" },
   { id: "cve", name: "CVE", color: "#ef4444", key: "8", fetcher: fetchCVEStories, tag: "CVE" },
-  { id: "hnvideo", name: "HN VIDEO", color: "#fb923c", key: "9", fetcher: fetchHNVideoStories, tag: "VID" },
+  { id: "hnpicks", name: "HN PICKS", short: "HN PICKS", color: "#f59e0b", key: "9", fetcher: fetchHNPicksStories, tag: "PIX" },
   { id: "aivideo", name: "AI VIDEO", color: "#38bdf8", key: "0", fetcher: fetchAIVideoStories, tag: "AIV" },
   // Channels 11 and up have no number key (1-9 and 0 are taken): arrows or click.
-  { id: "models", name: "CLOUD MODELS", color: "#e879f9", key: "", fetcher: fetchNewModelsStories, tag: "MOD" },
-  { id: "skills", name: "AGENT SKILLS", color: "#a3e635", key: "", fetcher: fetchSkillsStories, tag: "SKL" },
-  { id: "faceoff", name: "MODEL FACE-OFF", color: "#cbd5e1", key: "", fetcher: fetchFaceoffStories, tag: "VS" },
-  { id: "local", name: "LOCAL MODELS", color: "#2dd4bf", key: "", fetcher: fetchLocalModelsStories, tag: "LOC" },
-  { id: "hnpicks", name: "HN PICKS", color: "#f59e0b", key: "", fetcher: fetchHNPicksStories, tag: "PIX" },
+  { id: "models", name: "CLOUD MODELS", short: "CLOUD", color: "#e879f9", key: "", fetcher: fetchNewModelsStories, tag: "MOD" },
+  { id: "skills", name: "AGENT SKILLS", short: "SKILLS", color: "#a3e635", key: "", fetcher: fetchSkillsStories, tag: "SKL" },
+  { id: "faceoff", name: "MODEL FACE-OFF", short: "FACE-OFF", color: "#cbd5e1", key: "", fetcher: fetchFaceoffStories, tag: "VS" },
+  { id: "local", name: "LOCAL MODELS", short: "LOCAL", color: "#2dd4bf", key: "", fetcher: fetchLocalModelsStories, tag: "LOC" },
+  { id: "devtube", name: "DEVTUBE", short: "DEVTUBE", color: "#ff6b6b", key: "", fetcher: fetchDevTubeStories, tag: "DTB" },
+  { id: "hackertools", name: "HACKERTOOLS", short: "HACKER TOOLS", color: "#4ade80", key: "", fetcher: fetchHackerToolsStories, tag: "TLS" },
   { id: "spotlight", name: "SPOTLIGHT", color: "#fde68a", key: "", fetcher: fetchSpotlightStories, tag: "SPOT" },
 ];
 
@@ -3071,7 +3137,7 @@ async function openReader(channel, story) {
         + (readme ? (readme.text
             ? `<div class="spot-readme-head mono">README \u00b7 FROM GITHUB</div>` + mdLite(absolutizeReadmeImages(tidyReadmeHtml(readme.text), repo))
             : `<p class="hn-discussion-note">${escapeHtml(readme.note)}</p>`) : "");
-    } else if (channel.id === "hnvideo" || channel.id === "aivideo" || channel.id === "hnpicks") {
+    } else if (channel.id === "hnvideo" || channel.id === "aivideo" || channel.id === "hnpicks" || channel.id === "devtube") {
       // Re-validate the ID right before it touches an iframe src, even
       // though the fetcher already did, so nothing unexpected can ever
       // be injected here.
@@ -3084,14 +3150,15 @@ async function openReader(channel, story) {
       // the video on YouTube instead of a player that's guaranteed to fail.
       const ytUrl = `https://www.youtube.com/watch?v=${story.videoId}`;
       if (/^https?:$/.test(location.protocol)) {
-        html = `<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${story.videoId}?autoplay=1&rel=0&playsinline=1" title="Video player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`
+        html = `<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${story.videoId}?autoplay=1&rel=0&playsinline=1${story.start ? "&start=" + (story.start | 0) : ""}" title="Video player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`
           + `<p style="color:#8a8a92; font-size:12px; margin-top:12px;">If the player shows an error, the video may block embedding. "Open original source" below always works.</p>`;
       } else {
         html = `<a class="video-frame" href="${ytUrl}" target="_blank" rel="noopener noreferrer" style="display:block;"><img src="https://i.ytimg.com/vi/${story.videoId}/hqdefault.jpg" alt="Video thumbnail" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; margin:0;"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:44px; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,0.8);">▶</span></a>`
           + `<p style="color:#8a8a92; font-size:12px; margin-top:12px;">In-TV playback needs the live site (YouTube blocks players on pages opened as local files). Tap the thumbnail to watch on YouTube.</p>`;
       }
       html += (discuss ? `<p style="font-size:12px;"><a href="${discuss}" target="_blank" rel="noopener noreferrer">Read the Hacker News discussion</a></p>` : "");
-      if (story.credit) html += `<p class="mono" style="font-size:11px; color:#8a8a92;">${escapeHtml(story.credit)} · <a href="https://karpathy.bearblog.dev/hacker-tube/" target="_blank" rel="noopener noreferrer">hackertube.org</a></p>`;
+      if (story.receipts && story.receipts.length) html += `<div class="spot-readme-head mono">WHO RECOMMENDED IT</div><ul style="font-size:13px;">` + story.receipts.map(r => `<li><a href="${escapeHtml(r.url)}" target="_blank" rel="noopener noreferrer">@${escapeHtml(r.by)}</a> ${r.type === "comment" ? "in a comment on" : "in"} <a href="${escapeHtml(r.article_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(r.article_title)}</a></li>`).join("") + `</ul><p style="font-size:12px;"><a href="https://shouvik12.github.io/devtube/" target="_blank" rel="noopener noreferrer">See the full DEVTube chart ↗</a></p>`;
+      if (story.credit && channel.id === "hnpicks") html += `<p class="mono" style="font-size:11px; color:#8a8a92;">${escapeHtml(story.credit)} · <a href="https://karpathy.bearblog.dev/hacker-tube/" target="_blank" rel="noopener noreferrer">hackertube.org</a></p>`;
     } else {
       throw new Error("No in-app reader available for this source yet.");
     }
@@ -3971,7 +4038,7 @@ function renderGuide() {
 /* render(): paints the screen, buttons and settings from current state. */
 /* Per-channel background: effect per channel id, colour comes from the channel itself. */
 const CHANNEL_FX = { github: "grid", hn: "sweep", devto: "aurora", huggingface: "dots", releases: "stripes", aipapers: "rings",
-  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", hnpicks: "vhs", aivideo: "checker", models: "rain", skills: "twinkle", faceoff: "versus", spotlight: "beam" };
+  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", hnpicks: "vhs", devtube: "vhs", hackertools: "grid", aivideo: "checker", models: "rain", skills: "twinkle", faceoff: "versus", spotlight: "beam" };
 function setChannelFx(color, fx) {
   const r = document.documentElement;
   if (!color) { r.removeAttribute("data-fx"); return; }
@@ -4226,6 +4293,7 @@ function render() {
 
   const btnsEl = document.getElementById("channel-buttons");
   btnsEl.innerHTML = "";
+  btnsEl.style.setProperty("--cols", Math.ceil(channels.length / 2));
   channels.forEach((c, idx) => {
     const active = power && idx === channelIdx;
     const btn = document.createElement("button");
@@ -4233,7 +4301,7 @@ function render() {
     btn.style.setProperty("--c", c.color);
     btn.style.opacity = power ? "1" : "0.4";
     btn.style.cursor = power ? "pointer" : "not-allowed";
-    btn.innerHTML = `<span class="num">${c.num}</span><span class="name">${c.name}</span>`;
+    btn.innerHTML = `<span class="num">${c.num}</span><span class="name">${c.short || c.name}</span>`;
     if (c.status === "loading") btn.innerHTML += '<span class="dot" style="background:#6a6a72;"></span>';
     if (c.status === "error") btn.innerHTML += '<span class="dot" style="background:#ff5c5c;"></span>';
     btn.onclick = () => manualChangeChannel(idx);
