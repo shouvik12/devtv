@@ -2163,16 +2163,23 @@ async function fetchHackerToolsStories() {
   const top = list.slice(0, 5), rest = list.slice(5, 40).sort(() => Math.random() - 0.5);
   return [...top, ...rest].slice(0, 12).map(t => {
     const name = String(t.name || t.title);
-    const n = t.people || t.mentions || t.count || t.score;
+    const n = +t.commenters || +t.people || 0;
     const url = typeof t.url === "string" && /^https?:\/\//.test(t.url) ? t.url : "https://shouvik12.github.io/hackertools/";
-    const desc = String(t.description || t.desc || t.quote || "");
+    // Snippets cut mid-sentence start with "…" and a partial word: drop the partial word, keep the "…".
+    const clean = x => { let v = String(x || "").replace(/\s+/g, " ").trim(); if (v.startsWith("\u2026")) v = "\u2026" + v.slice(1).replace(/^\S*\s+/, ""); return v; };
+    const quotes = (Array.isArray(t.comments) ? t.comments : [])
+      .filter(c => c && /^\d+$/.test(String(c.id || "")) && clean(c.snippet).length > 40)
+      .slice(0, 5)
+      .map(c => ({ id: String(c.id), author: String(c.author || "someone"), date: String(c.date || ""), story: String(c.story || ""), text: clean(c.snippet) }));
+    const q = quotes.find(c => !c.text.startsWith("\u2026")) || quotes[0];
+    const short = q ? (q.text.length > 160 ? q.text.slice(0, 157).replace(/\s+\S*$/, "") + "\u2026" : q.text) : "";
+    const years = t.first_year ? ` \u00b7 since ${t.first_year}` : "";
     return {
-      show: "HACKERTOOLS · RECOMMENDED ON HN",
+      show: "HACKERTOOLS \u00b7 " + (t.category ? String(t.category).toUpperCase() : "RECOMMENDED ON HN"),
       title: name,
-      line1: n ? `Recommended by ${n} HN commenters` : "Recommended in Hacker News comments",
-      line2: desc ? (desc.length > 200 ? desc.slice(0, 197) + "..." : desc) : "See it on HackerTools",
-      url,
-      fullText: "**" + name + "**\n\n" + (desc || "") + (n ? "\n\nRecommended by " + n + " HN commenters." : "") + "\n\n[Browse all HackerTools](https://shouvik12.github.io/hackertools/)",
+      line1: n ? `Recommended by ${n.toLocaleString()} HN commenters${years}` : "Recommended in Hacker News comments",
+      line2: q ? `\u201c${short}\u201d \u2014 ${q.author}` : (t.description ? String(t.description) : "See it on HackerTools"),
+      url, quotes, category: t.category || "",
     };
   });
 }
@@ -3114,7 +3121,9 @@ async function openReader(channel, story) {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "hackertools") {
       // Text comes from HN comments via tools.json, so escape it like Spotlight.
-      html = `<p>${escapeHtml(story.line2 || "")}</p>`
+      html = (story.quotes && story.quotes.length
+          ? `<div class="spot-readme-head mono">WHAT HN COMMENTERS SAID</div>` + story.quotes.map(c => `<blockquote style="margin:0 0 14px; padding-left:12px; border-left:2px solid #4ade80;"><p style="margin:0 0 4px;">\u201c${escapeHtml(c.text)}\u201d</p><p class="mono" style="margin:0; font-size:11px; color:#8a8a92;"><a href="https://news.ycombinator.com/item?id=${c.id}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.author)}</a>${c.date ? " \u00b7 " + escapeHtml(c.date) : ""}${c.story ? " \u00b7 on \u201c" + escapeHtml(c.story) + "\u201d" : ""}</p></blockquote>`).join("")
+          : `<p>${escapeHtml(story.line2 || "")}</p>`)
         + `<p style="font-size:13px;"><a href="${escapeHtml(story.url)}" target="_blank" rel="noopener noreferrer">Visit ${escapeHtml(story.title)} \u2197</a></p>`
         + `<p style="font-size:13px;"><a href="https://shouvik12.github.io/hackertools/" target="_blank" rel="noopener noreferrer">Browse all HackerTools \u2197</a></p>`;
     } else if (channel.id === "spotlight" && story.empty) {
