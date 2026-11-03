@@ -3112,6 +3112,9 @@ async function openReader(channel, story) {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "models" || channel.id === "faceoff" || channel.id === "local") {
       html = mdLite(story.fullText || story.line2);
+    } else if (channel.id === "hackertools") {
+      // Text comes from HN comments via tools.json, so escape it like Spotlight.
+      html = safeMd(story.fullText || story.line2);
     } else if (channel.id === "spotlight" && story.empty) {
       html = SPOT_BEAM_HTML + `<div class="hn-article-banner"><div>Community Spotlight</div></div>` + safeMd(story.fullText);
     } else if (channel.id === "spotlight") {
