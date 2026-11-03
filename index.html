@@ -3114,7 +3114,9 @@ async function openReader(channel, story) {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "hackertools") {
       // Text comes from HN comments via tools.json, so escape it like Spotlight.
-      html = safeMd(story.fullText || story.line2);
+      html = `<p>${escapeHtml(story.line2 || "")}</p>`
+        + `<p style="font-size:13px;"><a href="${escapeHtml(story.url)}" target="_blank" rel="noopener noreferrer">Visit ${escapeHtml(story.title)} \u2197</a></p>`
+        + `<p style="font-size:13px;"><a href="https://shouvik12.github.io/hackertools/" target="_blank" rel="noopener noreferrer">Browse all HackerTools \u2197</a></p>`;
     } else if (channel.id === "spotlight" && story.empty) {
       html = SPOT_BEAM_HTML + `<div class="hn-article-banner"><div>Community Spotlight</div></div>` + safeMd(story.fullText);
     } else if (channel.id === "spotlight") {
