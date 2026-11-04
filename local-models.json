@@ -1,7 +1,33 @@
 {
   "source": "https://ollama.com/search?o=newest",
-  "generated": "2026-11-03T12:09:40Z",
+  "generated": "2026-11-04T12:22:36Z",
   "models": [
+    {
+      "name": "pplx-decider-flash",
+      "description": "pplx-decider-flash is a 4B decision model from Perplexity, built on Qwen3.5-4B",
+      "capabilities": [
+        "vision"
+      ],
+      "sizes": [
+        "4b"
+      ],
+      "pulls": "702",
+      "updated": "Nov 3, 2026"
+    },
+    {
+      "name": "mimo-v2.6",
+      "description": "MiMo-V2.6-Distill-Qwen-9B is Xiaomi MiMo’s 9B model for code and agent workflows",
+      "capabilities": [
+        "tools",
+        "vision",
+        "thinking"
+      ],
+      "sizes": [
+        "9b"
+      ],
+      "pulls": "4,490",
+      "updated": "Nov 3, 2026"
+    },
     {
       "name": "lfm3",
       "description": "LFM3-1.7B is a tri-hybrid model for local agents and specialized applications.",
@@ -12,7 +38,7 @@
       "sizes": [
         "1.7b"
       ],
-      "pulls": "40.3K",
+      "pulls": "43.9K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -26,7 +52,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "10.3K",
+      "pulls": "12K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -40,7 +66,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "26.5K",
+      "pulls": "28.8K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -54,7 +80,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "13K",
+      "pulls": "14.9K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -69,7 +95,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "38.1K",
+      "pulls": "41.9K",
       "updated": "Oct 30, 2026"
     },
     {
@@ -77,7 +103,7 @@
       "description": "Phonon is Gradium’s text-to-speech family. It turns written text into spoken audio as it generates, making it useful for reading assistant replies, narrating passages, and adding a voice to local apps.",
       "capabilities": [],
       "sizes": [],
-      "pulls": "29.4K",
+      "pulls": "30.9K",
       "updated": "Oct 24, 2026"
     },
     {
@@ -90,7 +116,7 @@
       "sizes": [
         "40b"
       ],
-      "pulls": "48.6K",
+      "pulls": "51.1K",
       "updated": "Oct 22, 2026"
     },
     {
@@ -104,7 +130,7 @@
         "600m",
         "2b"
       ],
-      "pulls": "22.4K",
+      "pulls": "24.1K",
       "updated": "Oct 27, 2026"
     },
     {
@@ -121,7 +147,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "102.9K",
+      "pulls": "108K",
       "updated": "Oct 16, 2026"
     },
     {
@@ -133,7 +159,7 @@
       "sizes": [
         "27b"
       ],
-      "pulls": "17.2K",
+      "pulls": "18K",
       "updated": "Oct 17, 2026"
     },
     {
@@ -146,7 +172,7 @@
         "2b",
         "3b"
       ],
-      "pulls": "33.1K",
+      "pulls": "35.2K",
       "updated": "Oct 27, 2026"
     },
     {
@@ -154,7 +180,7 @@
       "description": "Kev scores answers to structured questions about a supplied text state in a single forward pass.",
       "capabilities": [],
       "sizes": [],
-      "pulls": "19.9K",
+      "pulls": "20.9K",
       "updated": "Oct 17, 2026"
     },
     {
@@ -167,7 +193,7 @@
       "sizes": [
         "9b"
       ],
-      "pulls": "22.8K",
+      "pulls": "23.6K",
       "updated": "Oct 13, 2026"
     },
     {
@@ -182,35 +208,8 @@
       "sizes": [
         "e4b"
       ],
-      "pulls": "46.6K",
+      "pulls": "49.6K",
       "updated": "Oct 23, 2026"
-    },
-    {
-      "name": "embeddinggemma-2",
-      "description": "EmbeddingGemma 2 is a multimodal embedding model from Google built on the Gemma 4 architecture.",
-      "capabilities": [
-        "vision",
-        "embedding",
-        "audio"
-      ],
-      "sizes": [
-        "270m",
-        "440m",
-        "570m",
-        "740m"
-      ],
-      "pulls": "127.7K",
-      "updated": "Oct 15, 2026"
-    },
-    {
-      "name": "strands-decider",
-      "description": "A 2B decision model from Strands Agents for fast classification, routing, and scoring.",
-      "capabilities": [],
-      "sizes": [
-        "2b"
-      ],
-      "pulls": "10.7K",
-      "updated": "Oct 13, 2026"
     }
   ]
 }
