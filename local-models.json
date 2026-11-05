@@ -1,7 +1,20 @@
 {
   "source": "https://ollama.com/search?o=newest",
-  "generated": "2026-11-04T12:22:36Z",
+  "generated": "2026-11-05T12:37:15Z",
   "models": [
+    {
+      "name": "autotrust-jev",
+      "description": "AutoTrust’s decision models return choices, yes/no probabilities, and ratings for the questions you supply",
+      "capabilities": [
+        "vision"
+      ],
+      "sizes": [
+        "9b",
+        "35b"
+      ],
+      "pulls": "1,220",
+      "updated": "Nov 4, 2026"
+    },
     {
       "name": "pplx-decider-flash",
       "description": "pplx-decider-flash is a 4B decision model from Perplexity, built on Qwen3.5-4B",
@@ -11,7 +24,7 @@
       "sizes": [
         "4b"
       ],
-      "pulls": "702",
+      "pulls": "2,144",
       "updated": "Nov 3, 2026"
     },
     {
@@ -25,7 +38,7 @@
       "sizes": [
         "9b"
       ],
-      "pulls": "4,490",
+      "pulls": "11.1K",
       "updated": "Nov 3, 2026"
     },
     {
@@ -38,7 +51,7 @@
       "sizes": [
         "1.7b"
       ],
-      "pulls": "43.9K",
+      "pulls": "46.6K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -52,7 +65,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "12K",
+      "pulls": "13.3K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -66,7 +79,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "28.8K",
+      "pulls": "30.9K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -80,7 +93,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "14.9K",
+      "pulls": "16.4K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -95,7 +108,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "41.9K",
+      "pulls": "45.4K",
       "updated": "Oct 30, 2026"
     },
     {
@@ -103,7 +116,7 @@
       "description": "Phonon is Gradium’s text-to-speech family. It turns written text into spoken audio as it generates, making it useful for reading assistant replies, narrating passages, and adding a voice to local apps.",
       "capabilities": [],
       "sizes": [],
-      "pulls": "30.9K",
+      "pulls": "37.9K",
       "updated": "Oct 24, 2026"
     },
     {
@@ -116,7 +129,7 @@
       "sizes": [
         "40b"
       ],
-      "pulls": "51.1K",
+      "pulls": "53.4K",
       "updated": "Oct 22, 2026"
     },
     {
@@ -130,7 +143,7 @@
         "600m",
         "2b"
       ],
-      "pulls": "24.1K",
+      "pulls": "25.8K",
       "updated": "Oct 27, 2026"
     },
     {
@@ -147,7 +160,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "108K",
+      "pulls": "112.9K",
       "updated": "Oct 16, 2026"
     },
     {
@@ -159,7 +172,7 @@
       "sizes": [
         "27b"
       ],
-      "pulls": "18K",
+      "pulls": "18.7K",
       "updated": "Oct 17, 2026"
     },
     {
@@ -172,7 +185,7 @@
         "2b",
         "3b"
       ],
-      "pulls": "35.2K",
+      "pulls": "37.1K",
       "updated": "Oct 27, 2026"
     },
     {
@@ -180,7 +193,7 @@
       "description": "Kev scores answers to structured questions about a supplied text state in a single forward pass.",
       "capabilities": [],
       "sizes": [],
-      "pulls": "20.9K",
+      "pulls": "21.6K",
       "updated": "Oct 17, 2026"
     },
     {
@@ -193,23 +206,8 @@
       "sizes": [
         "9b"
       ],
-      "pulls": "23.6K",
+      "pulls": "24.2K",
       "updated": "Oct 13, 2026"
-    },
-    {
-      "name": "nemotron-3.5-bolt",
-      "description": "Nemotron 3.5 Bolt is NVIDIA’s compact vision-language model for local coding, reasoning, and tool use.",
-      "capabilities": [
-        "tools",
-        "vision",
-        "thinking",
-        "audio"
-      ],
-      "sizes": [
-        "e4b"
-      ],
-      "pulls": "49.6K",
-      "updated": "Oct 23, 2026"
     }
   ]
 }
