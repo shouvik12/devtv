@@ -1433,6 +1433,9 @@ function fmtContext(n) {
 function fmtPerMillion(perToken) {
   const n = Number(perToken) * 1000000;
   if (!isFinite(n)) return null;
+  // OpenRouter sends -1 for routers (Auto Router, Auto Code...): the price is
+  // whatever the routed model costs, so there is no fixed number to show.
+  if (n < 0) return "variable";
   if (n === 0) return "free";
   return "$" + (n >= 10 ? n.toFixed(0) : n.toFixed(2).replace(/\.?0+$/, ""));
 }
@@ -1465,19 +1468,21 @@ async function fetchNewModelsStories() {
     const name = (typeof m.name === "string" && m.name.trim()) ? m.name.trim() : m.id;
     const inP = m.pricing ? fmtPerMillion(m.pricing.prompt) : null;
     const outP = m.pricing ? fmtPerMillion(m.pricing.completion) : null;
-    const price = inP && outP ? (inP === "free" && outP === "free" ? "free" : inP + " in / " + outP + " out per 1M tokens") : "";
+    const price = inP && outP ? (inP === "variable" || outP === "variable" ? "variable pricing (routed)" : inP === "free" && outP === "free" ? "free" : inP + " in / " + outP + " out per 1M tokens") : "";
     // Models that don't output text (image, decisions...) say so, so they
     // don't read like chatbots.
     const outMods = (m.architecture && Array.isArray(m.architecture.output_modalities)) ? m.architecture.output_modalities : [];
     const outTag = (outMods.length && !(outMods.length === 1 && outMods[0] === "text")) ? "outputs " + outMods.join("+") : "";
     const facts = [outTag, fmtContext(Number(m.context_length)), price].filter(Boolean);
     const desc = (typeof m.description === "string" ? m.description : "").replace(/\s+/g, " ").trim();
+    // The on-air card is plain text, so markdown links show as link text only.
+    const plainDesc = desc.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
     const okId = /^[A-Za-z0-9._~\/-]+(?::[A-Za-z0-9._-]+)?$/.test(m.id);
     return {
       show: "CLOUD MODEL \u00b7 OPENROUTER",
       title: name,
       line1: "added " + timeAgo(Number(m.created) * 1000) + (facts.length ? " \u00b7 " + facts.join(" \u00b7 ") : ""),
-      line2: desc ? (desc.length > 220 ? desc.slice(0, 217) + "..." : desc) : "Model id: " + m.id,
+      line2: plainDesc ? (plainDesc.length > 220 ? plainDesc.slice(0, 217) + "..." : plainDesc) : "Model id: " + m.id,
       url: okId ? "https://openrouter.ai/" + m.id.split(":")[0] : "https://openrouter.ai/models",
       fullText: "**" + name + "**\n\n" + (desc || "No description provided.") + "\n\nModel id: `" + m.id + "`" + (facts.length ? "\n\n" + facts.join(" \u00b7 ") : ""),
     };
