@@ -698,6 +698,94 @@
 .sp-primary { background: #fde68a; border-color: #fde68a; color: #1a1405; }
 .sp-primary:hover { border-color: #fff3bd; filter: brightness(1.06); }
 .sp-primary[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+/* DEV BULLETIN: every channel's top headlines as slides that sweep in from the left and out to the right. Everything is scoped to #bulletin-overlay. */
+.bulletin-tune { position: relative; z-index: 1; margin-top: 12px; padding: 9px 16px; border-radius: 6px; border: 1px solid #f2a93b; background: #f2a93b; color: #1b1206; font-size: var(--fs-btn); font-weight: 700; letter-spacing: 0.08em; cursor: pointer; }
+.bulletin-tune:hover { filter: brightness(1.08); }
+#bulletin-overlay { --so-navy:#0b1730; --so-ink:#f4f6fb; --so-muted:#9aa7bf; --so-amber:#f2a93b; --so-red:#d72d36;
+  --so-display:"Archivo","Arial Narrow",Arial,sans-serif; --so-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  position:absolute; inset:0; z-index:12; display:none; overflow:hidden; background:#000; color:var(--so-ink); font-family:var(--so-display); container-type:size; isolation:isolate; }
+#bulletin-overlay [hidden] { display:none !important; }
+#bulletin-overlay button { font-family:inherit; }
+#bulletin-overlay button:focus-visible, #bulletin-overlay a:focus-visible { outline:2px solid var(--so-ink); outline-offset:2px; }
+.so-screen { position:absolute; inset:0; transform-origin:50% 50%; }
+.so-screen::after { content:""; position:absolute; inset:0; pointer-events:none; z-index:40; background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 1px,transparent 1px 3px); }
+.so-screen::before { content:""; position:absolute; inset:0; pointer-events:none; z-index:41; box-shadow:inset 0 0 7cqw rgba(0,0,0,.5); }
+.so-studio { position:absolute; inset:0; background:radial-gradient(70% 60% at 30% 40%,rgba(64,118,230,.38),transparent 70%),radial-gradient(40% 40% at 85% 25%,rgba(242,169,59,.14),transparent 70%),linear-gradient(180deg,#0d1c38 0%,#091325 62%,#050a14 100%); }
+.so-wall { position:absolute; inset:0; background-image:linear-gradient(rgba(140,180,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(140,180,255,.06) 1px,transparent 1px); background-size:6.25% 10%; }
+
+.so-top { position:absolute; left:3%; right:3%; top:4%; z-index:20; display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.so-left { display:flex; gap:8px; align-items:stretch; flex-wrap:wrap; }
+.so-bug { display:flex; align-items:stretch; font-weight:800; font-stretch:80%; font-size:max(10px,1.9cqw); letter-spacing:.04em; line-height:1; }
+.so-bug span { padding:.45em .6em; }
+.so-bug .b1 { background:rgba(255,255,255,.92); color:var(--so-navy); }
+.so-bug .b2 { background:var(--so-amber); color:#1b1206; }
+.so-ctl { display:flex; gap:4px; }
+.so-ctl button { background:rgba(5,10,20,.72); color:var(--so-ink); border:1px solid rgba(255,255,255,.18); font-family:var(--so-mono); font-size:max(10px,1.2cqw); padding:0 .7em; min-height:26px; cursor:pointer; letter-spacing:.06em; }
+.so-ctl button:hover { border-color:var(--so-amber); color:var(--so-amber); }
+.so-ctl button[aria-pressed="true"] { color:var(--so-amber); border-color:var(--so-amber); }
+.so-live { display:flex; flex-direction:column; align-items:flex-end; gap:.6cqw; font-family:var(--so-mono); font-size:max(9px,1.3cqw); }
+.so-live .row { display:flex; gap:.5em; align-items:center; }
+.so-pill { background:var(--so-red); color:#fff; font-weight:600; padding:.25em .55em; letter-spacing:.1em; font-family:var(--so-mono); }
+.so-pill::before { content:""; display:inline-block; width:.55em; height:.55em; border-radius:50%; background:#fff; margin-right:.45em; vertical-align:.05em; animation:soPulse 1.2s infinite; }
+@keyframes soPulse { 50%{opacity:.2} }
+.so-clock, .so-count { background:rgba(5,10,20,.7); padding:.25em .55em; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.so-count { color:var(--so-amber); letter-spacing:.06em; }
+
+.so-stage { position:absolute; left:0; right:0; top:16%; bottom:14%; z-index:10; overflow:hidden; }
+.so-slide { position:absolute; inset:0 6%; display:flex; flex-direction:column; justify-content:center; gap:max(6px,1.2cqw); transform:translateX(-110%); opacity:0;
+  transition:transform .75s cubic-bezier(.2,.8,.2,1), opacity .5s; }
+.so-slide.in { transform:translateX(0); opacity:1; }
+.so-slide.out { transform:translateX(110%); opacity:0; transition:transform .7s cubic-bezier(.6,0,.8,.4), opacity .6s; }
+.so-kick { align-self:flex-start; display:flex; align-items:center; gap:.6em; background:var(--so-amber); color:#1b1206; font-weight:800; font-stretch:75%; font-size:max(10px,1.6cqw); letter-spacing:.14em; padding:.45em .9em; text-transform:uppercase; }
+.so-dot { width:.7em; height:.7em; border-radius:50%; box-shadow:0 0 0 2px #1b1206; }
+.so-num { font-family:var(--so-mono); font-weight:600; letter-spacing:.04em; opacity:.7; margin-left:.4em; }
+.so-head { margin:0; font-weight:800; font-stretch:70%; font-size:max(22px,5.4cqw); line-height:1.02; letter-spacing:.005em; text-wrap:balance; overflow-wrap:anywhere; max-width:28ch;
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.so-sub { margin:0; font-family:var(--so-mono); color:var(--so-amber); font-size:max(10px,1.45cqw); line-height:1.4; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+.so-more { margin:0; color:var(--so-muted); font-size:max(11px,1.75cqw); line-height:1.45; max-width:62ch; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.so-read { align-self:flex-start; margin-top:.4cqw; background:transparent; color:var(--so-ink); border:1px solid rgba(255,255,255,.28); font-family:var(--so-mono) !important; font-size:max(10px,1.2cqw); padding:.45em .9em; cursor:pointer; letter-spacing:.06em; }
+.so-read:hover { border-color:var(--so-amber); color:var(--so-amber); }
+.so-wait { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--so-mono); color:var(--so-muted); font-size:max(11px,1.5cqw); }
+
+.so-prog { position:absolute; left:0; right:0; bottom:7.5%; height:3px; z-index:16; background:rgba(255,255,255,.08); }
+.so-prog-bar { height:100%; width:0; background:var(--so-amber); }
+.so-ticker { position:absolute; left:0; right:0; bottom:0; height:7.5%; min-height:22px; z-index:16; display:flex; background:#06101f; border-top:1px solid rgba(255,255,255,.1); font-family:var(--so-mono); font-size:max(9px,1.2cqw); }
+.so-ticker .lab { flex:none; background:var(--so-red); color:#fff; font-weight:600; display:flex; align-items:center; padding:0 1.2cqw; letter-spacing:.12em; }
+.so-ticker .track { flex:1; overflow:hidden; display:flex; align-items:center; min-width:0; }
+.so-ticker .run { white-space:nowrap; display:inline-block; padding-left:100%; animation:soTick 120s linear infinite; color:#dfe6f3; }
+.so-ticker .run em { font-style:normal; color:var(--so-amber); }
+@keyframes soTick { to{transform:translateX(-100%)} }
+.so-paused { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:30; background:rgba(5,10,20,.9); color:var(--so-amber); font-family:var(--so-mono); font-size:max(11px,1.5cqw); letter-spacing:.12em; padding:.8em 1.2em; border:1px solid var(--so-amber); white-space:nowrap; }
+
+.so-ov { position:absolute; inset:0; z-index:60; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:max(8px,1.4cqw); padding:4cqw; }
+.so-end h2 { margin:0; font-weight:800; font-stretch:62%; letter-spacing:.02em; line-height:.92; font-size:max(30px,7.5cqw); text-wrap:balance; }
+.so-btn { font-weight:800; font-stretch:80%; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; border:0; background:var(--so-amber); color:#1b1206; padding:.8em 1.6em; font-size:max(12px,1.6cqw); display:inline-flex; align-items:center; gap:.6em; text-decoration:none; }
+.so-btn:hover { filter:brightness(1.08); }
+.so-btn.ghost { background:transparent; color:var(--so-ink); box-shadow:inset 0 0 0 1px rgba(255,255,255,.22); }
+.so-crtoff { animation:soCrt .9s cubic-bezier(.6,0,.4,1) forwards; }
+@keyframes soCrt { 0%{transform:scale(1,1);filter:brightness(1)} 55%{transform:scale(1,.006);filter:brightness(3)} 80%{transform:scale(.005,.006);filter:brightness(5)} 100%{transform:scale(0,0);opacity:0} }
+.so-end { background:#020409; opacity:0; transition:opacity .8s; }
+.so-end.on { opacity:1; }
+.so-end .go { font-size:max(18px,4cqw); font-weight:800; font-stretch:62%; color:var(--so-amber); letter-spacing:.04em; }
+.so-end .streak { font-family:var(--so-mono); font-size:max(10px,1.4cqw); color:var(--so-muted); letter-spacing:.06em; }
+.so-end .streak b { color:var(--so-ink); }
+.so-acts { display:flex; gap:max(8px,1.2cqw); flex-wrap:wrap; justify-content:center; margin-top:.8cqw; }
+
+/* Square and portrait screens (phones): larger type relative to the width. */
+@container (max-aspect-ratio: 13/10) {
+  .so-stage { top:22%; bottom:13%; }
+  .so-slide { inset:0 5%; }
+  .so-head { font-size:max(20px,7.4cqw); }
+  .so-more { font-size:max(11px,3cqw); -webkit-line-clamp:3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .so-slide, .so-slide.out { transition:opacity .3s; transform:none; }
+  .so-ticker .run { animation:none; padding-left:0; }
+  .so-pill::before { animation:none; }
+  .so-crtoff { animation:soFade .5s forwards; }
+  @keyframes soFade { to{opacity:0} }
+}
+
 /* YOU ON TV: a special report built from a visitor's public GitHub profile. It uses the TV screen's own neutral colours (the same ones as the Spotlight panel), so it sits inside DEV·TV rather than on top of it. */
 #ontv-btn.on { box-shadow: 0 0 0 1px var(--key-edge), inset 0 1px 3px rgba(0,0,0,0.45) !important; transform: translateY(1px); }
 /* The YOU ON TV key: a soft newsroom red, so it reads as its own thing next to the plain keys and the gold Spotlight key. */
@@ -984,6 +1072,7 @@ html[data-fx="beam"] body::before, html[data-fx="beam"] #screen::before { backgr
 
       <div id="submit-overlay" role="dialog" aria-modal="true" aria-labelledby="submit-title"></div>
       <div id="ontv-overlay" role="dialog" aria-modal="true" aria-labelledby="ontv-title"></div>
+      <div id="bulletin-overlay" role="dialog" aria-modal="true" aria-label="Dev Bulletin headlines"></div>
 
       <div id="ad-break" style="display:none;">
         <div class="ad-top"><span class="ad-tag"><span class="ad-tag-long">ADVERTISEMENT</span><span class="ad-tag-short">AD</span></span><span class="ad-countdown" id="ad-countdown"></span></div>
@@ -2458,6 +2547,356 @@ async function fetchReleasesStories() {
   }));
 }
 
+/* DEV BULLETIN channel: every channel's top headlines as slides that sweep in
+   from the left and out to the right, then a "You're caught up. Go build." card.
+   No backend: the headlines come from data the other channels already loaded.
+   It follows the remote: STOP pauses, the speed key (1x 2x 3x 0.5x) changes the pace. */
+const BULLETIN_KEY = "devtv-bulletin";
+const BULLETIN_SLIDE_MS = 5000;
+const BULLETIN_PLAN = [
+  { id: "models", take: 3, kicker: "Cloud models" },
+  { id: "local", take: 2, kicker: "Local models" },
+  { id: "skills", take: 2, kicker: "Agent skills" },
+  { id: "faceoff", take: 1, kicker: "Model face-off" },
+  { id: "hn", take: 3, kicker: "Hacker News" },
+  { id: "github", take: 2, kicker: "GitHub" },
+  { id: "devto", take: 2, kicker: "DEV" },
+  { id: "huggingface", take: 2, kicker: "Hugging Face" },
+  { id: "releases", take: 3, kicker: "Releases" },
+  { id: "aipapers", take: 1, kicker: "AI papers" },
+  { id: "latestpapers", take: 1, kicker: "Latest papers" },
+  { id: "cve", take: 1, kicker: "Security" },
+  { id: "hnpicks", take: 1, kicker: "HN picks" },
+  { id: "hackertools", take: 1, kicker: "Tool of the day" },
+  { id: "spotlight", take: 1, kicker: "Spotlight" },
+];
+
+function soClean(t) {
+  return String(t || "").replace(/https?:\/\/\S+/g, "").replace(/[*_`#>\[\]]/g, "")
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, "").replace(/\s+/g, " ").trim();
+}
+// The first sentence of a line, short enough for a headline slide.
+function soFirst(t) {
+  let s = soClean(t);
+  const m = s.match(/^(.{20,180}?[.!?])(\s|$)/);
+  if (m) s = m[1];
+  const w = s.split(" ");
+  if (w.length > 30) s = w.slice(0, 30).join(" ") + "…";
+  return s;
+}
+
+function soBuildEdition() {
+  const channels = getChannels();
+  const slides = [];
+  BULLETIN_PLAN.forEach(p => {
+    const ch = channels.find(c => c.id === p.id);
+    if (!ch || ch.status !== "ready") return;
+    ch.stories.filter(s => !s.empty && s.title).slice(0, p.take).forEach(s => {
+      slides.push({ k: p.kicker, color: ch.color, chId: ch.id, story: s, title: soClean(s.title), sub: soClean(s.line1), more: soFirst(s.line2) });
+    });
+  });
+  const mins = Math.max(1, Math.round(slides.length * BULLETIN_SLIDE_MS / 60000));
+  return { slides, mins };
+}
+
+// The channel's own card on the TV: a teaser for tonight's bulletin. It waits for the other channels so the numbers are real.
+async function fetchBulletinStories() {
+  const start = Date.now();
+  const busy = () => ALL_CHANNELS.some(c => c.id !== "bulletin" && enabledIds.includes(c.id) && (!dataByChannel[c.id] || dataByChannel[c.id].status === "loading"));
+  while (busy() && Date.now() - start < 25000) await new Promise(r => setTimeout(r, 500));
+  const ed = soBuildEdition();
+  if (!ed.slides.length) throw new Error("No headlines yet. The other channels are still tuning in.");
+  return [{
+    show: "TONIGHT'S BULLETIN",
+    title: ed.slides.length + " headlines from every channel, in about " + ed.mins + " minute" + (ed.mins === 1 ? "" : "s") + ". Then go build.",
+    line1: [...new Set(ed.slides.map(s => s.k))].join(" · "),
+    line2: ed.slides.slice(0, 3).map(s => s.title).join("  ·  "),
+    heads: ed.slides.slice(0, 2).map(s => s.k + ": " + s.title),
+    url: location.origin + location.pathname + "?bulletin",
+    bulletin: true,
+  }];
+}
+
+let soOpen = false, soBuilt = false, soEdition = null, soCur = -1, soPlaying = false, soPaused = false;
+let soSlideT = 0, soSlideStart = 0, soSlideLeft = 0, soClockT = 0, soWaitT = 0, soReturnFocus = null;
+let soAc = null, soMus = null, soNoise = null, soMusicOn = false;
+const soEl = id => document.getElementById("so-" + id);
+const soSpeed = () => (typeof speed === "number" && speed > 0 ? speed : 1);
+const soSlideMs = () => BULLETIN_SLIDE_MS / soSpeed();
+
+function soTemplate() {
+  return `
+<div class="so-screen" id="so-screen">
+  <div class="so-studio"></div><div class="so-wall"></div>
+  <div class="so-top">
+    <div class="so-left">
+      <div class="so-bug"><span class="b1">DEV·TV</span><span class="b2">BULLETIN</span></div>
+      <div class="so-ctl">
+        <button type="button" id="so-prev" title="Previous headline (←)" aria-label="Previous headline">◂</button>
+        <button type="button" id="so-skip" title="Next headline (→)" aria-label="Next headline">▸</button>
+        <button type="button" id="so-music" aria-pressed="false" title="Background music on or off (M)" aria-label="Background music">♪</button>
+        <button type="button" id="so-x" title="Close (Esc)" aria-label="Close the bulletin">✕</button>
+      </div>
+    </div>
+    <div class="so-live">
+      <div class="row"><span class="so-pill" id="so-pill">LIVE</span><span class="so-clock" id="so-clock"></span></div>
+      <span class="so-count" id="so-count"></span>
+    </div>
+  </div>
+  <div class="so-stage" id="so-stage" aria-live="polite"></div>
+  <div class="so-prog"><div class="so-prog-bar" id="so-prog"></div></div>
+  <div class="so-ticker"><div class="lab">BULLETIN</div><div class="track"><span class="run" id="so-tick"></span></div></div>
+  <div class="so-paused" id="so-paused" hidden>❚❚ PAUSED · press WATCH to resume</div>
+</div>
+<div class="so-ov so-end" id="so-end" hidden>
+  <h2>You're caught up.</h2>
+  <div class="go">Go build.</div>
+  <div class="streak" id="so-streak"></div>
+  <div class="so-acts">
+    <a class="so-btn" id="so-share" href="https://x.com/intent/post" target="_blank" rel="noopener noreferrer">Post to X</a>
+    <button class="so-btn ghost" id="so-again" type="button">Watch again</button>
+    <button class="so-btn ghost" id="so-back" type="button">Back to DEV·TV</button>
+  </div>
+</div>`;
+}
+
+function soBuild() {
+  if (soBuilt) return;
+  if (!document.getElementById("so-fonts")) {
+    const l = document.createElement("link");
+    l.id = "so-fonts"; l.rel = "stylesheet";
+    l.href = "https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap";
+    document.head.appendChild(l);
+  }
+  document.getElementById("bulletin-overlay").innerHTML = soTemplate();
+  soEl("x").onclick = () => closeBulletin();
+  soEl("back").onclick = () => closeBulletin();
+  soEl("skip").onclick = soSkip;
+  soEl("prev").onclick = soPrev;
+  soEl("music").onclick = soToggleMusic;
+  soEl("again").onclick = soStart;
+  soBuilt = true;
+}
+
+function soFmt(s) { s = Math.max(0, Math.round(s)); return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }
+function soPaintClock() {
+  if (!soOpen) return;
+  let t; try { t = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); } catch (e) { t = new Date().toTimeString().slice(0, 5); }
+  soEl("clock").textContent = t;
+  const n = soEdition ? soEdition.slides.length : 0;
+  const elapsedThis = soPaused ? soSlideMs() - soSlideLeft : Math.min(soSlideMs(), performance.now() - soSlideStart);
+  const left = soPlaying ? Math.max(0, (n - soCur) * soSlideMs() - elapsedThis) / 1000 : 0;
+  soEl("count").textContent = (soCur >= 0 ? (Math.min(soCur + 1, n)) + " / " + n + "  ·  " : "") + "SIGN-OFF IN " + soFmt(left) + (soSpeed() !== 1 ? "  ·  " + soSpeed() + "×" : "");
+  soEl("pill").textContent = soPaused ? "PAUSED" : "LIVE";
+}
+
+function soSlideHtml(s, i, n) {
+  return `<article class="so-slide">
+    <div class="so-kick"><span class="so-dot" style="background:${s.color}"></span>${escapeHtml(s.k)}<span class="so-num">${i + 1}/${n}</span></div>
+    <h3 class="so-head">${escapeHtml(s.title)}</h3>
+    ${s.sub ? `<p class="so-sub">${escapeHtml(s.sub)}</p>` : ""}
+    ${s.more && s.more !== s.sub ? `<p class="so-more">${escapeHtml(s.more)}</p>` : ""}
+    <button type="button" class="so-read">Read in DEV·TV ▸</button>
+  </article>`;
+}
+
+// Bring in slide i from the left; the current slide leaves to the right.
+function soShow(i) {
+  const n = soEdition.slides.length;
+  if (i >= n) { soSignOff(); return; }
+  if (i < 0) i = 0;
+  const stage = soEl("stage");
+  const old = stage.querySelector(".so-slide.in");
+  if (old) { old.classList.remove("in"); old.classList.add("out"); setTimeout(() => old.remove(), 900); }
+  const wrap = document.createElement("div");
+  wrap.innerHTML = soSlideHtml(soEdition.slides[i], i, n);
+  const el = wrap.firstElementChild;
+  const s = soEdition.slides[i];
+  el.querySelector(".so-read").onclick = () => { const ch = getChannels().find(c => c.id === s.chId); closeBulletin(true); if (ch) openReader(ch, s.story); };
+  stage.appendChild(el);
+  void el.offsetWidth;
+  el.classList.add("in");
+  soCur = i;
+  soWhoosh();
+  soArm(soSlideMs());
+}
+function soArm(ms) {
+  clearTimeout(soSlideT);
+  soSlideLeft = ms;
+  soSlideStart = performance.now() - (soSlideMs() - ms);
+  const bar = soEl("prog");
+  bar.style.transition = "none"; bar.style.width = ((1 - ms / soSlideMs()) * 100) + "%"; void bar.offsetWidth;
+  bar.style.transition = "width " + ms + "ms linear"; bar.style.width = "100%";
+  soSlideT = setTimeout(() => { if (soOpen && soPlaying && !soPaused) soShow(soCur + 1); }, ms);
+  soPaintClock();
+}
+function soSkip() { if (!soPlaying) return; if (soPaused) soTogglePause(); soShow(soCur + 1); }
+function soPrev() { if (!soPlaying || soCur <= 0) return; if (soPaused) soTogglePause(); soShow(soCur - 1); }
+function soTogglePause() {
+  if (!soPlaying) return;
+  soPaused = !soPaused;
+  soEl("paused").hidden = !soPaused;
+  const bar = soEl("prog");
+  if (soPaused) {
+    clearTimeout(soSlideT);
+    soSlideLeft = Math.max(0, soSlideMs() - (performance.now() - soSlideStart));
+    const w = getComputedStyle(bar).width; bar.style.transition = "none"; bar.style.width = w;
+  } else soArm(soSlideLeft || soSlideMs());
+  mode = soPaused ? "manual" : "autopilot";
+  soPaintClock();
+  render();
+}
+// The speed key changes the pace of the slide that's showing, not just the next one.
+function soSpeedChanged() { if (soOpen && soPlaying && !soPaused) soArm(Math.max(400, soSlideMs() * (1 - Math.min(1, (performance.now() - soSlideStart) / (BULLETIN_SLIDE_MS / (soLastSpeed || 1)))))); soLastSpeed = soSpeed(); }
+let soLastSpeed = 1;
+
+function soStreak() {
+  try {
+    const day = d => d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+    const today = day(new Date()), yest = day(new Date(Date.now() - 864e5));
+    const d = JSON.parse(localStorage.getItem(BULLETIN_KEY) || "{}");
+    if (d.last === today) return d.count || 1;
+    const c = d.last === yest ? (d.count || 0) + 1 : 1;
+    localStorage.setItem(BULLETIN_KEY, JSON.stringify({ last: today, count: c }));
+    return c;
+  } catch (e) { return 1; }
+}
+function soSignOff() {
+  soPlaying = false; clearTimeout(soSlideT);
+  soMusicStop(true);
+  const n = soStreak();
+  soEl("streak").innerHTML = `Caught up <b>${n} day${n > 1 ? "s" : ""}</b> in a row`;
+  const txt = `Caught up on every dev feed in ${soEdition.mins} min with the DEV·TV Bulletin${n > 1 ? " (day " + n + ")" : ""}. Closing the tabs, going to build.`;
+  soEl("share").href = "https://x.com/intent/post?text=" + encodeURIComponent(txt) + "&url=" + encodeURIComponent(location.origin + location.pathname + "?bulletin");
+  soPaintClock();
+  soEl("screen").classList.add("so-crtoff");
+  setTimeout(() => { if (!soOpen) return; soEl("end").hidden = false; requestAnimationFrame(() => soEl("end").classList.add("on")); soEl("again").focus({ preventScroll: true }); }, 900);
+}
+
+/* Optional sound: a whoosh per slide and a soft generated news bed. Browsers only
+   allow audio after a tap, so the music starts from the ♪ button. */
+function soNoiseBuf() {
+  if (soNoise || !soAc) return soNoise;
+  const b = soAc.createBuffer(1, soAc.sampleRate, soAc.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return (soNoise = b);
+}
+function soWhoosh() {
+  if (!soAc || !soMusicOn) return;
+  const t = soAc.currentTime, src = soAc.createBufferSource(), f = soAc.createBiquadFilter(), g = soAc.createGain();
+  src.buffer = soNoiseBuf(); f.type = "bandpass"; f.Q.value = 1.2;
+  f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(3000, t + 0.4);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.06, t + 0.15); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+  src.connect(f).connect(g).connect(soAc.destination); src.start(t); src.stop(t + 0.6);
+}
+const SO_BEAT = 60 / 100;
+const SO_CHORDS = [[57, 60, 64], [53, 57, 60], [48, 52, 55], [55, 59, 62]];
+const soHz = n => 440 * Math.pow(2, (n - 69) / 12);
+function soMusicStart() {
+  if (!soAc || soMus) return;
+  const ac = soAc, out = ac.createGain(), lp = ac.createBiquadFilter(), dl = ac.createDelay(), fb = ac.createGain();
+  out.gain.value = 0; out.connect(ac.destination);
+  lp.type = "lowpass"; lp.frequency.value = 1300; lp.connect(out);
+  dl.delayTime.value = SO_BEAT * 0.75; fb.gain.value = 0.3; dl.connect(fb).connect(dl); dl.connect(out);
+  soMus = { out, lp, dl, next: ac.currentTime + 0.1, step: 0, timer: setInterval(soMusicTick, 60) };
+}
+function soMusicTick() {
+  const m = soMus; if (!m || !soAc) return;
+  const now = soAc.currentTime;
+  m.out.gain.setTargetAtTime(soMusicOn && soPlaying && !soPaused ? 0.3 : 0, now, 0.25);
+  while (m.next < now + 0.3) { soMusicStep(m, m.step, m.next); m.next += SO_BEAT / 2; m.step++; }
+}
+function soMusicStep(m, step, t) {
+  const ac = soAc, e = step % 8, ch = SO_CHORDS[Math.floor(step / 8) % 4];
+  const note = (freq, type, vol, len, dest, att) => {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + (att || 0.01)); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    o.connect(g).connect(dest); o.start(t); o.stop(t + len + 0.05); return o;
+  };
+  if (e === 0) ch.forEach(n => [-7, 7].forEach(det => { const o = note(soHz(n), "sawtooth", 0.028, SO_BEAT * 4 + 0.3, m.lp, 0.45); o.detune.value = det; }));
+  if (e % 2 === 0) note(soHz(ch[0] - 12), "sine", 0.16, 0.35, m.out);
+  if (e === 0 || e === 4) { const o = note(110, "sine", 0.3, 0.18, m.out); o.frequency.exponentialRampToValueAtTime(42, t + 0.15); }
+  const src = ac.createBufferSource(), hp = ac.createBiquadFilter(), g = ac.createGain();
+  src.buffer = soNoiseBuf(); hp.type = "highpass"; hp.frequency.value = 7000;
+  g.gain.setValueAtTime(e % 2 ? 0.035 : 0.06, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+  src.connect(hp).connect(g).connect(m.out); src.start(t); src.stop(t + 0.06);
+  if (Math.floor(step / 8) % 2 === 1 && (e === 3 || e === 7)) note(soHz(ch[(e >> 1) % ch.length] + 24), "triangle", 0.045, 0.6, m.dl);
+}
+function soMusicStop(withChord) {
+  const m = soMus; if (!m) return;
+  soMus = null; clearInterval(m.timer);
+  try { m.out.gain.setTargetAtTime(0, soAc.currentTime, 0.4); } catch (e) {}
+  setTimeout(() => { try { m.out.disconnect(); m.dl.disconnect(); } catch (e) {} }, 3000);
+  if (withChord && soMusicOn && soAc) [60, 64, 67, 72].forEach((n, i) => {
+    const t = soAc.currentTime + i * 0.06, o = soAc.createOscillator(), g = soAc.createGain();
+    o.type = "triangle"; o.frequency.value = soHz(n);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.05, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+    o.connect(g).connect(soAc.destination); o.start(t); o.stop(t + 1.7);
+  });
+}
+function soToggleMusic() {
+  soMusicOn = !soMusicOn;
+  soEl("music").setAttribute("aria-pressed", String(soMusicOn));
+  if (soMusicOn) {
+    try { soAc = soAc || new (window.AudioContext || window.webkitAudioContext)(); if (soAc.state === "suspended") soAc.resume(); } catch (e) {}
+    if (soPlaying) soMusicStart();
+  }
+}
+
+function soStart() {
+  soEdition = soBuildEdition();
+  const stage = soEl("stage");
+  soEl("screen").classList.remove("so-crtoff");
+  soEl("end").classList.remove("on"); soEl("end").hidden = true;
+  soEl("paused").hidden = true;
+  soPaused = false; mode = "autopilot"; soLastSpeed = soSpeed();
+  stage.innerHTML = "";
+  if (!soEdition.slides.length) {
+    soPlaying = false;
+    stage.innerHTML = '<div class="so-wait">Gathering tonight\'s headlines…</div>';
+    clearTimeout(soWaitT); soWaitT = setTimeout(() => { if (soOpen && !soPlaying) soStart(); }, 1000);
+    soPaintClock();
+    return;
+  }
+  const heads = soEdition.slides.map(x => `<em>${escapeHtml(x.k.toUpperCase())}</em> ${escapeHtml(x.title)}`).join("  ·  ");
+  soEl("tick").innerHTML = heads + "  ·  " + heads;
+  soPlaying = true;
+  if (soMusicOn) soMusicStart();
+  soShow(0);
+  render();
+}
+
+function openBulletin() {
+  if (!power) return;
+  if (readerOpen) closeReader();
+  if (submitOpen) closeSubmit();
+  if (onTvOpen) closeOnTv(true);
+  if (adBreakActive) { adBreakActive = false; document.getElementById("ad-break").style.display = "none"; }
+  const staticEl = document.getElementById("boot-static");
+  if (staticEl && staticEl.style.display !== "none") stopStaticSilently();
+  showSettings = false;
+  guideOpen = false;
+  soBuild();
+  soReturnFocus = document.activeElement;
+  soOpen = true;
+  clearInterval(soClockT);
+  soClockT = setInterval(soPaintClock, 500);
+  render();
+  soStart();
+  try { const sc = document.getElementById("screen").getBoundingClientRect(); if (sc.top < 0 || sc.top > window.innerHeight * 0.6) document.getElementById("screen").scrollIntoView({ block: "start" }); } catch (e) {}
+}
+
+function closeBulletin(skipFocus) {
+  if (!soOpen) return;
+  soOpen = false; soPlaying = false;
+  if (soPaused) { soPaused = false; mode = "autopilot"; }
+  clearTimeout(soSlideT); clearInterval(soClockT); clearTimeout(soWaitT);
+  soMusicStop(false);
+  render();
+  if (!skipFocus && soReturnFocus && soReturnFocus.focus) { try { soReturnFocus.focus(); } catch (e) {} }
+}
+
 /* The channel list. Loads after every fetcher it points to. */
 const ALL_CHANNELS = [
   { id: "github", name: "GITHUB", color: "#7c8cff", key: "1", fetcher: fetchGithubStories, tag: "GH" },
@@ -2476,6 +2915,7 @@ const ALL_CHANNELS = [
   { id: "local", name: "LOCAL MODELS", short: "LOCAL", color: "#2dd4bf", key: "", fetcher: fetchLocalModelsStories, tag: "LOC" },
   { id: "hackertools", name: "HACKERTOOLS", short: "HACKER TOOLS", color: "#4ade80", key: "", fetcher: fetchHackerToolsStories, tag: "TLS" },
   { id: "spotlight", name: "SPOTLIGHT", color: "#fde68a", key: "", fetcher: fetchSpotlightStories, tag: "SPOT" },
+  { id: "bulletin", name: "DEV BULLETIN", short: "BULLETIN", color: "#f2a93b", key: "", fetcher: fetchBulletinStories, tag: "BUL" },
 ];
 
 /* Saved settings (speed, enabled channels) and getChannels(). */
@@ -2492,6 +2932,7 @@ function cycleSpeed() {
   const idx = SPEEDS.indexOf(speed);
   speed = SPEEDS[(idx + 1) % SPEEDS.length];
   try { localStorage.setItem(SPEED_KEY, String(speed)); } catch (e) {}
+  if (soOpen) soSpeedChanged();
   render();
 }
 
@@ -2510,7 +2951,7 @@ function loadEnabledIds() {
         let seen = null;
         try { seen = JSON.parse(localStorage.getItem(SEEN_KEY)); } catch (e) {}
         // No seen list yet means this browser predates it: it has seen every channel except "skills".
-        if (!Array.isArray(seen)) seen = allIds.filter(id => id !== "skills" && id !== "faceoff" && id !== "local");
+        if (!Array.isArray(seen)) seen = allIds.filter(id => id !== "skills" && id !== "faceoff" && id !== "local" && id !== "bulletin");
         const fresh = allIds.filter(id => !seen.includes(id) && !valid.includes(id));
         try { localStorage.setItem(SEEN_KEY, JSON.stringify(allIds)); } catch (e) {}
         if (fresh.length > 0) {
@@ -2678,7 +3119,7 @@ async function loadChannel(def) {
   // Spotlight is a tiny file on this same site with no rate limit, so it always
   // fetches fresh: a new entry shows on the next refresh. The saved copy is still
   // used if the fetch fails.
-  if (def.id !== "spotlight" && cached && Date.now() - cached.t < CACHE_FRESH_MS && Array.isArray(cached.data) && cached.data.length > 0) {
+  if (def.id !== "spotlight" && def.id !== "bulletin" && cached && Date.now() - cached.t < CACHE_FRESH_MS && Array.isArray(cached.data) && cached.data.length > 0) {
     dataByChannel[def.id] = { stories: cached.data, status: "ready", error: null, staleSince: null };
     render();
     if (def.id === "spotlight") applyPendingSpotlight();
@@ -2779,6 +3220,7 @@ function togglePower() {
   if (readerOpen) closeReader();
   if (submitOpen) closeSubmit();
   if (onTvOpen) closeOnTv(true);
+  if (soOpen) closeBulletin(true);
   const screenEl = document.getElementById("screen");
 
   if (power) {
@@ -2841,6 +3283,7 @@ function manualChangeChannel(idx) {
   if (!power) return;
   guideOpen = false;
   if (onTvOpen) closeOnTv(true);
+  if (soOpen) closeBulletin(true);
   // Switching channels no longer forces a stop — it just changes what's
   // showing, exactly like a real remote. Playback state (playing or
   // stopped) carries over to whatever channel you land on. Picking a new
@@ -2881,6 +3324,7 @@ function advance() {
 
 function toggleAutoPilot() {
   if (!power) return;
+  if (soOpen && soPlaying) { soTogglePause(); return; }
   mode = mode === "autopilot" ? "manual" : "autopilot";
   render();
   bootStaticShowing = false;
@@ -2897,7 +3341,7 @@ function startTick() {
   tickInterval = setInterval(() => {
     // Manual mode is now a frozen preview: nothing advances on its own.
     // Auto Pilot is the only thing that moves stories or channels forward.
-    if (!power || readerOpen || submitOpen || onTvOpen || guideOpen || adBreakActive || mode !== "autopilot") return;
+    if (!power || readerOpen || submitOpen || onTvOpen || soOpen || guideOpen || adBreakActive || mode !== "autopilot") return;
     const channels = getChannels();
     const cur = channels[channelIdx];
     const hasStories = cur && cur.status === "ready" && cur.stories.length > 0;
@@ -3008,6 +3452,7 @@ function endAdBreak() {
 /* Reader mode. */
 // ---- Reader mode ----
 async function openReader(channel, story) {
+  if (soOpen) closeBulletin(true);
   readerOpen = true;
   readerLoading = true;
   readerStory = story;
@@ -3475,6 +3920,7 @@ function spBuild() {
 
 function openSubmit() {
   if (!power) return;
+  if (soOpen) closeBulletin(true);
   if (readerOpen) closeReader();
   // The boot static can still be running over the screen (it keeps looping when the channels load from cache), and it would swallow clicks.
   const staticEl = document.getElementById("boot-static");
@@ -3947,6 +4393,7 @@ function onTvBuild() {
 
 function openOnTv(login) {
   if (!power) return;
+  if (soOpen) closeBulletin(true);
   if (readerOpen) closeReader();
   if (submitOpen) closeSubmit();
   // Same as the guide: opening this escapes a commercial break, and the boot static would swallow taps.
@@ -3987,6 +4434,7 @@ function openGuide() {
   if (readerOpen) closeReader();
   if (submitOpen) closeSubmit();
   if (onTvOpen) closeOnTv(true);
+  if (soOpen) closeBulletin(true);
   // Same as flipping channels during a real commercial break: opening the guide escapes the ad.
   if (adBreakActive) { adBreakActive = false; document.getElementById("ad-break").style.display = "none"; }
   // The boot static can still be looping over the screen and would swallow taps on the guide.
@@ -4056,7 +4504,7 @@ function renderGuide() {
 /* render(): paints the screen, buttons and settings from current state. */
 /* Per-channel background: effect per channel id, colour comes from the channel itself. */
 const CHANNEL_FX = { github: "grid", hn: "sweep", devto: "aurora", huggingface: "dots", releases: "stripes", aipapers: "rings",
-  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", hnpicks: "vhs", devtube: "vhs", hackertools: "grid", aivideo: "checker", models: "rain", skills: "twinkle", faceoff: "versus", spotlight: "beam" };
+  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", hnpicks: "vhs", devtube: "vhs", hackertools: "grid", aivideo: "checker", models: "rain", skills: "twinkle", faceoff: "versus", spotlight: "beam", bulletin: "rings" };
 function setChannelFx(color, fx) {
   const r = document.documentElement;
   if (!color) { r.removeAttribute("data-fx"); return; }
@@ -4076,6 +4524,7 @@ function render() {
   document.getElementById("guide-overlay").style.display = (guideOpen && power) ? "flex" : "none";
   document.getElementById("ontv-overlay").style.display = (onTvOpen && power) ? "flex" : "none";
   document.getElementById("ontv-btn").classList.toggle("on", onTvOpen && power);
+  document.getElementById("bulletin-overlay").style.display = (soOpen && power) ? "block" : "none";
   document.getElementById("ontv-btn").style.opacity = power ? "1" : "0.4";
   document.getElementById("guide-btn").classList.toggle("on", guideOpen && power);
   document.getElementById("guide-btn").style.opacity = power ? "1" : "0.4";
@@ -4285,15 +4734,18 @@ function render() {
         <div class="story-title" style="font-weight:700; font-size:var(--fs-title); color:#f5f5f7; line-height:1.2; letter-spacing:-0.01em; margin-top:6px;">${escapeHtml(story.title)}</div>
         <div class="mono" style="font-size:var(--fs-line1); color:${channel.color}; margin-top:6px;">${escapeHtml(story.line1)}</div>
         <div style="font-size:var(--fs-line2); color:#9a9aa2; max-width:46em; line-height:1.4; margin-top:6px;">${escapeHtml(story.line2)}</div>
-        <div class="mono story-hint" style="font-size:var(--fs-hint); color:${channel.color}; margin-top:8px; opacity:0.8;">${story.cta ? "▸ click to submit yours" : "▸ click to read in DEV·TV"}</div>
+        ${story.bulletin ? "" : `<div class="mono story-hint" style="font-size:var(--fs-hint); color:${channel.color}; margin-top:8px; opacity:0.8;">${story.cta ? "▸ click to submit yours" : "▸ click to read in DEV·TV"}</div>`}
       </div>
-      ${channel.id === "spotlight" ? '<button type="button" id="spot-submit-btn" class="spot-submit btn mono">★ Get your project featured</button>' : ""}`;
-    document.getElementById("story-open-target").onclick = () => story.cta ? openSubmit() : openReader(channel, story);
+      ${channel.id === "spotlight" ? '<button type="button" id="spot-submit-btn" class="spot-submit btn mono">★ Get your project featured</button>' : ""}
+      ${story.bulletin ? '<button type="button" id="bulletin-tune-btn" class="bulletin-tune btn mono">▶ TUNE IN</button>' : ""}`;
+    document.getElementById("story-open-target").onclick = () => story.bulletin ? openBulletin() : story.cta ? openSubmit() : openReader(channel, story);
     const spotSubmitBtn = document.getElementById("spot-submit-btn");
     if (spotSubmitBtn) spotSubmitBtn.onclick = (ev) => { ev.stopPropagation(); openSubmit(); };
+    const bulletinTuneBtn = document.getElementById("bulletin-tune-btn");
+    if (bulletinTuneBtn) bulletinTuneBtn.onclick = (ev) => { ev.stopPropagation(); openBulletin(); };
     document.getElementById("now-text").textContent = story.title;
-    document.getElementById("next-text").textContent = nextStory.title;
-    document.getElementById("later-text").textContent = laterStory.title;
+    document.getElementById("next-text").textContent = story.bulletin && story.heads ? story.heads[0] || "" : nextStory.title;
+    document.getElementById("later-text").textContent = story.bulletin && story.heads ? story.heads[1] || "" : laterStory.title;
   } else {
     bodyEl.innerHTML = "";
   }
@@ -4307,7 +4759,7 @@ function render() {
   // The overlay sits visually on top, but the ticker's animation keeps
   // compositing every frame underneath it unless explicitly paused — that's
   // wasted GPU work competing with a scroll gesture inside the overlay.
-  tickerEl.style.animationPlayState = (readerOpen || showSettings || guideOpen || onTvOpen) ? "paused" : "running";
+  tickerEl.style.animationPlayState = (readerOpen || showSettings || guideOpen || onTvOpen || soOpen) ? "paused" : "running";
 
   const btnsEl = document.getElementById("channel-buttons");
   btnsEl.innerHTML = "";
@@ -4429,6 +4881,14 @@ syncFullscreenState();
 document.addEventListener("keydown", (e) => {
   if (submitOpen) { if (e.key === "Escape") closeSubmit(); return; }
   if (onTvOpen) { if (e.key === "Escape") closeOnTv(); return; }
+  if (soOpen) {
+    if (e.key === "Escape") closeBulletin();
+    else if (e.key === "ArrowRight") { e.preventDefault(); soSkip(); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); soPrev(); }
+    else if (e.key === " ") { e.preventDefault(); soTogglePause(); }
+    else if (e.key === "m" || e.key === "M") soToggleMusic();
+    return;
+  }
   if (readerOpen && e.key === "Escape") { closeReader(); return; }
   const isG = (e.key === "g" || e.key === "G") && !e.ctrlKey && !e.metaKey && !e.altKey;
   if (guideOpen && power) {
@@ -4476,7 +4936,7 @@ document.addEventListener("visibilitychange", () => {
 window.addEventListener("focus", maybeRefreshOnReturn);
 
 /* Button wiring and startup. Loads last. */
-document.getElementById("gear").onclick = () => { if (submitOpen) closeSubmit(); if (onTvOpen) closeOnTv(true); guideOpen = false; showSettings = !showSettings; render(); };
+document.getElementById("gear").onclick = () => { if (submitOpen) closeSubmit(); if (onTvOpen) closeOnTv(true); if (soOpen) closeBulletin(true); guideOpen = false; showSettings = !showSettings; render(); };
 
 document.getElementById("skin-btn").onclick = cycleSkin;
 
@@ -4504,6 +4964,8 @@ document.getElementById("guide-btn").onclick = toggleGuide;
 // If the TV is off, switch it on first so the click is never a silent no-op.
 document.getElementById("ontv-btn").onclick = () => { if (onTvOpen) closeOnTv(); else if (!power) { togglePower(); setTimeout(() => openOnTv(), 700); } else openOnTv(); };
 
+// If the TV is off, switch it on first so the click is never a silent no-op.
+
 document.getElementById("close-guide").onclick = closeGuide;
 
 // Tapping the channel number or name on the screen opens the guide too.
@@ -4522,6 +4984,13 @@ startTick();
 render();
 
 playStatic(null);
+
+// ?bulletin in the address opens tonight's Dev Bulletin, so a shared post lands on it.
+if (/[?&]bulletin(=|&|$)/.test(location.search)) {
+  // Land on the BULLETIN channel, then start it.
+  const bi = getChannels().findIndex(c => c.id === "bulletin");
+  if (bi >= 0) { manualChangeChannel(bi); setTimeout(openBulletin, 900); } else openBulletin();
+}
 
 // ?submit in the address opens the Spotlight form straight away, so it can be linked to.
 if (/[?&]submit(=|&|$)/.test(location.search)) openSubmit();
