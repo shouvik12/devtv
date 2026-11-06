@@ -1,6 +1,6 @@
 {
   "source": "https://ollama.com/search?o=newest",
-  "generated": "2026-11-05T12:37:15Z",
+  "generated": "2026-11-06T12:19:41Z",
   "models": [
     {
       "name": "autotrust-jev",
@@ -12,7 +12,7 @@
         "9b",
         "35b"
       ],
-      "pulls": "1,220",
+      "pulls": "5,719",
       "updated": "Nov 4, 2026"
     },
     {
@@ -24,7 +24,7 @@
       "sizes": [
         "4b"
       ],
-      "pulls": "2,144",
+      "pulls": "5,057",
       "updated": "Nov 3, 2026"
     },
     {
@@ -38,7 +38,7 @@
       "sizes": [
         "9b"
       ],
-      "pulls": "11.1K",
+      "pulls": "19.1K",
       "updated": "Nov 3, 2026"
     },
     {
@@ -51,7 +51,7 @@
       "sizes": [
         "1.7b"
       ],
-      "pulls": "46.6K",
+      "pulls": "50.4K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -65,7 +65,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "13.3K",
+      "pulls": "16.1K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -79,7 +79,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "30.9K",
+      "pulls": "34.1K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -93,7 +93,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "16.4K",
+      "pulls": "19.4K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -108,7 +108,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "45.4K",
+      "pulls": "51.2K",
       "updated": "Oct 30, 2026"
     },
     {
@@ -116,7 +116,7 @@
       "description": "Phonon is Gradium’s text-to-speech family. It turns written text into spoken audio as it generates, making it useful for reading assistant replies, narrating passages, and adding a voice to local apps.",
       "capabilities": [],
       "sizes": [],
-      "pulls": "37.9K",
+      "pulls": "49.8K",
       "updated": "Oct 24, 2026"
     },
     {
@@ -129,7 +129,7 @@
       "sizes": [
         "40b"
       ],
-      "pulls": "53.4K",
+      "pulls": "57.1K",
       "updated": "Oct 22, 2026"
     },
     {
@@ -143,7 +143,7 @@
         "600m",
         "2b"
       ],
-      "pulls": "25.8K",
+      "pulls": "28.7K",
       "updated": "Oct 27, 2026"
     },
     {
@@ -160,7 +160,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "112.9K",
+      "pulls": "119.8K",
       "updated": "Oct 16, 2026"
     },
     {
@@ -172,7 +172,7 @@
       "sizes": [
         "27b"
       ],
-      "pulls": "18.7K",
+      "pulls": "20.5K",
       "updated": "Oct 17, 2026"
     },
     {
@@ -185,7 +185,7 @@
         "2b",
         "3b"
       ],
-      "pulls": "37.1K",
+      "pulls": "40.9K",
       "updated": "Oct 27, 2026"
     },
     {
@@ -193,7 +193,7 @@
       "description": "Kev scores answers to structured questions about a supplied text state in a single forward pass.",
       "capabilities": [],
       "sizes": [],
-      "pulls": "21.6K",
+      "pulls": "22.5K",
       "updated": "Oct 17, 2026"
     },
     {
@@ -206,7 +206,7 @@
       "sizes": [
         "9b"
       ],
-      "pulls": "24.2K",
+      "pulls": "24.8K",
       "updated": "Oct 13, 2026"
     }
   ]
