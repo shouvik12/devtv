@@ -407,6 +407,10 @@
   .ad-brand { font-size: clamp(26px, 5.5vw, 48px); font-weight: 900; letter-spacing: -0.02em; line-height: 1; text-transform: uppercase; text-shadow: 0 3px 0 rgba(0,0,0,0.25); max-width: 90%; }
   .ad-slogan { font-size: clamp(14px, 2.4vw, 20px); font-weight: 800; font-style: italic; color: var(--ad-accent, #facc15); max-width: 90%; }
   .ad-body { font-size: 13px; line-height: 1.5; max-width: 440px; opacity: 0.92; }
+  .ad-img { display: block; max-width: min(92%, 620px); max-height: 46%; min-height: 0; width: auto; height: auto; object-fit: contain; border-radius: 6px; border: 2px solid var(--ad-accent, #facc15); box-shadow: 0 6px 18px rgba(0,0,0,0.45); }
+  .ad-img[hidden] { display: none; }
+  #ad-break.has-img .ad-logo { display: none; }
+  #ad-break.has-img .ad-body { max-width: 560px; }
   .ad-cta { margin-top: 6px; padding: 10px 18px; border-radius: 999px; font-size: 13px; font-weight: 900; letter-spacing: 0.06em;
     background: var(--ad-accent, #facc15); color: var(--ad-bg, #1d4ed8); box-shadow: 0 4px 0 rgba(0,0,0,0.3); }
   .ad-burst { position: absolute; top: 60px; right: 18px; width: 108px; height: 108px; display: grid; place-items: center; text-align: center;
@@ -426,6 +430,7 @@
     .ad-brand { font-size: 19px; max-width: 92%; }
     .ad-slogan { font-size: 12px; max-width: 80%; }
     .ad-body { display: none; }
+    .ad-img { max-height: 42%; max-width: 88%; border-width: 1px; }
     .ad-cta { margin-top: 2px; padding: 5px 12px; font-size: 10px; box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
     .ad-burst { top: 9px; left: 50%; right: auto; width: auto; height: auto; max-width: 42%; padding: 3px 7px; border-radius: 3px;
       clip-path: none; font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
@@ -1080,6 +1085,7 @@ html[data-fx="beam"] body::before, html[data-fx="beam"] #screen::before { backgr
           <div class="ad-logo" id="ad-logo" aria-hidden="true"></div>
           <div class="ad-brand" id="ad-brand"></div>
           <div class="ad-slogan" id="ad-slogan"></div>
+          <img class="ad-img" id="ad-img" alt="" hidden>
           <div class="ad-body" id="ad-body"></div>
           <div class="ad-cta" id="ad-cta"></div>
         </div>
@@ -3371,12 +3377,14 @@ const HOUSE_ADS = [
   { brand: "Spotlight", logo: "\u{1F526}", slogan: "Your project. On TV.", body: "Built something developers should see? Get it featured on the Spotlight channel. It's free.", offer: "FREE!", cta: "SUBMIT YOUR PROJECT", bg: "#1e1b4b", accent: "#fde68a", ink: "#ffffff", seconds: 9, action: "submit" },
   { brand: "Star DEV·TV", logo: "\u2605", slogan: "Enjoying the show? Give it a star.", body: "DEV·TV is free and open source. A GitHub star helps more developers find it.", offer: "FREE", cta: "\u2605 STAR ON GITHUB", bg: "#0f172a", accent: "#facc15", ink: "#ffffff", seconds: 9, action: "star" },
   { brand: "leantext", logo: "\u{1F4C4}", slogan: "Your agent reads the web. Make it read less.", body: "From the maker of DEV\u00B7TV. Web pages, PDFs, screenshots and Office files become lean Markdown before your agent reads them, and it falls back to the original when a conversion looks wrong.", offer: "UP TO 99% FEWER TOKENS", cta: "GET LEANTEXT", bg: "#0E4B57", accent: "#E8A93A", ink: "#F4EAD2", seconds: 9, action: "leantext" },
-  { brand: "living-canvas", logo: "\u{1F3A8}", slogan: "Your README, in motion.", body: "From the maker of DEV\u00B7TV. A Claude skill that turns any repo, doc or idea into an animated README banner: one self-contained SVG, no JavaScript, usually under 10 KB.", offer: "FREE CLAUDE SKILL", cta: "GET LIVING-CANVAS", bg: "#1B1035", accent: "#FF7AB6", ink: "#F3ECFF", seconds: 9, action: "livingcanvas" }
+  { brand: "living-canvas", logo: "\u{1F3A8}", slogan: "Your README, in motion.", body: "From the maker of DEV\u00B7TV. A Claude skill that turns any repo, doc or idea into an animated README banner: one self-contained SVG, no JavaScript, usually under 10 KB.", offer: "FREE CLAUDE SKILL", cta: "GET LIVING-CANVAS", bg: "#1B1035", accent: "#FF7AB6", ink: "#F3ECFF", seconds: 9, action: "livingcanvas" },
+  { brand: "Relit", logo: "\u{1F579}", slogan: "Same 1993 Doom engine. New renderer.", body: "From the maker of DEV\u00B7TV. Real-time lighting, shadows and a flashlight on the original engine. Press V to flip back to 1993. One HTML file, runs in your browser.", image: "assets/relit-ad.jpg", imageAlt: "The same corridor in 1993 and in Relit", offer: "FREE & OPEN SOURCE", cta: "PLAY RELIT", bg: "#170C07", accent: "#FF6A2B", ink: "#FFE6D2", seconds: 9, action: "relit" }
 ];
 const STAR_URL = "https://github.com/shouvik12/devtv";
 const CONTRIBUTE_URL = "https://github.com/shouvik12/devtv/blob/main/CONTRIBUTING.md";
 const LEANTEXT_URL = "https://github.com/shouvik12/leantext";
 const LIVING_CANVAS_URL = "https://github.com/shouvik12/living-canvas";
+const RELIT_URL = "https://github.com/shouvik12/relit";
 let adCount = 0, houseIdx = 0;
 
 const AD_BREAK_SECONDS = 6;
@@ -3396,6 +3404,10 @@ function showAdBreak() {
   document.getElementById("ad-brand").textContent = ad.brand;
   document.getElementById("ad-slogan").textContent = ad.slogan;
   document.getElementById("ad-body").textContent = ad.body;
+  // Optional picture: a house ad can show a screenshot instead of its logo.
+  const imgEl = document.getElementById("ad-img");
+  if (ad.image) { imgEl.src = ad.image; imgEl.alt = ad.imageAlt || ""; imgEl.hidden = false; box.classList.add("has-img"); }
+  else { imgEl.hidden = true; imgEl.removeAttribute("src"); imgEl.alt = ""; box.classList.remove("has-img"); }
   document.getElementById("ad-offer").textContent = ad.offer;
   document.getElementById("ad-cta").textContent = ad.cta;
   document.getElementById("ad-countdown").textContent = `BACK IN ${secs}`;
@@ -3415,6 +3427,7 @@ function showAdBreak() {
       else if (ad.action === "contribute") window.open(CONTRIBUTE_URL, "_blank", "noopener");
       else if (ad.action === "leantext") window.open(LEANTEXT_URL, "_blank", "noopener");
       else if (ad.action === "livingcanvas") window.open(LIVING_CANVAS_URL, "_blank", "noopener");
+      else if (ad.action === "relit") window.open(RELIT_URL, "_blank", "noopener");
     };
   } else {
     ctaEl.style.cursor = "";
