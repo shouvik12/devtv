@@ -1,6 +1,6 @@
 {
   "source": "https://ollama.com/search?o=newest",
-  "generated": "2026-11-12T13:01:52Z",
+  "generated": "2026-11-13T12:27:29Z",
   "models": [
     {
       "name": "ripple-preview",
@@ -12,7 +12,7 @@
       "sizes": [
         "65b"
       ],
-      "pulls": "11K",
+      "pulls": "20.1K",
       "updated": "Nov 9, 2026"
     },
     {
@@ -25,7 +25,7 @@
         "9b",
         "35b"
       ],
-      "pulls": "32.9K",
+      "pulls": "37.2K",
       "updated": "Nov 4, 2026"
     },
     {
@@ -37,7 +37,7 @@
       "sizes": [
         "4b"
       ],
-      "pulls": "25.9K",
+      "pulls": "29.1K",
       "updated": "Nov 3, 2026"
     },
     {
@@ -51,7 +51,7 @@
       "sizes": [
         "9b"
       ],
-      "pulls": "66.1K",
+      "pulls": "74.3K",
       "updated": "Nov 3, 2026"
     },
     {
@@ -64,7 +64,7 @@
       "sizes": [
         "1.7b"
       ],
-      "pulls": "76.5K",
+      "pulls": "80.5K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -78,7 +78,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "35.2K",
+      "pulls": "38K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -92,7 +92,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "57.5K",
+      "pulls": "60.9K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -106,7 +106,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "41.1K",
+      "pulls": "44.3K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -121,7 +121,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "81.8K",
+      "pulls": "86.8K",
       "updated": "Oct 30, 2026"
     },
     {
@@ -129,7 +129,7 @@
       "description": "Phonon is Gradium’s text-to-speech family. It turns written text into spoken audio as it generates, making it useful for reading assistant replies, narrating passages, and adding a voice to local apps.",
       "capabilities": [],
       "sizes": [],
-      "pulls": "141.3K",
+      "pulls": "148.2K",
       "updated": "Oct 24, 2026"
     },
     {
@@ -142,7 +142,7 @@
       "sizes": [
         "40b"
       ],
-      "pulls": "82.8K",
+      "pulls": "87.3K",
       "updated": "Oct 22, 2026"
     },
     {
@@ -156,7 +156,7 @@
         "600m",
         "2b"
       ],
-      "pulls": "50K",
+      "pulls": "53.1K",
       "updated": "Oct 27, 2026"
     },
     {
@@ -173,7 +173,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "157.6K",
+      "pulls": "164.2K",
       "updated": "Oct 16, 2026"
     },
     {
@@ -185,7 +185,7 @@
       "sizes": [
         "27b"
       ],
-      "pulls": "37.2K",
+      "pulls": "39.6K",
       "updated": "Oct 17, 2026"
     },
     {
@@ -198,16 +198,8 @@
         "2b",
         "3b"
       ],
-      "pulls": "63.7K",
+      "pulls": "67.3K",
       "updated": "Oct 27, 2026"
-    },
-    {
-      "name": "kev",
-      "description": "Kev scores answers to structured questions about a supplied text state in a single forward pass.",
-      "capabilities": [],
-      "sizes": [],
-      "pulls": "27.1K",
-      "updated": "Oct 17, 2026"
     }
   ]
 }
