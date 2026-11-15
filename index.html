@@ -719,8 +719,6 @@ html.depths-on, html.depths-on[data-skin] {
   --key-top: #0f4d5e; --key-bot: #062833; --key-edge: #3fb4cf; --key-ink: #d8f7ff; --key-num: #79cbe0;
   --panel-bg: linear-gradient(180deg, #0b2e3b, #041820);
 }
-/* Never let the dive be taller than the window (phones in landscape). */
-html.depths-on #screen.reading { min-height: 0; height: max(min(72vh, 760px), min(calc(100dvh - 16px), 520px)); max-height: calc(100dvh - 16px); }
 html.depths-on .chbtn, html.depths-on .round-btn, html.depths-on #watch-btn, html.depths-on #guide-btn, html.depths-on #speed-btn { transition: background .6s ease, border-color .6s ease, color .6s ease; }
 #bulletin-overlay button { font-family:inherit; }
 #bulletin-overlay button:focus-visible, #bulletin-overlay a:focus-visible { outline:2px solid var(--so-ink); outline-offset:2px; }
@@ -2667,8 +2665,8 @@ function openDepths() {
   dpOpen = true;
   document.documentElement.classList.add("depths-on");
   render();
-  try { ov.querySelector("iframe").focus({ preventScroll: true }); } catch (e) {}
-  try { const sc = document.getElementById("screen").getBoundingClientRect(); if (sc.top < 0 || sc.bottom > window.innerHeight) window.scrollTo({ top: window.scrollY + sc.top - 8 }); } catch (e) {}
+  try { ov.querySelector("iframe").focus(); } catch (e) {}
+  try { const sc = document.getElementById("screen").getBoundingClientRect(); if (sc.top < 0 || sc.top > window.innerHeight * 0.6) document.getElementById("screen").scrollIntoView({ block: "start" }); } catch (e) {}
 }
 function closeDepths(skipFocus) {
   if (!dpOpen) return;
