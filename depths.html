@@ -115,6 +115,8 @@ body.embed .remote button{height:42px}
 #exit{display:none;pointer-events:auto;background:linear-gradient(180deg,#0f4d5e,#062833);color:#d8f7ff;border:1px solid #3fb4cf;border-radius:8px;width:34px;height:34px;font:16px/1 var(--sans);cursor:pointer}
 body.embed #exit{display:block}
 body.embed .live{display:none}
+@media (max-width:440px){body.embed .chip{display:none} .depth small{white-space:nowrap} #sndIcon{padding:0 8px}}
+@media (max-width:360px){#sndIcon{font-size:0}#sndIcon::first-letter{font-size:14px}}
 body.embed .remote{display:none!important}
 #sndIcon{display:none;pointer-events:auto;background:linear-gradient(180deg,#0f4d5e,#062833);color:#d8f7ff;border:1px solid #3fb4cf;border-radius:8px;height:34px;padding:0 10px;font:12px/1 var(--mono);letter-spacing:.1em;cursor:pointer}
 body.embed #sndIcon{display:block}
@@ -122,7 +124,7 @@ body.embed #sndIcon{display:block}
 body.embed .remote button{font-size:12px;letter-spacing:.02em;padding:0 4px}
 body.embed .remote button.main{font-size:13px}
 /* Short screens (DEV·TV on a phone): keep the ocean visible. */
-@media (max-height:620px){
+@media (max-height:700px){
   .lower{padding:28px 14px 8px}
   .cur,.nowB{display:none}
   .era{margin-bottom:6px;font-size:12px}
@@ -132,7 +134,7 @@ body.embed .remote button.main{font-size:13px}
   .card .ct{font-size:clamp(24px,7vw,36px)}
   .card{top:22%}
 }
-@media (max-height:460px){ .row:nth-of-type(2){display:none} .ticker{display:none} .lower{bottom:0} }
+@media (max-height:460px){ .row+.row{display:none} .ticker{display:none} .lower{bottom:0} }
 </style>
 </head>
 <body>
@@ -624,9 +626,11 @@ screen.addEventListener('click',ev=>{
 });
 screen.addEventListener('wheel',ev=>{ev.preventDefault();camYear=Math.max(BOTY,Math.min(TOPY,camYear+ev.deltaY*-.004));pinned=null},{passive:false});
 let ty=null;
-screen.addEventListener('touchstart',ev=>{ty=ev.touches[0].clientY},{passive:true});
-screen.addEventListener('touchmove',ev=>{if(ty===null)return;const y=ev.touches[0].clientY;camYear=Math.max(BOTY,Math.min(TOPY,camYear+(y-ty)*.012));ty=y;pinned=null},{passive:true});
-screen.addEventListener('touchend',()=>ty=null);
+let vel=0, lastMove=0;
+screen.addEventListener('touchstart',ev=>{ty=ev.touches[0].clientY;vel=0;lastMove=performance.now()},{passive:true});
+screen.addEventListener('touchmove',ev=>{if(ty===null)return;const y=ev.touches[0].clientY,now=performance.now(),d=(y-ty)*.035;
+  camYear=Math.max(BOTY,Math.min(TOPY,camYear+d));vel=d/Math.max(8,now-lastMove)*16;lastMove=now;ty=y;pinned=null},{passive:true});
+screen.addEventListener('touchend',()=>{ty=null;if(performance.now()-lastMove>80)vel=0});
 addEventListener('keydown',ev=>{
   if(ev.key==='ArrowDown'){camYear=Math.max(BOTY,camYear-.5)}
   else if(ev.key==='ArrowUp'){camYear=Math.min(TOPY,camYear+.5)}
@@ -646,6 +650,7 @@ function frame(ms){
       showCard('1951','Where it all began','UNIVAC I goes to work, and IBM is already waiting on the seabed. Rising back to today.',5200);
       setTimeout(()=>{if(ending)travel(TOPY)},6200);}
   }
+  if(ty===null&&Math.abs(vel)>.002){camYear=Math.max(BOTY,Math.min(TOPY,camYear+vel*dt*60));vel*=Math.pow(.92,dt*60)} // glide after a flick
   const cy=camYear, wy=Y(cy), W=screen.clientWidth, H=screen.clientHeight;
   const xs=Math.max(.42,Math.min(1.25,camera.aspect*1.25));
 
