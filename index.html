@@ -3373,6 +3373,7 @@ const AD_BREAKS = [
 // DEV·TV's own ads. They run in the same break slot as the fake ads, every other break,
 // alternating, and (unlike the fake ones) their button does something.
 const HOUSE_ADS = [
+  { brand: "Samestate", logo: "\u{1F4F1}", tag: "FROM THE CREATOR\u2019S CORNER", tagShort: "CREATOR", slogan: "One interaction. Every device.", body: "Open your site on phones, tablets, laptops and big displays side by side. Click a menu on one and the same state opens on all of them, and Samestate flags what breaks between them: text, images, spacing, navigation.", offer: "FREE ON CHROME", cta: "GET SAMESTATE", bg: "#0B1F3A", accent: "#7DD3FC", ink: "#EAF6FF", seconds: 10, action: "samestate" },
   { brand: "Build DEV\u00B7TV", logo: "\u{1F6E0}", slogan: "Help build the next, stronger DEV\u00B7TV.", body: "DEV\u00B7TV is free and open source, and the next release is being planned in the open. Bring an idea, a fix or a new channel, and get credited on air.", offer: "HELP WANTED", cta: "CONTRIBUTE ON GITHUB", bg: "#10241c", accent: "#7ee0a8", ink: "#eafaf1", seconds: 10, action: "contribute" },
   { brand: "Spotlight", logo: "\u{1F526}", slogan: "Your project. On TV.", body: "Built something developers should see? Get it featured on the Spotlight channel. It's free.", offer: "FREE!", cta: "SUBMIT YOUR PROJECT", bg: "#1e1b4b", accent: "#fde68a", ink: "#ffffff", seconds: 9, action: "submit" },
   { brand: "Star DEV·TV", logo: "\u2605", slogan: "Enjoying the show? Give it a star.", body: "DEV·TV is free and open source. A GitHub star helps more developers find it.", offer: "FREE", cta: "\u2605 STAR ON GITHUB", bg: "#0f172a", accent: "#facc15", ink: "#ffffff", seconds: 9, action: "star" },
@@ -3385,6 +3386,7 @@ const CONTRIBUTE_URL = "https://github.com/shouvik12/devtv/blob/main/CONTRIBUTIN
 const LEANTEXT_URL = "https://github.com/shouvik12/leantext";
 const LIVING_CANVAS_URL = "https://github.com/shouvik12/living-canvas";
 const RELIT_URL = "https://github.com/shouvik12/relit";
+const SAMESTATE_URL = "https://github.com/shouvik12/samestate";
 let adCount = 0, houseIdx = 0;
 
 const AD_BREAK_SECONDS = 6;
@@ -3408,6 +3410,9 @@ function showAdBreak() {
   const imgEl = document.getElementById("ad-img");
   if (ad.image) { imgEl.src = ad.image; imgEl.alt = ad.imageAlt || ""; imgEl.hidden = false; box.classList.add("has-img"); }
   else { imgEl.hidden = true; imgEl.removeAttribute("src"); imgEl.alt = ""; box.classList.remove("has-img"); }
+  // House ads can carry their own label in the corner (e.g. "From the creator's corner").
+  document.querySelector("#ad-break .ad-tag-long").textContent = ad.tag || "ADVERTISEMENT";
+  document.querySelector("#ad-break .ad-tag-short").textContent = ad.tagShort || "AD";
   document.getElementById("ad-offer").textContent = ad.offer;
   document.getElementById("ad-cta").textContent = ad.cta;
   document.getElementById("ad-countdown").textContent = `BACK IN ${secs}`;
@@ -3428,6 +3433,7 @@ function showAdBreak() {
       else if (ad.action === "leantext") window.open(LEANTEXT_URL, "_blank", "noopener");
       else if (ad.action === "livingcanvas") window.open(LIVING_CANVAS_URL, "_blank", "noopener");
       else if (ad.action === "relit") window.open(RELIT_URL, "_blank", "noopener");
+      else if (ad.action === "samestate") window.open(SAMESTATE_URL, "_blank", "noopener");
     };
   } else {
     ctaEl.style.cursor = "";
