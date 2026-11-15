@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Depths · DEV·TV</title>
+<style>
+:root{
+  color-scheme: light;
+  --page:#cdd5c4; --bezel:#728d7a; --bezel-hi:#8ba591; --bezel-line:#a9b9a0;
+  --badge:#ded4ac; --badge-ink:#2a2a1e; --key:#3f5a48; --key-ink:#e9efe3; --key-line:#2b4134;
+  --key-hot:#5c2a26; --key-hot-ink:#ffd9cf;
+  --screen:#07090c; --ink:#f2ede1; --dim:#a9a395; --coral:#ff6447; --coral-soft:rgba(255,100,71,.14);
+  --shade:rgba(3,6,10,.82);
+  --mono:"Courier New",Courier,ui-monospace,monospace;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme: dark;
+    --page:#131a15; --bezel:#3d5545; --bezel-hi:#4c6855; --bezel-line:#5b7361;
+    --badge:#c9c099; --badge-ink:#211f15; --key:#28392d; --key-ink:#dde7d8; --key-line:#18241b;
+    --key-hot:#4a1f1b; --key-hot-ink:#ffcfc2;
+    --screen:#05070a; --ink:#f2ede1; --dim:#a39d8f; --coral:#ff6a4d; --coral-soft:rgba(255,106,77,.14);
+    --shade:rgba(2,4,8,.85);
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--page);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{display:grid;place-items:center;min-height:100dvh}
+.tv{width:min(100%,600px);height:min(100dvh,1000px);padding:12px;display:flex;flex-direction:column;gap:10px;
+  background:linear-gradient(180deg,var(--bezel-hi),var(--bezel));border:3px solid var(--bezel-line);border-radius:22px}
+.top{display:flex;align-items:center;gap:10px}
+.badge{background:var(--badge);color:var(--badge-ink);font:800 22px/1 var(--sans);letter-spacing:.06em;padding:10px 16px;border-radius:10px;
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.18),0 2px 0 rgba(0,0,0,.25)}
+.clock{background:#000;color:#e8e2d2;font:15px/1 var(--mono);letter-spacing:.15em;padding:10px 12px;border-radius:8px}
+.chname{margin-left:auto;color:var(--key-ink);font:14px/1.2 var(--mono);opacity:.85;text-align:right}
+
+.screen{position:relative;flex:1;min-height:0;border-radius:18px;overflow:hidden;background:var(--screen);
+  border:2px solid rgba(0,0,0,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);touch-action:none;cursor:ns-resize}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.screen::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px),
+             radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+#fade{position:absolute;inset:0;background:#000;opacity:0;transition:opacity 1.2s ease;pointer-events:none;z-index:6}
+
+.osd{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:flex-start;gap:12px;z-index:3;pointer-events:none}
+.live{display:flex;align-items:center;gap:8px;color:var(--dim);font:14px/1 var(--mono);letter-spacing:.2em;margin-top:9px}
+.live i{width:11px;height:11px;border-radius:50%;background:var(--coral);box-shadow:0 0 10px var(--coral)}
+.chip{border:2px solid var(--coral);color:var(--coral);border-radius:8px;padding:6px 10px;font:700 14px/1 var(--sans);letter-spacing:.04em;background:var(--coral-soft)}
+.chip span{font-family:var(--mono);font-weight:400;margin-right:6px}
+.depth{margin-left:auto;text-align:right;color:var(--ink)}
+.depth b{display:block;font:800 34px/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.depth small{font:12px/1.4 var(--mono);color:var(--dim)}
+
+#labels{position:absolute;inset:0;z-index:2;pointer-events:none}
+.lbl{position:absolute;left:0;top:0;pointer-events:auto;cursor:pointer;white-space:nowrap;color:var(--ink);
+  transform-origin:0 0;text-shadow:0 1px 6px rgba(0,0,0,.9);padding:4px 6px;border-radius:6px;transition:background .2s}
+.lbl:hover,.lbl:focus-visible{background:rgba(0,0,0,.45);outline:none}
+.lbl.picked{background:var(--coral-soft);box-shadow:0 0 0 1px var(--coral)}
+.screen{cursor:pointer}
+.lbl .n{font:600 13px/1.2 var(--sans)}
+.lbl .y{font:11px/1.2 var(--mono);color:var(--dim);margin-left:6px}
+.lbl.wreck .n{color:#b9c3c6;font-style:italic;font-weight:500}
+.lbl.event .n{color:var(--coral)}
+
+.card{position:absolute;left:8%;right:8%;top:30%;text-align:center;z-index:4;pointer-events:none;opacity:0;transform:translateY(8px);transition:opacity .8s ease,transform .8s ease}
+.card.on{opacity:1;transform:none}
+.card .cy{font:15px/1 var(--mono);color:var(--coral);letter-spacing:.2em;margin-bottom:12px}
+.card .ct{font:800 clamp(30px,7.5vw,48px)/1.02 var(--sans);color:var(--ink);letter-spacing:-.02em;text-shadow:0 2px 24px rgba(0,0,0,.8)}
+.card .cs{font:16px/1.45 var(--sans);color:var(--ink);opacity:.82;margin:12px auto 0;max-width:30ch;text-shadow:0 1px 10px #000}
+
+.lower{position:absolute;left:0;right:0;bottom:34px;z-index:3;padding:40px 18px 12px;
+  background:linear-gradient(180deg,transparent,var(--shade) 34%);color:var(--ink)}
+.era{display:flex;align-items:baseline;gap:10px;font:14px/1.2 var(--mono);color:var(--coral);letter-spacing:.14em;margin-bottom:10px}
+.era em{font-style:normal;color:var(--dim);letter-spacing:.05em}
+.row{display:grid;grid-template-columns:62px 1fr;gap:8px;margin-bottom:8px}
+.k{font:13px/1.5 var(--mono);color:var(--dim);letter-spacing:.12em}
+.nowT{font:700 20px/1.2 var(--sans);letter-spacing:-.01em}
+.nowB{font:15px/1.4 var(--sans);color:var(--ink);opacity:.82;margin-top:3px;max-width:52ch}
+.nextT{font:15px/1.4 var(--sans);color:var(--dim)}
+.cur{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.1)}
+.cur div{font:12px/1.35 var(--mono);color:var(--dim)}
+.cur b{display:block;font:600 13px/1.3 var(--sans);color:var(--ink);transition:color .4s}
+.cur b.flash{color:var(--coral)}
+.cur i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:0}
+
+.ticker{position:absolute;left:0;right:0;bottom:0;height:34px;z-index:3;overflow:hidden;background:rgba(0,0,0,.9);border-top:1px solid rgba(255,255,255,.08)}
+.track{position:absolute;white-space:nowrap;top:9px;font:14px/1 var(--mono);color:var(--dim);letter-spacing:.08em;animation:tick 60s linear infinite}
+.track b{color:var(--coral);font-weight:700;margin:0 8px 0 26px}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+.guide{position:absolute;inset:0;z-index:5;background:rgba(3,5,8,.92);padding:22px;display:none;overflow:auto}
+.guide.on{display:block}
+.guide h3{font:800 24px/1 var(--sans);color:var(--ink);margin:4px 0 16px}
+.guide button{display:flex;justify-content:space-between;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid rgba(255,255,255,.1);
+  color:var(--ink);font:600 17px/1.3 var(--sans);padding:14px 2px;cursor:pointer}
+.guide button span{font:13px/1.6 var(--mono);color:var(--coral)}
+
+.remote{display:grid;grid-template-columns:1.3fr 1fr 1fr .8fr 1fr;gap:8px;padding:10px;border-radius:18px;background:rgba(0,0,0,.14)}
+.remote button{white-space:nowrap;height:52px;border-radius:12px;border:2px solid var(--key-line);background:var(--key);color:var(--key-ink);
+  font:15px/1 var(--mono);letter-spacing:.06em;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+.remote button.hot{background:var(--key-hot);color:var(--key-hot-ink)}
+.remote button.main{font:800 15px/1 var(--sans);letter-spacing:0}
+.remote button:focus-visible,.guide button:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
+@media (max-width:420px){.remote button{font-size:13px;height:48px}.depth b{font-size:28px}.chname{display:none}}
+body.embed{background:#000;display:block}
+body.embed .tv{width:100%;height:100dvh;padding:0;border:0;border-radius:0;background:#000;gap:0}
+body.embed .top{display:none}
+body.embed .screen{border:0;border-radius:0}
+body.embed .remote{border-radius:0;padding:6px;gap:6px;background:var(--deck,#0b0e12)}
+body.embed .remote button{background:linear-gradient(180deg,var(--key-top),var(--key-bot));border:1px solid #000;border-top:1px solid var(--key-edge);color:var(--key-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 2px 4px rgba(0,0,0,.4)}
+body.embed .remote button.hot{color:var(--coral);border-color:var(--coral)}
+body.embed .remote button{height:42px}
+#exit{display:none;pointer-events:auto;background:linear-gradient(180deg,#0f4d5e,#062833);color:#d8f7ff;border:1px solid #3fb4cf;border-radius:8px;width:34px;height:34px;font:16px/1 var(--sans);cursor:pointer}
+body.embed #exit{display:block}
+body.embed .live{display:none}
+body.embed .remote{display:none!important}
+#sndIcon{display:none;pointer-events:auto;background:linear-gradient(180deg,#0f4d5e,#062833);color:#d8f7ff;border:1px solid #3fb4cf;border-radius:8px;height:34px;padding:0 10px;font:12px/1 var(--mono);letter-spacing:.1em;cursor:pointer}
+body.embed #sndIcon{display:block}
+#sndIcon.on{color:#062833;background:linear-gradient(180deg,#8ff0ff,#3fb4cf);border-color:#bff6ff}
+body.embed .remote button{font-size:12px;letter-spacing:.02em;padding:0 4px}
+body.embed .remote button.main{font-size:13px}
+/* Short screens (DEV·TV on a phone): keep the ocean visible. */
+@media (max-height:620px){
+  .lower{padding:28px 14px 8px}
+  .cur,.nowB{display:none}
+  .era{margin-bottom:6px;font-size:12px}
+  .nowT{font-size:16px}
+  .row{margin-bottom:4px;grid-template-columns:50px 1fr}
+  .depth b{font-size:26px}
+  .card .ct{font-size:clamp(24px,7vw,36px)}
+  .card{top:22%}
+}
+@media (max-height:460px){ .row:nth-of-type(2){display:none} .ticker{display:none} .lower{bottom:0} }
+</style>
+</head>
+<body>
+<div class="tv">
+  <div class="top">
+    <div class="badge">DEV·TV</div>
+    <div class="clock" id="clock">--:--</div>
+    <div class="chname">Software history</div>
+  </div>
+
+  <div class="screen" id="screen" aria-label="The Depths: a dive through the history of the software industry. Today is at the surface; the first computers are at the bottom.">
+    <canvas id="gl"></canvas>
+    <div id="labels"></div>
+    <div class="osd">
+      <button id="exit" aria-label="Back to DEV·TV" title="Back to DEV·TV (Esc)">✕</button>
+      <button id="sndIcon" aria-label="Ocean sound" title="Ocean sound">🔈 SOUND</button>
+      <span class="live"><i></i>LIVE</span>
+      <span class="chip">THE DEPTHS</span>
+      <div class="depth"><b id="yr">2026</b><small id="yrsub">at the surface</small></div>
+    </div>
+    <div class="card" id="card"><div class="cy" id="cardY"></div><div class="ct" id="cardT"></div><div class="cs" id="cardS"></div></div>
+    <div class="lower">
+      <div class="era"><span id="eraN"></span><em id="eraS"></em></div>
+      <div class="row"><div class="k">NOW</div><div><div class="nowT" id="nowT"></div><div class="nowB" id="nowB"></div></div></div>
+      <div class="row"><div class="k">NEXT</div><div class="nextT" id="nextT"></div></div>
+      <div class="cur">
+        <div><i style="background:#ffc46b"></i>Sold as<b id="cSold"></b></div>
+        <div><i style="background:#ff8fc8"></i>Delivered on<b id="cReach"></b></div>
+        <div><i style="background:#7ff0c4"></i>Built with<b id="cBuilt"></b></div>
+        <div><i style="background:#9fd4ff"></i>The job<b id="cJob"></b></div>
+      </div>
+    </div>
+    <div class="ticker"><div class="track" id="track"></div></div>
+    <div class="guide" id="guide" role="dialog" aria-label="Jump to an era"><h3>Jump to an era</h3><div id="guideList"></div></div>
+    <div id="fade"></div>
+  </div>
+
+  <div class="remote">
+    <button class="main" id="play">❚❚ PAUSE</button>
+    <button id="guideBtn">GUIDE</button>
+    <button class="hot" id="surf">SURFACE</button>
+    <button id="speed">1×</button>
+    <button id="snd">SOUND</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+if(/[?&]embed/.test(location.search))document.body.classList.add('embed');
+/* Follow DEV·TV's skin: copy its key colors and keep them in sync when the skin changes. */
+function syncSkin(){try{
+  const pr=parent.document.documentElement, cs=parent.getComputedStyle(pr), me=document.documentElement.style;
+  ['--key-top','--key-bot','--key-edge','--key-ink'].forEach(v=>{const x=cs.getPropertyValue(v).trim();if(x)me.setProperty(v,x)});
+  const deck=parent.document.querySelector('#deck,.deck,#controls'); if(deck)me.setProperty('--deck',parent.getComputedStyle(deck).backgroundColor);
+}catch(e){}}
+if(parent!==window){syncSkin();try{new parent.MutationObserver(syncSkin).observe(parent.document.documentElement,{attributes:true,attributeFilter:['data-skin','style','class']})}catch(e){}}
+document.getElementById('exit').onclick=()=>parent.postMessage('depths:close','*');
+addEventListener('keydown',e=>{if(e.key==='Escape')parent.postMessage('depths:close','*')});
+/* ---------- DATA ----------
+   type: c creature, g giant, e event, w wreck, s swallow (name swallowed by extra)
+   This array is what species.json / depths/*.json would hold in production. */
+const DATA_FALLBACK = [
+ ['c',1951.2,'UNIVAC I',2.2,'The first commercial computer built in the US. It called the 1952 election on live TV.'],
+ ['g',1952.6,'IBM',4,'Founded in 1911. For decades, computing simply meant IBM.'],
+ ['c',1957,'Fortran',1.1,'The first widely used high-level language, built for scientists.'],
+ ['c',1959,'COBOL',1.1,'Business logic in English-like code. It still runs banks today.'],
+ ['c',1964,'IBM System/360',2.4,'One architecture across a family of machines. Software could finally outlive its hardware.'],
+ ['c',1969,'Unix',2.4,'Built at Bell Labs on a spare minicomputer. Its ideas still run nearly everything.'],
+ ['e',1969.4,'ARPANET',0,'Four computers connected. The first breath of the internet.'],
+ ['e',1969.8,'IBM unbundles software',0,'IBM starts pricing software separately from hardware. The software industry is born.'],
+ ['c',1970.2,'PDP-11',2,"DEC's minicomputer brings computing into labs and universities."],
+ ['c',1970.7,'Xerox PARC',2,'Invents the GUI, Ethernet, and the laser printer. Others get rich from them.'],
+ ['c',1975,'Microsoft',2.8,'Gates and Allen sell a BASIC for the Altair.'],
+ ['c',1976,'Apple',2.8,'Two Steves in a garage. The Apple II makes personal computers mainstream.'],
+ ['c',1977,'Oracle',2,'Turns the relational database into a business.'],
+ ['e',1979,'VisiCalc',0,'The first spreadsheet and the first killer app. People buy computers just to run it.'],
+ ['e',1981,'IBM PC and MS-DOS',0,'IBM makes the PC legitimate. Microsoft keeps the rights to DOS.'],
+ ['c',1982,'Adobe',2,'PostScript makes desktop publishing possible.'],
+ ['c',1984,'Macintosh',2.2,'The graphical interface reaches ordinary people.'],
+ ['c',1985,'Windows 1.0',2,'Microsoft puts windows on top of DOS.'],
+ ['e',1991,'World Wide Web',0,'Tim Berners-Lee publishes the first website.'],
+ ['c',1991.5,'Linux',2.6,"A student's hobby kernel. It now runs most of the world's servers."],
+ ['w',1994,'Commodore',0,'Made the best-selling home computer ever, the C64. Bankrupt in 1994.'],
+ ['c',1994.4,'Netscape',2.2,'The browser that starts the gold rush.'],
+ ['c',1994.8,'Amazon',2.8,'Starts out selling books online.'],
+ ['s',1995.4,'Lotus',0,'IBM buys Lotus, maker of the 1-2-3 spreadsheet.','IBM'],
+ ['c',1998,'Google',2.8,'PageRank brings order to the web.'],
+ ['s',1998.5,'DEC',0,'Compaq buys Digital Equipment, the minicomputer pioneer.','Compaq'],
+ ['s',1999,'Netscape',0,'AOL buys Netscape after the browser war is lost.','AOL'],
+ ['c',1999.5,'Salesforce',2,'No software to install. Subscriptions start replacing boxed licenses.'],
+ ['e',2000,'Dot-com crash',0,'The bubble bursts. Thousands of startups sink within months.'],
+ ['w',2000.6,'Pets.com',0,'Shut down within a year of going public. The symbol of the crash.'],
+ ['c',2001,'Wikipedia',2,'Anyone can edit. Open collaboration at world scale.'],
+ ['e',2001.5,'Agile Manifesto',0,'Seventeen developers at a ski lodge rewrite how teams ship software.'],
+ ['c',2004,'Firefox',2,'Open source takes back the browser.'],
+ ['c',2004.5,'Facebook',2.8,'Social networking goes mainstream.'],
+ ['c',2005,'Git',2,'Linus Torvalds writes a version control system in about two weeks.'],
+ ['s',2005.5,'Android',0,'Google quietly buys a small mobile OS startup.','Google'],
+ ['s',2006,'YouTube',0,'Google buys YouTube for $1.65 billion.','Google'],
+ ['c',2006.5,'AWS',2.8,'Rent servers by the hour. Startups no longer need data centers.'],
+ ['c',2007,'iPhone',2.8,'The phone becomes a computer in your pocket.'],
+ ['w',2008.1,'Netscape Navigator',0,'AOL ends support for the browser that started it all.'],
+ ['e',2008.4,'App Store',0,'Software distribution changes overnight.'],
+ ['c',2008.7,'GitHub',2.2,'Code hosting becomes social.'],
+ ['c',2008.9,'Android',2.4,'The first Android phone ships. Open mobile, at huge scale.'],
+ ['c',2010,'Azure',2,"Microsoft's cloud."],
+ ['s',2010.2,'Sun Microsystems',0,'Oracle buys Sun, and with it Java and MySQL.','Oracle'],
+ ['c',2010.6,'Stripe',2,'Online payments in a few lines of code.'],
+ ['s',2012,'Instagram',0,'Facebook buys a 13-person photo app for $1 billion.','Facebook'],
+ ['c',2013,'Docker',2,'Ship the whole environment in a container.'],
+ ['c',2013.6,'Slack',2,'Work chat that developers actually want.'],
+ ['s',2014,'WhatsApp',0,'Facebook buys WhatsApp for $19 billion.','Facebook'],
+ ['s',2014.4,"Nokia's phones",0,'Microsoft buys the fallen phone giant.','Microsoft'],
+ ['c',2014.8,'Kubernetes',2,'Google open-sources how it runs containers at scale.'],
+ ['c',2015.9,'OpenAI',2.6,'Founded as a nonprofit AI research lab.'],
+ ['w',2016.7,'BlackBerry phones',0,'BlackBerry stops designing its own phones.'],
+ ['e',2017.4,'The Transformer',0,'The paper "Attention Is All You Need" lays the foundation for modern AI.'],
+ ['s',2018.4,'GitHub',0,'Microsoft buys GitHub for $7.5 billion.','Microsoft'],
+ ['w',2019.9,'Windows Phone',0,'Microsoft ends support for its last mobile OS.'],
+ ['w',2020.9,'Flash',0,'Reaches end of life on the last day of 2020.'],
+ ['c',2021.2,'Anthropic',2.6,'An AI safety company. Maker of Claude.'],
+ ['c',2021.5,'GitHub Copilot',2,'AI starts writing code inside the editor.'],
+ ['c',2022.9,'ChatGPT',2.8,'An estimated 100 million users in about two months.'],
+ ['c',2024.9,'MCP',2,'An open standard for connecting AI agents to tools and data.'],
+];
+function boot(RAW){
+const TY={company:'c',giant:'g',event:'e',wreck:'w',acquired:'s'};
+const DATA=RAW.map(d=>Array.isArray(d)?d:[TY[d.type]||d.type,d.year,d.name,d.size||0,d.blurb,d.by,d.region,d.form]);
+const ZONES = [
+ {from:2017,to:2027,name:'THE AI SURFACE',title:'The AI surface',span:'2017 to today',sub:'Models that write, see, and act. The water is crowded and moving fast.',bg:0x1a5b6b,acc:0x9ff5ff,job:'AI engineer'},
+ {from:2012,to:2017,name:'CLOUD AND DEVOPS',title:'Cloud and DevOps',span:'2012 to 2017',sub:'Servers become code. Everything ships continuously.',bg:0x154962,acc:0x8fd0ff,job:'DevOps engineer, SRE'},
+ {from:2007,to:2012,name:'MOBILE',title:'Mobile',span:'2007 to 2012',sub:'The computer moves into your pocket, and app stores take over distribution.',bg:0x113b57,acc:0xc4b4ff,job:'Mobile developer'},
+ {from:2000,to:2007,name:'OPEN SOURCE AND WEB 2.0',title:'Open source and Web 2.0',span:'2000 to 2007',sub:'After the crash, the web rebuilds itself in the open.',bg:0x0e2f49,acc:0x7ee6b8,job:'Full-stack developer'},
+ {from:1991,to:2000,name:'THE INTERNET BOOM',title:'The internet boom',span:'1991 to 2000',sub:'A web of documents becomes a gold rush.',bg:0x0b233f,acc:0xffd27a,job:'Webmaster'},
+ {from:1975,to:1991,name:'PCS AND THE GUI',title:'PCs and the GUI',span:'1975 to 1991',sub:'A computer on every desk, sold in a box.',bg:0x091a33,acc:0x86bcff,job:'Software engineer'},
+ {from:1965,to:1975,name:'MINICOMPUTERS AND UNIX',title:'Minicomputers and Unix',span:'1965 to 1975',sub:'Computers shrink to the size of a fridge, and the network is born.',bg:0x071329,acc:0xffb36b,job:'Programmer'},
+ {from:1940,to:1965,name:'MAINFRAMES',title:'Mainframes',span:'1951 to 1965',sub:'Room-sized machines, punch cards, and one dominant company.',bg:0x030916,acc:0x6dff9e,job:'Keypunch operator'},
+];
+const SOLD=[[2022.9,'pay per token'],[1999.5,'subscriptions'],[1980,'boxed retail software'],[1969.8,'separate licenses'],[-1,'bundled with hardware']];
+const REACH=[[2012,'the cloud'],[2008.4,'app stores'],[2000,'downloads'],[1991,'CD-ROMs'],[1975,'floppy disks'],[-1,'punch cards and tape']];
+const BUILT=[[2021.5,'AI pair programming'],[2009,'DevOps'],[2001.5,'Agile'],[-1,'waterfall']];
+const stage=(l,y)=>l.find(([s])=>y>=s)[1];
+
+/* ---------- SETUP ---------- */
+const TOPY=2026.6, BOTY=1950.6, UNIT=7;
+const Y=yr=>(yr-2026)*UNIT;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const screen=document.getElementById('screen'), canvas=document.getElementById('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+const scene=new THREE.Scene();
+scene.fog=new THREE.FogExp2(0x1a5b6b,.03);
+scene.background=new THREE.Color(0x1a5b6b);
+const camera=new THREE.PerspectiveCamera(60,1,.1,400);
+const ADD=THREE.AdditiveBlending;
+let rnd=7; const r=()=>(rnd=(rnd*16807)%2147483647)/2147483647;
+
+function tex(draw,w=128,h=128){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=new THREE.CanvasTexture(c);return t}
+const glowTex=tex((g,w,h)=>{const gr=g.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.25,'rgba(255,255,255,.45)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,w,h)});
+const shaftTex=tex((g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'rgba(255,255,255,.9)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);const gx=g.createLinearGradient(0,0,w,0);gx.addColorStop(0,'rgba(0,0,0,1)');gx.addColorStop(.5,'rgba(0,0,0,0)');gx.addColorStop(1,'rgba(0,0,0,1)');g.globalCompositeOperation='destination-out';g.fillStyle=gx;g.fillRect(0,0,w,h)},64,256);
+
+const zoneAt=yr=>ZONES.find(z=>yr>=z.from)||ZONES[ZONES.length-1];
+const zoneIdx=yr=>ZONES.indexOf(zoneAt(yr));
+function bgAt(yr){ // blend zone colors near boundaries
+  const z=zoneAt(yr), i=ZONES.indexOf(z), c=new THREE.Color(z.bg);
+  if(i<ZONES.length-1 && yr-z.from<1.5){const k=.5-(yr-z.from)/3;c.lerp(new THREE.Color(ZONES[i+1].bg),k)}
+  if(i>0 && z.to-yr<1.5){const k=.5-(z.to-yr)/3;c.lerp(new THREE.Color(ZONES[i-1].bg),k)}
+  return c;
+}
+
+/* ---------- BUILDERS ---------- */
+function jelly(color,size){
+  const g=new THREE.Group(), cut=Math.PI*.55;
+  const m=(o)=>new THREE.MeshBasicMaterial({color,transparent:true,opacity:o,blending:ADD,depthWrite:false,side:THREE.DoubleSide});
+  const bell=new THREE.Mesh(new THREE.SphereGeometry(1,28,14,0,Math.PI*2,0,cut),m(.28));
+  const core=new THREE.Mesh(new THREE.SphereGeometry(.42,16,10),m(.75)); core.position.y=.38;
+  const rimY=Math.cos(cut), rimR=Math.sin(cut);
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(rimR,.035,6,48),m(.9)); rim.rotation.x=Math.PI/2; rim.position.y=rimY;
+  const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color,transparent:true,blending:ADD,depthWrite:false,opacity:.55}));
+  halo.scale.set(4.2,4.2,1); halo.position.y=.2;
+  g.add(bell,core,rim,halo);
+  const tents=[], N=7, P=20, len=2.6+size*.5;
+  for(let k=0;k<N;k++){
+    const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(P*3),3));
+    const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color,transparent:true,opacity:.5,blending:ADD,depthWrite:false}));
+    g.add(line); tents.push({geo,a:k/N*Math.PI*2+r()*.3,ph:r()*6});
+  }
+  g.scale.setScalar(size);
+  const ph=r()*6;
+  return {obj:g,mats:[bell.material,core.material,rim.material,halo.material],update(t,act){
+    const s=reduce?0:Math.sin(t*1.6+ph);
+    bell.scale.set(1+.07*s,1-.1*s,1+.07*s); rim.scale.setScalar(1+.08*s);
+    if(!act||reduce) return;
+    for(const tn of tents){const a=tn.geo.attributes.position.array;
+      for(let i=0;i<P;i++){const f=i/(P-1), w=Math.sin(t*1.8-f*5+tn.ph)*.35*f;
+        a[i*3]=Math.cos(tn.a)*rimR*.85*(1-f*.4)+w*Math.cos(tn.a+1.6);
+        a[i*3+1]=rimY-f*len;
+        a[i*3+2]=Math.sin(tn.a)*rimR*.85*(1-f*.4)+w*Math.sin(tn.a+1.6);}
+      tn.geo.attributes.position.needsUpdate=true;}
+  }};
+}
+function sonar(color){
+  const g=new THREE.Group();
+  const mk=(rad,o)=>{const m=new THREE.Mesh(new THREE.TorusGeometry(rad,.04,6,64),new THREE.MeshBasicMaterial({color,transparent:true,opacity:o,blending:ADD,depthWrite:false}));m.rotation.x=Math.PI/2.4;return m};
+  const ring=mk(1.4,.9), wave=mk(1.4,.6), wave2=mk(1.4,.4);
+  const core=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color,transparent:true,blending:ADD,depthWrite:false,opacity:.95}));
+  core.scale.set(3,3,1);
+  g.add(ring,wave,wave2,core);
+  let flash=0;
+  return {obj:g,ping(){flash=1},update(t){
+    const p=reduce?.5:(t*.45)%1, p2=reduce?.8:(t*.45+.5)%1;
+    wave.scale.setScalar(1+p*2.6); wave.material.opacity=.6*(1-p);
+    wave2.scale.setScalar(1+p2*2.6); wave2.material.opacity=.4*(1-p2);
+    flash*=.96; core.scale.setScalar(3+flash*7); core.material.opacity=.95;
+  }};
+}
+function glowMat(color,o,side){return new THREE.MeshBasicMaterial({color,transparent:true,opacity:o,blending:ADD,depthWrite:false,side:side||THREE.FrontSide})}
+function lineMat(color,o){return new THREE.LineBasicMaterial({color,transparent:true,opacity:o,blending:ADD,depthWrite:false})}
+/* Whales: the giants. A faceted glowing body, a beating tail, bioluminescent spots, gliding slowly across the water. */
+function whale(color,size){
+  const g=new THREE.Group(), swim=new THREE.Group(); g.add(swim);
+  const bodyGeo=new THREE.IcosahedronGeometry(1,2); bodyGeo.scale(2.5,.78,.85);
+  const pos=bodyGeo.attributes.position; // taper the back half and flatten the belly
+  for(let i=0;i<pos.count;i++){let x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i);
+    const k=x<0?1+x/2.5*.62:1-Math.max(0,x-1.6)*.25; y*=k; z*=k; if(y<0)y*=.75; pos.setXYZ(i,x,y,z)}
+  bodyGeo.computeVertexNormals();
+  swim.add(new THREE.Mesh(bodyGeo,glowMat(color,.16)));
+  swim.add(new THREE.LineSegments(new THREE.EdgesGeometry(bodyGeo,1),lineMat(color,.5)));
+  // pectoral fins
+  [-1,1].forEach(sd=>{const f=new THREE.Mesh(new THREE.ConeGeometry(.28,1.4,3),glowMat(color,.3,THREE.DoubleSide));
+    f.position.set(.7,-.45,.62*sd); f.rotation.set(sd*1.1,0,-.9); f.scale.z=.25; swim.add(f)});
+  // tail: stalk + flukes, pivoting at the back of the body
+  const tail=new THREE.Group(); tail.position.x=-2.3; swim.add(tail);
+  const stalk=new THREE.Mesh(new THREE.ConeGeometry(.32,1.5,8),glowMat(color,.22)); stalk.rotation.z=Math.PI/2; stalk.position.x=-.6; tail.add(stalk);
+  const fg=new THREE.BufferGeometry(); fg.setAttribute('position',new THREE.Float32BufferAttribute([-1.2,0,0,-2.1,0,1.3,-1.8,0,0, -1.2,0,0,-1.8,0,0,-2.1,0,-1.3],3));
+  tail.add(new THREE.Mesh(fg,glowMat(color,.45,THREE.DoubleSide)));
+  tail.add(new THREE.LineSegments(new THREE.EdgesGeometry(fg),lineMat(color,.8)));
+  // bioluminescent spots along the flank
+  const sp=[]; for(let i=0;i<14;i++){const x=1.9-i*.3; sp.push(x,-.15+Math.sin(i)*.12,.62*(1-Math.abs(x)/3.2)+.02, x,-.15+Math.cos(i)*.12,-.62*(1-Math.abs(x)/3.2)-.02)}
+  const spg=new THREE.BufferGeometry(); spg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));
+  const spots=new THREE.Points(spg,new THREE.PointsMaterial({map:glowTex,size:.35,color:0xffffff,transparent:true,opacity:.85,blending:ADD,depthWrite:false})); swim.add(spots);
+  const eye=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xffffff,transparent:true,blending:ADD,depthWrite:false,opacity:.9})); eye.scale.set(.45,.45,1); eye.position.set(2.05,.08,.5); swim.add(eye);
+  const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color,transparent:true,blending:ADD,depthWrite:false,opacity:.3})); halo.scale.set(8,4,1); swim.add(halo);
+  g.scale.setScalar(size); const ph=r()*6;
+  return {obj:g,face(dir){swim.rotation.y=dir>0?0:Math.PI},update(t,act){
+    if(reduce)return;
+    tail.rotation.z=Math.sin(t*1.1+ph)*.32; swim.rotation.z=Math.sin(t*1.1+ph+1.2)*.05;
+    spots.material.opacity=.55+.35*Math.sin(t*2+ph);
+  }};
+}
+/* Manta rays: companies. Wide wings that beat slowly, a whip tail, gliding with a bank. */
+function manta(color,size){
+  const g=new THREE.Group(), body=new THREE.Group(); g.add(body);
+  // nose, left tip, right tip, tail root, spine top, left mid, right mid
+  const base=[0,0,1.1, -1.9,0,-.15, 1.9,0,-.15, 0,0,-.75, 0,.18,.1, -.95,.06,.42, .95,.06,.42];
+  const idx=[0,5,4, 5,1,4, 1,3,4, 0,4,6, 6,4,2, 4,3,2];
+  const geo=new THREE.BufferGeometry(), arr=new Float32Array(base); geo.setAttribute('position',new THREE.BufferAttribute(arr,3)); geo.setIndex(idx);
+  body.add(new THREE.Mesh(geo,glowMat(color,.3,THREE.DoubleSide)));
+  const og=new THREE.BufferGeometry(); og.setAttribute('position',geo.attributes.position); og.setIndex([0,5,5,1,1,3,3,2,2,6,6,0,4,1,4,2,4,0]);
+  body.add(new THREE.LineSegments(og,lineMat(color,.85)));
+  const tl=new THREE.BufferGeometry(), ta=new Float32Array(10*3); tl.setAttribute('position',new THREE.BufferAttribute(ta,3));
+  body.add(new THREE.Line(tl,lineMat(color,.6)));
+  [-1,1].forEach(sd=>{const h=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xffffff,transparent:true,blending:ADD,depthWrite:false,opacity:.8}));h.scale.set(.35,.35,1);h.position.set(.32*sd,.08,.85);body.add(h)});
+  const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color,transparent:true,blending:ADD,depthWrite:false,opacity:.35})); halo.scale.set(5,2.6,1); body.add(halo);
+  body.rotation.x=.55; g.scale.setScalar(size); const ph=r()*6;
+  return {obj:g,face(dir){g.rotation.y=dir*.5},update(t,act){
+    const w=reduce?0:Math.sin(t*1.25+ph);
+    arr[4]=w*.75; arr[7]=w*.75; arr[16]=.06+w*.3; arr[19]=.06+w*.3;
+    geo.attributes.position.needsUpdate=true;
+    for(let i=0;i<10;i++){const f=i/9; ta[i*3]=Math.sin(t*1.6+ph-f*3)*.25*f; ta[i*3+1]=-f*.15; ta[i*3+2]=-.75-f*2.2}
+    tl.attributes.position.needsUpdate=true;
+    if(!reduce){body.rotation.z=Math.sin(t*.4+ph)*.15; body.position.y=-w*.12}
+  }};
+}
+function wreck(acc){
+  const g=new THREE.Group(), dark=new THREE.MeshBasicMaterial({color:0x18252b});
+  const hull=new THREE.Mesh(new THREE.BoxGeometry(3.4,.8,1.1),dark);
+  const bow=new THREE.Mesh(new THREE.ConeGeometry(.56,1.2,4),dark); bow.rotation.z=-Math.PI/2; bow.rotation.x=Math.PI/4; bow.position.x=2.25;
+  const cab=new THREE.Mesh(new THREE.BoxGeometry(1.1,.7,.8),dark); cab.position.set(-.6,.75,0);
+  const mast=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,2.2,6),dark); mast.position.set(.5,1.4,0); mast.rotation.z=.5;
+  g.add(hull,bow,cab,mast);
+  const edgeMat=new THREE.LineBasicMaterial({color:new THREE.Color(acc).lerp(new THREE.Color(0x8aa0a8),.6),transparent:true,opacity:.55});
+  [hull,cab,mast].forEach(m=>{const e=new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry),edgeMat);e.position.copy(m.position);e.rotation.copy(m.rotation);g.add(e)});
+  const lamp=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xff9a6b,transparent:true,blending:ADD,depthWrite:false,opacity:.35}));
+  lamp.scale.set(1.4,1.4,1); lamp.position.set(-.6,.8,.5); g.add(lamp);
+  g.rotation.set(.15,r()*1.4-.7,.32);
+  const ph=r()*6, base=g.rotation.z;
+  return {obj:g,update(t){if(!reduce){g.rotation.z=base+Math.sin(t*.5+ph)*.05; lamp.material.opacity=.25+.15*Math.sin(t*2.2+ph)}}};
+}
+
+/* ---------- ENTITIES ---------- */
+const ents=[];
+const labelsEl=document.getElementById('labels');
+DATA.sort((a,b)=>b[1]-a[1]).forEach((d,i)=>{
+  const [type,year,name,size,blurb,by,region,form]=d;
+  const acc=zoneAt(year).acc;
+  const e={type,year,name,blurb,by,region,y:Y(year)};
+  const side=i%2?1:-1;
+  e.bx=side*(4.5+r()*6.5); e.z=-5-r()*11;
+  let v;
+  if(type==='c'&&form==='whale'){v=whale(acc,size*.42);e.bx=side*(3+r()*3);e.z=-14-r()*5;v.face(-side)}
+  else if(type==='c'&&form==='manta'){v=manta(acc,size*.5);v.face(-side)}
+  else if(type==='c'){v=jelly(acc,size*.55)}
+  else if(type==='g'){v=whale(acc,1.9);e.bx=0;e.z=-22;v.face(1)}
+  else if(type==='e'){v=sonar(0xff6447);e.bx=(r()-.5)*3;e.z=-9}
+  else if(type==='w'){v=wreck(acc);e.y-=.6}
+  else if(type==='s'){
+    const big=whale(acc,.75), small=manta(acc,.5), g=new THREE.Group(); big.face(-1);
+    g.add(big.obj,small.obj); small.obj.position.set(3.6,1.4,0);
+    let t0=null;
+    v={obj:g,update(t,act,cy){
+      big.update(t,act); small.update(t,act);
+      const d=Math.abs(cy-year);
+      if(d<.7&&t0===null){t0=t;e.onFire&&e.onFire()}
+      if(d>2.5)t0=null;
+      let p=t0===null?0:Math.min(1,(t-t0)/2.8); p=p*p*(3-2*p);
+      small.obj.position.set(3.6*(1-p)-1.2*p,1.4*(1-p),.4*p);
+      small.obj.scale.setScalar(.55*Math.max(.02,1-p));
+      const glow=p>.85?(1-p)/.15:0, k=1+(t0!==null&&p>.85?.35*Math.sin((p-.85)/.15*Math.PI):0);
+      big.obj.scale.setScalar(.75*k);
+    }};
+  }
+  e.anchor=type==='g'?2.6:type==='w'?1.9:type==='e'?1.9:type==='s'?1.6:form==='whale'?size*.42*.9+.5:form==='manta'?size*.5*.6+.6:size*.55*1.05+.55;
+  v.obj.position.set(e.bx,e.y,e.z);
+  scene.add(v.obj); e.v=v;
+  // label
+  const L=document.createElement('div'); L.className='lbl'+(type==='w'?' wreck':type==='e'?' event':''); L.tabIndex=-1;
+  const shown=type==='s'?`${name} → ${by}`:type==='w'?`† ${name}`:name;
+  L.innerHTML=`<span class="n"></span><span class="y">${Math.floor(year)}${region&&region!=='US'?' · '+region:''}</span>`; L.querySelector('.n').textContent=shown;
+  L.style.display='none'; L.onclick=ev=>{ev.stopPropagation();pin(e)};
+  labelsEl.appendChild(L); e.L=L; e.shown=shown;
+  ents.push(e);
+});
+
+/* seabed */
+{
+  const geo=new THREE.PlaneGeometry(240,240,70,70), p=geo.attributes.position;
+  for(let i=0;i<p.count;i++) p.setZ(i,(Math.sin(p.getX(i)*.08)+Math.cos(p.getY(i)*.11))*1.6+r()*.8);
+  geo.computeVertexNormals();
+  const bed=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0x1d2a24}));
+  bed.rotation.x=-Math.PI/2; bed.position.set(0,Y(1949.6),-30); scene.add(bed);
+  const wire=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0x2f5a44,wireframe:true,transparent:true,opacity:.18}));
+  wire.rotation.copy(bed.rotation); wire.position.copy(bed.position); wire.position.y+=.02; scene.add(wire);
+}
+/* light shafts */
+const shafts=new THREE.Group();
+for(let i=0;i<7;i++){
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(2+r()*3,70),new THREE.MeshBasicMaterial({map:shaftTex,transparent:true,blending:ADD,depthWrite:false,opacity:.18,fog:false}));
+  m.position.set(-24+i*8+r()*3,Y(2026)-22,-12-r()*16); m.rotation.z=.28; shafts.add(m);
+}
+scene.add(shafts);
+/* marine snow (camera-relative, wraps) */
+const SN=1400, snowGeo=new THREE.BufferGeometry(), snowPos=new Float32Array(SN*3), snowBase=new Float32Array(SN);
+for(let i=0;i<SN;i++){snowPos[i*3]=(r()-.5)*60;snowBase[i]=r()*40;snowPos[i*3+2]=-40+r()*52}
+snowGeo.setAttribute('position',new THREE.BufferAttribute(snowPos,3));
+const snow=new THREE.Points(snowGeo,new THREE.PointsMaterial({map:glowTex,size:.28,transparent:true,opacity:.55,blending:ADD,depthWrite:false,color:0xdff6ff}));
+scene.add(snow);
+/* currents: three flowing streams of light rising through time */
+const CURS=[{x:-19,z:-26,c:0xffc46b},{x:19,z:-28,c:0xff8fc8},{x:0,z:-44,c:0x7ff0c4}];
+const CN=260;
+CURS.forEach((cu,j)=>{
+  const geo=new THREE.BufferGeometry(), arr=new Float32Array(CN*3);
+  geo.setAttribute('position',new THREE.BufferAttribute(arr,3));
+  cu.base=Array.from({length:CN},()=>r()); cu.off=Array.from({length:CN},()=>(r()-.5)*1.4);
+  cu.pts=new THREE.Points(geo,new THREE.PointsMaterial({map:glowTex,size:.9,transparent:true,opacity:.75,blending:ADD,depthWrite:false,color:cu.c}));
+  cu.geo=geo; cu.arr=arr; scene.add(cu.pts);
+});
+
+/* ---------- HUD ---------- */
+const $=id=>document.getElementById(id);
+const el={yr:$('yr'),yrsub:$('yrsub'),eraN:$('eraN'),eraS:$('eraS'),nowT:$('nowT'),nowB:$('nowB'),nextT:$('nextT'),
+  sold:$('cSold'),reach:$('cReach'),built:$('cBuilt'),job:$('cJob'),track:$('track'),card:$('card'),cardY:$('cardY'),cardT:$('cardT'),cardS:$('cardS'),fade:$('fade')};
+let cardTimer;
+function showCard(y,t,s,ms=3200){el.cardY.textContent=y;el.cardT.textContent=t;el.cardS.textContent=s;el.cardS.style.display=s?'':'none';el.card.classList.add('on');clearTimeout(cardTimer);cardTimer=setTimeout(()=>el.card.classList.remove('on'),ms)}
+function setTicker(zi){
+  const z=ZONES[zi];
+  const items=ents.filter(e=>zoneIdx(e.year)===zi).map(e=>`<b>${Math.floor(e.year)}</b>${e.shown.replace(/</g,'&lt;')}`);
+  const html=`<b>${z.name}</b>${z.span}`+items.join('');
+  el.track.innerHTML=html+html;
+  el.track.style.animationDuration=Math.max(30,items.length*7)+'s';
+}
+let lastCur={};
+function setCur(key,elm,val){if(lastCur[key]!==val){if(lastCur[key]!==undefined){elm.classList.add('flash');setTimeout(()=>elm.classList.remove('flash'),2400)}elm.textContent=val;lastCur[key]=val}}
+
+
+/* ---------- SOUND ---------- */
+let ac=null, master=null, filt=null, soundOn=false, unlockEl=null;
+function silentWav(){const n=800,b=new ArrayBuffer(44+n),v=new DataView(b),w=(o,t)=>[...t].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));
+  w(0,'RIFF');v.setUint32(4,36+n,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,8000,true);v.setUint32(28,8000,true);v.setUint16(32,1,true);v.setUint16(34,8,true);w(36,'data');v.setUint32(40,n,true);
+  for(let i=0;i<n;i++)v.setUint8(44+i,128);return URL.createObjectURL(new Blob([b],{type:'audio/wav'}))}
+let soundDepth=1, bubbleT=0;
+function noiseBuf(kind){
+  const n=ac.sampleRate*4, buf=ac.createBuffer(2,n,ac.sampleRate);
+  for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch); let last=0;
+    for(let i=0;i<n;i++){const w=Math.random()*2-1;
+      if(kind==='brown'){last=(last+.02*w)/1.02;d[i]=last*3.5}else d[i]=w*.5}}
+  return buf;
+}
+function loopSrc(buf){const s=ac.createBufferSource();s.buffer=buf;s.loop=true;s.start(0,Math.random()*3);return s}
+function initSound(){
+  // iOS: a looping silent <audio> moves the page into the playback category, so the ring/silent switch no longer mutes Web Audio.
+  try{unlockEl=new Audio(silentWav());unlockEl.loop=true;unlockEl.setAttribute('playsinline','');unlockEl.play().catch(()=>{})}catch(e){}
+  ac=new (window.AudioContext||window.webkitAudioContext)();
+  master=ac.createGain(); master.gain.value=0; master.connect(ac.destination);
+  // Everything passes through one lowpass: open near the surface, muffled on the seabed.
+  filt=ac.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=2600; filt.Q.value=.6; filt.connect(master);
+  const white=noiseBuf('white'), brown=noiseBuf('brown');
+  // 1. Waves: band of noise whose loudness surges in slow, uneven swells.
+  [[.075,0],[.11,1.7]].forEach(([rate,ph],i)=>{
+    const src=loopSrc(white), bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=i?900:520; bp.Q.value=.5;
+    const g=ac.createGain(); g.gain.value=.16;
+    const lfo=ac.createOscillator(), lg=ac.createGain(); lfo.frequency.value=rate; lg.gain.value=.15; lfo.connect(lg).connect(g.gain); lfo.start(ac.currentTime+ph);
+    src.connect(bp).connect(g).connect(filt);
+  });
+  // 2. Underwater body: deep rumble from brown noise, always there.
+  const rum=loopSrc(brown), rlp=ac.createBiquadFilter(); rlp.type='lowpass'; rlp.frequency.value=380;
+  const rg=ac.createGain(); rg.gain.value=.55; rum.connect(rlp).connect(rg).connect(filt);
+  const rlfo=ac.createOscillator(), rlg=ac.createGain(); rlfo.frequency.value=.05; rlg.gain.value=.2; rlfo.connect(rlg).connect(rg.gain); rlfo.start();
+  // 3. Bubbles, scheduled from the frame loop.
+  bubbleT=ac.currentTime+.5;
+}
+function bubble(t){
+  const o=ac.createOscillator(), g=ac.createGain(), f=500+Math.random()*900;
+  o.type='sine'; o.frequency.setValueAtTime(f,t); o.frequency.exponentialRampToValueAtTime(f*(1.8+Math.random()),t+.07);
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.05+Math.random()*.06,t+.008); g.gain.exponentialRampToValueAtTime(.0001,t+.09);
+  o.connect(g).connect(filt); o.start(t); o.stop(t+.12);
+}
+function bubbleTick(){
+  if(!soundOn||!ac) return;
+  while(bubbleT<ac.currentTime+.3){
+    // Clusters near the surface, sparse in the deep.
+    const n=Math.random()<.35?2+Math.floor(Math.random()*4):1;
+    for(let k=0;k<n;k++) bubble(bubbleT+k*(.03+Math.random()*.06));
+    bubbleT+=(.25+Math.random()*1.2)/(.25+soundDepth*1.1);
+  }
+}
+function ping(){
+  if(!soundOn||!ac) return;
+  const t=ac.currentTime, o=ac.createOscillator(), g=ac.createGain(), d=ac.createDelay(), fb=ac.createGain(), out=ac.createGain();
+  out.gain.value=.9; out.connect(ac.destination);
+  o.type='sine'; o.frequency.setValueAtTime(1320,t); o.frequency.exponentialRampToValueAtTime(880,t+.8);
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.4,t+.015); g.gain.exponentialRampToValueAtTime(.0001,t+1.5);
+  d.delayTime.value=.32; fb.gain.value=.42;
+  o.connect(g); g.connect(out); g.connect(d); d.connect(fb); fb.connect(d); d.connect(out);
+  o.start(t); o.stop(t+1.7);
+}
+ents.forEach(e=>{if(e.type==='s'||e.type==='e')e.onFire=()=>{ping();e.v.ping&&e.v.ping()}});
+
+/* ---------- STATE + INPUT ---------- */
+let camYear=TOPY, playing=!reduce, speed=1, pinned=null, curZone=-1, ending=false, lastT=0;
+const playBtn=$('play'), speedBtn=$('speed'), sndBtn=$('snd');
+function setPlay(v){playing=v;playBtn.textContent=v?'❚❚ PAUSE':'▶ WATCH';if(parent!==window)parent.postMessage({depthsPlaying:v},'*')}
+setPlay(playing);
+playBtn.onclick=()=>{pinned=null;setPlay(!playing)};
+function setSpeed(v){speed=v;speedBtn.textContent=v+'×';pinned=null;if(!playing)setPlay(true)}
+speedBtn.onclick=()=>setSpeed(speed===1?2:speed===2?3:1);
+addEventListener('message',ev=>{const d=ev.data;if(!d)return;
+  if(d.depthsSpeed&&+d.depthsSpeed!==speed)setSpeed(+d.depthsSpeed);
+  if(typeof d.depthsPlay==='boolean'&&d.depthsPlay!==playing){pinned=null;playing=d.depthsPlay;playBtn.textContent=playing?'❚❚ PAUSE':'▶ WATCH'}
+  if(d.depthsGuide)guide.classList.toggle('on');
+});
+if(parent!==window)parent.postMessage('depths:ready','*');
+try{const ps=parent.document.getElementById('speed-btn');if(ps&&parent!==window){const v=parseFloat(ps.textContent);if(v){speed=v;speedBtn.textContent=v+'×'}}}catch(e){}
+const sndIcon=$('sndIcon');
+sndIcon.onclick=ev=>{ev.stopPropagation();sndBtn.click()};
+sndBtn.onclick=()=>{if(!ac)initSound();soundOn=!soundOn;ac.resume();if(unlockEl){soundOn?unlockEl.play().catch(()=>{}):unlockEl.pause()}master.gain.setTargetAtTime(soundOn?.7:0,ac.currentTime,.3);if(soundOn){bubbleT=ac.currentTime+.2;setTimeout(ping,150)}sndBtn.textContent=soundOn?'SOUND ON':'SOUND';sndIcon.textContent=soundOn?'🔊 SOUND':'🔈 SOUND';sndIcon.classList.toggle('on',soundOn);sndBtn.classList.toggle('hot',soundOn)};
+$('surf').onclick=()=>travel(TOPY);
+function travel(yr){el.fade.style.opacity=1;setTimeout(()=>{camYear=yr;ending=false;pinned=null;el.fade.style.opacity=0},700)}
+const guide=$('guide'), gl=$('guideList');
+ZONES.forEach(z=>{const b=document.createElement('button');b.innerHTML=`${z.title}<span>${z.span}</span>`;b.onclick=()=>{guide.classList.remove('on');travel(Math.min(TOPY,z.to-.4))};gl.appendChild(b)});
+$('guideBtn').onclick=()=>guide.classList.toggle('on');
+function pin(e){
+  pinned=e; setPlay(false);
+  const reg=e.region&&e.region!=='US'?' · '+e.region.toUpperCase():'';
+  showCard(Math.floor(e.year)+reg, e.shown, e.blurb, 5200);
+  if(e.type==='e'||e.type==='s'){e.onFire&&e.onFire()} else ping();
+  e.L.classList.add('picked'); setTimeout(()=>e.L.classList.remove('picked'),1600);
+}
+let downXY=null;
+screen.addEventListener('pointerdown',ev=>{downXY=[ev.clientX,ev.clientY]});
+screen.addEventListener('click',ev=>{
+  if(ev.target.closest('button,.lbl,.guide'))return;
+  if(downXY&&Math.hypot(ev.clientX-downXY[0],ev.clientY-downXY[1])>10)return; // that was a drag, not a tap
+  const rc=screen.getBoundingClientRect(), x=ev.clientX-rc.left, y=ev.clientY-rc.top;
+  let best=null,bd=90;
+  for(const e of ents){if(!e.seen)continue;const d=Math.min(Math.hypot(e.sx-x,e.sy-y),Math.hypot(e.lx-x,e.ly-y));if(d<bd){bd=d;best=e}}
+  if(best)pin(best);
+});
+screen.addEventListener('wheel',ev=>{ev.preventDefault();camYear=Math.max(BOTY,Math.min(TOPY,camYear+ev.deltaY*-.004));pinned=null},{passive:false});
+let ty=null;
+screen.addEventListener('touchstart',ev=>{ty=ev.touches[0].clientY},{passive:true});
+screen.addEventListener('touchmove',ev=>{if(ty===null)return;const y=ev.touches[0].clientY;camYear=Math.max(BOTY,Math.min(TOPY,camYear+(y-ty)*.012));ty=y;pinned=null},{passive:true});
+screen.addEventListener('touchend',()=>ty=null);
+addEventListener('keydown',ev=>{
+  if(ev.key==='ArrowDown'){camYear=Math.max(BOTY,camYear-.5)}
+  else if(ev.key==='ArrowUp'){camYear=Math.min(TOPY,camYear+.5)}
+  else if(ev.key===' '){ev.preventDefault();setPlay(!playing)}
+});
+function resize(){const w=screen.clientWidth,h=screen.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.setViewOffset(w,h,0,h*.2,w,h);camera.updateProjectionMatrix()}
+addEventListener('resize',resize); resize();
+const clock=$('clock'); const tickClock=()=>{const d=new Date();clock.textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}; tickClock(); setInterval(tickClock,15000);
+
+/* ---------- LOOP ---------- */
+const v3=new THREE.Vector3();
+let prevYear=camYear;
+function frame(ms){
+  const t=ms/1000, dt=Math.min(.05,t-lastT); lastT=t;
+  if(playing&&!ending){camYear-=dt*.28*speed;
+    if(camYear<=BOTY){camYear=BOTY;ending=true;
+      showCard('1951','Where it all began','UNIVAC I goes to work, and IBM is already waiting on the seabed. Rising back to today.',5200);
+      setTimeout(()=>{if(ending)travel(TOPY)},6200);}
+  }
+  const cy=camYear, wy=Y(cy), W=screen.clientWidth, H=screen.clientHeight;
+  const xs=Math.max(.42,Math.min(1.25,camera.aspect*1.25));
+
+  camera.position.set(reduce?0:Math.sin(t*.12)*1.2,wy+1.2,14);
+  camera.lookAt(0,wy-1.6,-8);
+
+  const bg=bgAt(cy); scene.background.copy(bg); scene.fog.color.copy(bg);
+  const depth01=(cy-BOTY)/(TOPY-BOTY);
+  scene.fog.density=.026+(1-depth01)*.012;
+  shafts.children.forEach((m,i)=>{m.material.opacity=Math.max(0,1-(2026-cy)/9)*.2*(reduce?1:.8+.2*Math.sin(t*.7+i))});
+  if(filt){filt.frequency.setTargetAtTime(320+depth01*depth01*2600,ac.currentTime,.4);soundDepth=depth01;bubbleTick()}
+
+  // snow
+  for(let i=0;i<SN;i++){snowPos[i*3+1]=((snowBase[i]-wy*.9-(reduce?0:t*.25))%40+40)%40-20}
+  snow.position.y=wy; snowGeo.attributes.position.needsUpdate=true;
+  // currents rise upward
+  for(const cu of CURS){for(let i=0;i<CN;i++){const u=((cu.base[i]*60+(reduce?0:t*1.6)-wy*.0)%60+60)%60-30, yy=wy+u;
+    cu.arr[i*3]=cu.x*xs+Math.sin(yy*.12+i)*1.2+cu.off[i]; cu.arr[i*3+1]=yy; cu.arr[i*3+2]=cu.z+Math.cos(yy*.1+i)*1.4}
+    cu.geo.attributes.position.needsUpdate=true}
+
+  // entities + labels
+  let near=null, nd=1e9, next=null;
+  const center=cy-.35;
+  for(const e of ents){
+    const dist=Math.abs(e.year-cy), act=dist<6;
+    e.v.obj.position.x=e.bx*xs;
+    e.v.obj.visible=dist<12;
+    if(e.v.obj.visible){e.v.update(t,act,cy); if(e.type!=='s'&&!reduce)e.v.obj.position.y=e.y+Math.sin(t*.6+e.bx)*.25}
+    if(e.type==='e' && prevYear>e.year && cy<=e.year) e.onFire();
+    const dd=Math.abs(e.year-center); if(dd<nd){nd=dd;near=e}
+    if(act){
+      v3.set(e.v.obj.position.x,e.v.obj.position.y+e.anchor,e.v.obj.position.z).project(camera);
+      if(v3.z<1&&v3.y>-.5&&v3.y<.92){
+        const x=(v3.x+1)/2*W, y=(1-v3.y)/2*H, a=Math.max(0,1-dist/3.2);
+        e.seen=a>.15;
+        if(e.seen){const c=e.v.obj.position; v3.set(c.x,c.y,c.z).project(camera); e.sx=(v3.x+1)/2*W; e.sy=(1-v3.y)/2*H; e.lx=x; e.ly=y}
+        if(y>H*.6){e.L.style.display='none';continue}
+        e.L.style.display='block'; e.L.style.opacity=a.toFixed(2);
+        e.L.style.transform=`translate(${Math.min(W-e.L.offsetWidth-6,Math.max(6,x-e.L.offsetWidth/2))}px,${y}px)`;
+        e.L.tabIndex=a>.3?0:-1;
+      } else e.L.style.display='none';
+    } else if(e.L.style.display!=='none') e.L.style.display='none';
+  }
+  for(const e of ents){if(!(Math.abs(e.year-cy)<6))e.seen=false}
+  for(const e of ents){if(e.year<near.year-.05 && (!next||e.year>next.year)) next=e}
+  prevYear=cy;
+
+  // HUD
+  const yi=Math.max(1951,Math.min(2026,Math.floor(cy)));
+  el.yr.textContent=yi;
+  el.yrsub.textContent=yi>=2026?'at the surface':`${2026-yi} year${2026-yi===1?'':'s'} down`;
+  const zi=zoneIdx(cy);
+  if(zi!==curZone){
+    const first=curZone===-1; curZone=zi; const z=ZONES[zi];
+    el.eraN.textContent=z.name; el.eraS.textContent=z.span; setTicker(zi);
+    if(first) showCard('NOW SHOWING','The Depths','76 years of software. Today is the surface. The first machines lie on the seabed.',4200);
+    else if(!ending) showCard(z.span.toUpperCase(),z.title,z.sub);
+  }
+  const show=pinned||near;
+  if(show){
+    el.nowT.textContent=`${show.shown}, ${Math.floor(show.year)}${show.region?' · '+show.region:''}`; el.nowB.textContent=show.blurb;
+  }
+  el.nextT.textContent=next?`${next.shown}, ${Math.floor(next.year)}`:'The seabed';
+  setCur('s',el.sold,stage(SOLD,cy)); setCur('r',el.reach,stage(REACH,cy)); setCur('b',el.built,stage(BUILT,cy)); setCur('j',el.job,ZONES[zi].job);
+
+  renderer.render(scene,camera);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+}
+fetch('depths/species.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>boot(d.species||d)).catch(()=>boot(DATA_FALLBACK));
+</script>
+</body>
+</html>

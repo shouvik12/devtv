@@ -710,6 +710,16 @@
   --so-display:"Archivo","Arial Narrow",Arial,sans-serif; --so-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
   position:absolute; inset:0; z-index:12; display:none; overflow:hidden; background:#000; color:var(--so-ink); font-family:var(--so-display); container-type:size; isolation:isolate; }
 #bulletin-overlay [hidden] { display:none !important; }
+/* THE DEPTHS: the dive runs in its own page (depths.html), framed full-screen on the picture. */
+#depths-overlay { position:absolute; inset:0; z-index:12; display:none; background:#000; }
+#depths-overlay iframe { display:block; width:100%; height:100%; border:0; }
+#depths-dive-btn { background: linear-gradient(180deg,#3fb4cf,#0f6f86) !important; color: #031a22 !important; border-color: #8ff0ff !important; }
+/* While diving, the deck goes deep-sea teal, whatever the skin. Removed again on exit. */
+html.depths-on, html.depths-on[data-skin] {
+  --key-top: #0f4d5e; --key-bot: #062833; --key-edge: #3fb4cf; --key-ink: #d8f7ff; --key-num: #79cbe0;
+  --panel-bg: linear-gradient(180deg, #0b2e3b, #041820);
+}
+html.depths-on .chbtn, html.depths-on .round-btn, html.depths-on #watch-btn, html.depths-on #guide-btn, html.depths-on #speed-btn { transition: background .6s ease, border-color .6s ease, color .6s ease; }
 #bulletin-overlay button { font-family:inherit; }
 #bulletin-overlay button:focus-visible, #bulletin-overlay a:focus-visible { outline:2px solid var(--so-ink); outline-offset:2px; }
 .so-screen { position:absolute; inset:0; transform-origin:50% 50%; }
@@ -1078,6 +1088,7 @@ html[data-fx="beam"] body::before, html[data-fx="beam"] #screen::before { backgr
       <div id="submit-overlay" role="dialog" aria-modal="true" aria-labelledby="submit-title"></div>
       <div id="ontv-overlay" role="dialog" aria-modal="true" aria-labelledby="ontv-title"></div>
       <div id="bulletin-overlay" role="dialog" aria-modal="true" aria-label="Dev Bulletin headlines"></div>
+      <div id="depths-overlay" role="dialog" aria-modal="true" aria-label="The Depths: a dive through software history"></div>
 
       <div id="ad-break" style="display:none;">
         <div class="ad-top"><span class="ad-tag"><span class="ad-tag-long">ADVERTISEMENT</span><span class="ad-tag-short">AD</span></span><span class="ad-countdown" id="ad-countdown"></span></div>
@@ -2623,6 +2634,61 @@ async function fetchBulletinStories() {
   }];
 }
 
+/* THE DEPTHS channel: 76 years of the software industry as an ocean. The card is a teaser; DIVE IN opens depths.html full-screen. Data: depths/species.json. */
+async function fetchDepthsStories() {
+  let n = 0, eras = 8;
+  try { const r = await fetch("depths/species.json", { cache: "no-cache" }); if (r.ok) n = ((await r.json()).species || []).length; } catch (e) {}
+  return [{
+    show: "SOFTWARE HISTORY",
+    title: "Dive 76 years down through the software industry, from today's AI surface to the first mainframes on the seabed.",
+    line1: `${eras} eras · ${n || "60+"} companies, launches and shipwrecks`,
+    line2: "Watch acquisitions swallow companies whole, see the dot-com crash leave a field of wrecks, and follow how software was sold, shipped and built in every era.",
+    heads: ["The AI surface: OpenAI, Anthropic, ChatGPT, MCP", "1991 to 2000: the internet boom and the crash"],
+    url: location.origin + location.pathname + "?depths",
+    depths: true,
+  }];
+}
+let dpOpen = false, dpReturnFocus = null;
+function openDepths() {
+  if (!power) return;
+  if (readerOpen) closeReader();
+  if (submitOpen) closeSubmit();
+  if (onTvOpen) closeOnTv(true);
+  if (soOpen) closeBulletin(true);
+  if (adBreakActive) { adBreakActive = false; document.getElementById("ad-break").style.display = "none"; }
+  const staticEl = document.getElementById("boot-static");
+  if (staticEl && staticEl.style.display !== "none") stopStaticSilently();
+  showSettings = false; guideOpen = false;
+  dpReturnFocus = document.activeElement;
+  const ov = document.getElementById("depths-overlay");
+  ov.innerHTML = '<iframe src="depths.html?embed" title="The Depths" allow="autoplay; fullscreen"></iframe>';
+  dpOpen = true;
+  document.documentElement.classList.add("depths-on");
+  render();
+  try { ov.querySelector("iframe").focus(); } catch (e) {}
+  try { const sc = document.getElementById("screen").getBoundingClientRect(); if (sc.top < 0 || sc.top > window.innerHeight * 0.6) document.getElementById("screen").scrollIntoView({ block: "start" }); } catch (e) {}
+}
+function closeDepths(skipFocus) {
+  if (!dpOpen) return;
+  dpOpen = false;
+  document.documentElement.classList.remove("depths-on");
+  // Removing the frame stops its WebGL loop and its sound.
+  document.getElementById("depths-overlay").innerHTML = "";
+  render();
+  if (!skipFocus && dpReturnFocus && dpReturnFocus.focus) { try { dpReturnFocus.focus(); } catch (e) {} }
+}
+// The deck drives the dive: WATCH/STOP plays or pauses it, the speed key sets its pace, GUIDE lists its eras.
+function postDepths(msg) { const f = document.querySelector("#depths-overlay iframe"); if (f && f.contentWindow) f.contentWindow.postMessage(msg, "*"); }
+window.addEventListener("message", (e) => {
+  if (!e.source || !dpOpen) return;
+  if (e.data === "depths:close") closeDepths();
+  else if (e.data && typeof e.data.depthsPlaying === "boolean") {
+    // the dive paused or resumed itself (a tap on a creature, or the end of the dive): keep WATCH/STOP honest
+    const m = e.data.depthsPlaying ? "autopilot" : "manual";
+    if (mode !== m) { mode = m; render(); }
+  } else if (e.data === "depths:ready") postDepths({ depthsPlay: mode === "autopilot", depthsSpeed: speed });
+});
+
 let soOpen = false, soBuilt = false, soEdition = null, soCur = -1, soPlaying = false, soPaused = false;
 let soSlideT = 0, soSlideStart = 0, soSlideLeft = 0, soClockT = 0, soWaitT = 0, soReturnFocus = null;
 let soAc = null, soMus = null, soNoise = null, soMusicOn = false;
@@ -2875,6 +2941,7 @@ function soStart() {
 
 function openBulletin() {
   if (!power) return;
+  if (dpOpen) closeDepths(true);
   if (readerOpen) closeReader();
   if (submitOpen) closeSubmit();
   if (onTvOpen) closeOnTv(true);
@@ -2922,6 +2989,7 @@ const ALL_CHANNELS = [
   { id: "hackertools", name: "HACKERTOOLS", short: "HACKER TOOLS", color: "#4ade80", key: "", fetcher: fetchHackerToolsStories, tag: "TLS" },
   { id: "spotlight", name: "SPOTLIGHT", color: "#fde68a", key: "", fetcher: fetchSpotlightStories, tag: "SPOT" },
   { id: "bulletin", name: "DEV BULLETIN", short: "BULLETIN", color: "#f2a93b", key: "", fetcher: fetchBulletinStories, tag: "BUL" },
+  { id: "depths", name: "THE DEPTHS", short: "DEPTHS", color: "#5fd4ff", key: "", fetcher: fetchDepthsStories, tag: "DEEP" },
 ];
 
 /* Saved settings (speed, enabled channels) and getChannels(). */
@@ -2939,6 +3007,7 @@ function cycleSpeed() {
   speed = SPEEDS[(idx + 1) % SPEEDS.length];
   try { localStorage.setItem(SPEED_KEY, String(speed)); } catch (e) {}
   if (soOpen) soSpeedChanged();
+  if (dpOpen) { const f = document.querySelector("#depths-overlay iframe"); if (f) f.contentWindow.postMessage({ depthsSpeed: speed }, "*"); }
   render();
 }
 
@@ -3227,6 +3296,7 @@ function togglePower() {
   if (submitOpen) closeSubmit();
   if (onTvOpen) closeOnTv(true);
   if (soOpen) closeBulletin(true);
+  if (dpOpen) closeDepths(true);
   const screenEl = document.getElementById("screen");
 
   if (power) {
@@ -3290,6 +3360,7 @@ function manualChangeChannel(idx) {
   guideOpen = false;
   if (onTvOpen) closeOnTv(true);
   if (soOpen) closeBulletin(true);
+  if (dpOpen) closeDepths(true);
   // Switching channels no longer forces a stop — it just changes what's
   // showing, exactly like a real remote. Playback state (playing or
   // stopped) carries over to whatever channel you land on. Picking a new
@@ -3333,6 +3404,7 @@ function toggleAutoPilot() {
   if (soOpen && soPlaying) { soTogglePause(); return; }
   mode = mode === "autopilot" ? "manual" : "autopilot";
   render();
+  if (dpOpen) postDepths({ depthsPlay: mode === "autopilot" });
   bootStaticShowing = false;
   // Also clears any still-looping boot static if this is the first click
   // the person makes — otherwise the mode flips correctly underneath but
@@ -3466,6 +3538,7 @@ function endAdBreak() {
 // ---- Reader mode ----
 async function openReader(channel, story) {
   if (soOpen) closeBulletin(true);
+  if (dpOpen) closeDepths(true);
   readerOpen = true;
   readerLoading = true;
   readerStory = story;
@@ -3934,6 +4007,7 @@ function spBuild() {
 function openSubmit() {
   if (!power) return;
   if (soOpen) closeBulletin(true);
+  if (dpOpen) closeDepths(true);
   if (readerOpen) closeReader();
   // The boot static can still be running over the screen (it keeps looping when the channels load from cache), and it would swallow clicks.
   const staticEl = document.getElementById("boot-static");
@@ -4407,6 +4481,7 @@ function onTvBuild() {
 function openOnTv(login) {
   if (!power) return;
   if (soOpen) closeBulletin(true);
+  if (dpOpen) closeDepths(true);
   if (readerOpen) closeReader();
   if (submitOpen) closeSubmit();
   // Same as the guide: opening this escapes a commercial break, and the boot static would swallow taps.
@@ -4448,6 +4523,7 @@ function openGuide() {
   if (submitOpen) closeSubmit();
   if (onTvOpen) closeOnTv(true);
   if (soOpen) closeBulletin(true);
+  if (dpOpen) closeDepths(true);
   // Same as flipping channels during a real commercial break: opening the guide escapes the ad.
   if (adBreakActive) { adBreakActive = false; document.getElementById("ad-break").style.display = "none"; }
   // The boot static can still be looping over the screen and would swallow taps on the guide.
@@ -4469,7 +4545,7 @@ function closeGuide() {
   if (guideReturnFocus && guideReturnFocus.focus) { try { guideReturnFocus.focus(); } catch (e) {} }
 }
 
-function toggleGuide() { if (guideOpen) closeGuide(); else openGuide(); }
+function toggleGuide() { if (dpOpen) { postDepths({ depthsGuide: true }); return; } if (guideOpen) closeGuide(); else openGuide(); }
 
 function guideMarkSel() {
   document.querySelectorAll("#guide-list .guide-row").forEach((r, i) => r.classList.toggle("sel", i === guideSel));
@@ -4517,7 +4593,7 @@ function renderGuide() {
 /* render(): paints the screen, buttons and settings from current state. */
 /* Per-channel background: effect per channel id, colour comes from the channel itself. */
 const CHANNEL_FX = { github: "grid", hn: "sweep", devto: "aurora", huggingface: "dots", releases: "stripes", aipapers: "rings",
-  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", hnpicks: "vhs", devtube: "vhs", hackertools: "grid", aivideo: "checker", models: "rain", skills: "twinkle", faceoff: "versus", spotlight: "beam", bulletin: "rings" };
+  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", hnpicks: "vhs", devtube: "vhs", hackertools: "grid", aivideo: "checker", models: "rain", skills: "twinkle", faceoff: "versus", spotlight: "beam", bulletin: "rings", depths: "rain" };
 function setChannelFx(color, fx) {
   const r = document.documentElement;
   if (!color) { r.removeAttribute("data-fx"); return; }
@@ -4538,6 +4614,7 @@ function render() {
   document.getElementById("ontv-overlay").style.display = (onTvOpen && power) ? "flex" : "none";
   document.getElementById("ontv-btn").classList.toggle("on", onTvOpen && power);
   document.getElementById("bulletin-overlay").style.display = (soOpen && power) ? "block" : "none";
+  document.getElementById("depths-overlay").style.display = (dpOpen && power) ? "block" : "none";
   document.getElementById("ontv-btn").style.opacity = power ? "1" : "0.4";
   document.getElementById("guide-btn").classList.toggle("on", guideOpen && power);
   document.getElementById("guide-btn").style.opacity = power ? "1" : "0.4";
@@ -4547,13 +4624,13 @@ function render() {
   // Hiding it while reading is free: no functional loss, since it's just
   // ornamental, unlike the control deck below (which stays, so channel
   // switching remains available while reading).
-  document.getElementById("antenna").style.display = (readerOpen || submitOpen || onTvOpen) ? "none" : "block";
+  document.getElementById("antenna").style.display = (readerOpen || submitOpen || onTvOpen || dpOpen) ? "none" : "block";
   // The outer frame's own padding and the screen's fixed 16:10 aspect
   // ratio both relax while reading — the ratio in particular was capping
   // the screen's height well below what's actually available on a tall
   // mobile viewport, wasting real reading room for no functional reason.
-  document.getElementById("tv").classList.toggle("reading", readerOpen || submitOpen || onTvOpen);
-  document.getElementById("screen").classList.toggle("reading", readerOpen || submitOpen || onTvOpen);
+  document.getElementById("tv").classList.toggle("reading", readerOpen || submitOpen || onTvOpen || dpOpen);
+  document.getElementById("screen").classList.toggle("reading", readerOpen || submitOpen || onTvOpen || dpOpen);
   document.getElementById("screen").classList.toggle("off", !power);
   document.getElementById("content").style.display = power ? "flex" : "none";
   document.getElementById("no-signal").style.display = power ? "none" : "flex";
@@ -4747,18 +4824,21 @@ function render() {
         <div class="story-title" style="font-weight:700; font-size:var(--fs-title); color:#f5f5f7; line-height:1.2; letter-spacing:-0.01em; margin-top:6px;">${escapeHtml(story.title)}</div>
         <div class="mono" style="font-size:var(--fs-line1); color:${channel.color}; margin-top:6px;">${escapeHtml(story.line1)}</div>
         <div style="font-size:var(--fs-line2); color:#9a9aa2; max-width:46em; line-height:1.4; margin-top:6px;">${escapeHtml(story.line2)}</div>
-        ${story.bulletin ? "" : `<div class="mono story-hint" style="font-size:var(--fs-hint); color:${channel.color}; margin-top:8px; opacity:0.8;">${story.cta ? "▸ click to submit yours" : "▸ click to read in DEV·TV"}</div>`}
+        ${(story.bulletin || story.depths) ? "" : `<div class="mono story-hint" style="font-size:var(--fs-hint); color:${channel.color}; margin-top:8px; opacity:0.8;">${story.cta ? "▸ click to submit yours" : "▸ click to read in DEV·TV"}</div>`}
       </div>
       ${channel.id === "spotlight" ? '<button type="button" id="spot-submit-btn" class="spot-submit btn mono">★ Get your project featured</button>' : ""}
-      ${story.bulletin ? '<button type="button" id="bulletin-tune-btn" class="bulletin-tune btn mono">▶ TUNE IN</button>' : ""}`;
-    document.getElementById("story-open-target").onclick = () => story.bulletin ? openBulletin() : story.cta ? openSubmit() : openReader(channel, story);
+      ${story.bulletin ? '<button type="button" id="bulletin-tune-btn" class="bulletin-tune btn mono">▶ TUNE IN</button>' : ""}
+      ${story.depths ? '<button type="button" id="depths-dive-btn" class="bulletin-tune btn mono">▼ DIVE IN</button>' : ""}`;
+    document.getElementById("story-open-target").onclick = () => story.depths ? openDepths() : story.bulletin ? openBulletin() : story.cta ? openSubmit() : openReader(channel, story);
     const spotSubmitBtn = document.getElementById("spot-submit-btn");
     if (spotSubmitBtn) spotSubmitBtn.onclick = (ev) => { ev.stopPropagation(); openSubmit(); };
     const bulletinTuneBtn = document.getElementById("bulletin-tune-btn");
     if (bulletinTuneBtn) bulletinTuneBtn.onclick = (ev) => { ev.stopPropagation(); openBulletin(); };
+    const depthsDiveBtn = document.getElementById("depths-dive-btn");
+    if (depthsDiveBtn) depthsDiveBtn.onclick = (ev) => { ev.stopPropagation(); openDepths(); };
     document.getElementById("now-text").textContent = story.title;
-    document.getElementById("next-text").textContent = story.bulletin && story.heads ? story.heads[0] || "" : nextStory.title;
-    document.getElementById("later-text").textContent = story.bulletin && story.heads ? story.heads[1] || "" : laterStory.title;
+    document.getElementById("next-text").textContent = (story.bulletin || story.depths) && story.heads ? story.heads[0] || "" : nextStory.title;
+    document.getElementById("later-text").textContent = (story.bulletin || story.depths) && story.heads ? story.heads[1] || "" : laterStory.title;
   } else {
     bodyEl.innerHTML = "";
   }
@@ -4894,6 +4974,7 @@ syncFullscreenState();
 document.addEventListener("keydown", (e) => {
   if (submitOpen) { if (e.key === "Escape") closeSubmit(); return; }
   if (onTvOpen) { if (e.key === "Escape") closeOnTv(); return; }
+  if (dpOpen) { if (e.key === "Escape") closeDepths(); return; }
   if (soOpen) {
     if (e.key === "Escape") closeBulletin();
     else if (e.key === "ArrowRight") { e.preventDefault(); soSkip(); }
@@ -5003,6 +5084,12 @@ if (/[?&]bulletin(=|&|$)/.test(location.search)) {
   // Land on the BULLETIN channel, then start it.
   const bi = getChannels().findIndex(c => c.id === "bulletin");
   if (bi >= 0) { manualChangeChannel(bi); setTimeout(openBulletin, 900); } else openBulletin();
+}
+
+// ?depths in the address lands on THE DEPTHS and starts the dive.
+if (/[?&]depths(=|&|$)/.test(location.search)) {
+  const di = getChannels().findIndex(c => c.id === "depths");
+  if (di >= 0) { manualChangeChannel(di); setTimeout(openDepths, 900); } else openDepths();
 }
 
 // ?submit in the address opens the Spotlight form straight away, so it can be linked to.

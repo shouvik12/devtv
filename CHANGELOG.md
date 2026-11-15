@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- **THE DEPTHS channel.** 76 years of the software industry drawn as an ocean: today's AI surface at the top, the first mainframes on the seabed. Companies are glowing jellyfish, acquisitions swallow the company they bought, shutdowns sink as wrecks, and landmark events ping like sonar. A lower-third tracks how software was sold, delivered and built in each era, plus that era's job title. SOUND plays an underwater ambience (swells, a deep rumble, bubbles) that gets more muffled the deeper you go, with a sonar ping at landmark events. The card's DIVE IN button opens it full-screen; ✕ or `Esc` returns to the TV. `?depths` in the address opens it directly.
+- The industry worldwide, not just Silicon Valley: LEO I, TCS, SAP, Infosys, Huawei, ARM, Alibaba, Tencent, Spotify, Skype, UPI, Mistral and more, each with where it started.
+- Tap any creature to pause on it and read its story. The dive has no remote of its own: the deck's WATCH/STOP plays or pauses it, the speed key sets its pace, and GUIDE jumps between eras. Only ✕ and SOUND sit on the picture. While you dive, the deck keys turn deep-sea teal and return to your skin on exit.
+- Three kinds of creature: whales for the giants, manta rays for companies, jellyfish for products and technologies.
+- `depths.html` (the dive, Three.js) and `depths/species.json` (its 93 entries). Add or fix history by editing one line of the JSON.
+
 ## [2.0.0] - 2026-10-04
 
 ### Added
