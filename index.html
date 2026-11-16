@@ -2284,6 +2284,152 @@ async function fetchHackerToolsStories() {
   });
 }
 
+/* UNBUILT channel (id "buildthis"). */
+// Product ideas with real demand (plus Software Recommendations Stack Exchange
+// and GitHub issues closed as not planned, below): Hacker News comments and Ask HN posts from
+// the last 120 days where people say "I wish there was", "I would pay for",
+// "is there a tool"... via the public HN Algolia API (no backend). Opening a
+// story lets you put the idea on your own build list, kept in this browser.
+const BUILD_KEY = "devtv:build-list";
+const BUILD_QUERIES = [
+  { q: '"i wish there was"', kind: "WISH", tags: "comment" },
+  { q: '"i wish there were"', kind: "WISH", tags: "comment" },
+  { q: '"someone should build"', kind: "WISH", tags: "comment" },
+  { q: '"someone should make"', kind: "WISH", tags: "comment" },
+  { q: '"there should be a"', kind: "WISH", tags: "comment" },
+  { q: '"would love a tool"', kind: "WISH", tags: "comment" },
+  { q: '"i would pay for"', kind: "WOULD PAY", tags: "comment" },
+  { q: '"i\'d pay for"', kind: "WOULD PAY", tags: "comment" },
+  { q: '"i would happily pay"', kind: "WOULD PAY", tags: "comment" },
+  { q: '"is there a tool"', kind: "ASKING", tags: "comment" },
+  { q: '"is there an app"', kind: "ASKING", tags: "comment" },
+  { q: '"does anyone know of a"', kind: "ASKING", tags: "comment" },
+  { q: '"why is there no"', kind: "GAP", tags: "comment" },
+  { q: '"why isn\'t there a"', kind: "GAP", tags: "comment" },
+  { q: '"is there a"', kind: "ASK HN", tags: "ask_hn" },
+  { q: '"looking for a tool"', kind: "ASK HN", tags: "ask_hn" },
+  { q: '"any solution for"', kind: "ASK HN", tags: "ask_hn" },
+  { q: '"what do you use for"', kind: "ASK HN", tags: "ask_hn" },
+  { q: '"alternative to"', kind: "ASK HN", tags: "ask_hn" },
+];
+function loadBuildList() { try { return JSON.parse(localStorage.getItem(BUILD_KEY)) || {}; } catch (e) { return {}; } }
+function saveBuildList(m) { try { localStorage.setItem(BUILD_KEY, JSON.stringify(m)); } catch (e) {} }
+// Not every "I wish there was" is a product request ("I wish there was more
+// time", "Is there a reason..."). Keep only those where the words right after
+// the phrase name something that could be built, and drop common non-product wishes.
+const BUILD_PRODUCT_WORDS = /\b(tool|tools|app|apps|application|service|library|lib|package|plugin|extension|cli|api|sdk|framework|platform|website|site|dashboard|bot|script|editor|ide|database|db|saas|alternative|replacement|equivalent|version of|open[- ]source|self[- ]hosted|way to|easy way|simple way|better way|something (that|like|to)|product|software|program|utility|integration|feature|option to|setting|button|mode)\b/i;
+const BUILD_NOT_PRODUCT = /^\W*(a |any )?(reason|chance|difference|point|way around it|law|rule|god|time|money|more time|more people|less|fewer|someone (who|i)|anyone (who|here)|a job|jobs|consensus|evidence|proof|data on|study|studies|good answer|right answer)\b/i;
+function looksLikeBuildRequest(x, phrase) {
+  const src = (x.kind === "ASK HN" ? x.text : x.full).toLowerCase();
+  const at = src.indexOf(phrase);
+  const after = at < 0 ? src.slice(0, 140) : src.slice(at + phrase.length, at + phrase.length + 120);
+  if (BUILD_NOT_PRODUCT.test(after)) return false;
+  if (x.kind === "ASK HN") return BUILD_PRODUCT_WORDS.test(x.text) || /\b(tool|app|service|solution|software|alternative)\b/i.test(src.slice(0, 400));
+  return BUILD_PRODUCT_WORDS.test(after);
+}
+function buildPlainText(h) { const d = document.createElement("div"); d.innerHTML = h || ""; return (d.textContent || "").replace(/\s+/g, " ").trim(); }
+async function fetchBuildThisStories() {
+  const since = Math.floor(Date.now() / 1000) - 120 * 86400;
+  const settled = await Promise.allSettled(BUILD_QUERIES.map(async Q => {
+    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(Q.q)}&tags=${Q.tags}&numericFilters=created_at_i>${since}&hitsPerPage=100`, { cache: "no-store" });
+    if (!res.ok) throw new Error("HN search " + res.status);
+    const phrase = Q.q.replace(/"/g, "");
+    return (await res.json()).hits.map(h => {
+      const body = buildPlainText(h.comment_text || h.story_text || "");
+      let text;
+      if (Q.tags === "ask_hn") text = String(h.title || "");
+      else {
+        const at = body.toLowerCase().indexOf(phrase);
+        const start = at < 0 ? 0 : Math.max(0, at - 120);
+        text = (start > 0 ? "…" : "") + body.slice(start, (at < 0 ? 0 : at) + 260).replace(/^\S*\s+/, start > 0 ? "" : "$&").trim() + "…";
+      }
+      return { id: String(h.objectID), src: "HN", url: `https://news.ycombinator.com/item?id=${h.objectID}`, kind: Q.kind, text, full: body, author: h.author || "someone",
+        story: h.story_title || h.title || "", at: h.created_at_i || 0, signal: h.points || h.num_comments || 0 };
+    }).filter(x => x.text.length > 50 && looksLikeBuildRequest(x, phrase));
+  }));
+  const [se, gh] = await Promise.allSettled([fetchBuildSoftwareRecs(), fetchBuildWontFix()]);
+  const seen = new Set();
+  const hn = settled.flatMap(r => r.status === "fulfilled" ? r.value : []).filter(x => !seen.has(x.id) && seen.add(x.id));
+  const asks = hn.filter(x => x.kind === "ASK HN").sort((a, b) => b.signal - a.signal).slice(0, 25);
+  const rest = hn.filter(x => x.kind !== "ASK HN").sort((a, b) => b.at - a.at).slice(0, 75);
+  const others = [se, gh].flatMap(r => r.status === "fulfilled" ? r.value : []);
+  const picked = [...asks, ...rest, ...others];
+  if (!picked.length) throw new Error("Couldn't reach Hacker News, Stack Exchange or GitHub right now");
+  const mine = loadBuildList();
+  return picked.sort(() => Math.random() - 0.5).map(x => {
+    const days = Math.max(0, Math.round((Date.now() / 1000 - x.at) / 86400));
+    return {
+      show: "UNBUILT · " + x.src + " · " + x.kind + (mine[x.id] ? " · ✓ ON YOUR LIST" : ""),
+      title: x.text.length > 140 ? x.text.slice(0, 137).replace(/\s+\S*$/, "") + "…" : x.text,
+      line1: (x.signal ? (x.signalLabel || (x.kind === "ASK HN" ? x.signal + " points" : x.signal + " replies")) + " · " : "") + (days ? days + "d ago" : "today") + " · " + x.author,
+      line2: x.story ? (x.src === "HN" ? "in “" + x.story + "”" : x.story) : "Ask HN",
+      url: x.url,
+      buildIdea: x,
+    };
+  });
+}
+// Software Recommendations Stack Exchange: people asking for a tool. Questions
+// with no accepted answer are the gaps. Public API, works from the browser.
+async function fetchBuildSoftwareRecs() {
+  const since = Math.floor(Date.now() / 1000) - 365 * 86400;
+  const res = await fetch(`https://api.stackexchange.com/2.3/search/advanced?order=desc&sort=votes&accepted=False&site=softwarerecs&fromdate=${since}&pagesize=40&filter=withbody`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Stack Exchange " + res.status);
+  return ((await res.json()).items || []).filter(q => q.score >= 1).map(q => {
+    const title = buildPlainText(q.title);
+    return { id: "se:" + q.question_id, src: "STACK EXCHANGE", url: q.link, kind: q.answer_count ? "NO GOOD ANSWER" : "UNANSWERED",
+      text: title, full: title + " \u2014 " + buildPlainText(q.body).slice(0, 900), author: (q.owner && buildPlainText(q.owner.display_name)) || "someone",
+      story: (q.tags || []).slice(0, 3).join(" \u00b7 "), at: q.creation_date || 0, signal: q.score, signalLabel: q.score + " votes" };
+  });
+}
+// GitHub issues closed as "not planned" with lots of reactions: features users
+// want that the maintainers won't build. One search call (unauthenticated limit).
+async function fetchBuildWontFix() {
+  const since = new Date(Date.now() - 365 * 86400000).toISOString().slice(0, 10);
+  const q = encodeURIComponent(`is:issue is:closed reason:"not planned" reactions:>30 created:>${since}`);
+  const res = await fetch(`https://api.github.com/search/issues?q=${q}&sort=reactions&order=desc&per_page=30`, { cache: "no-store" });
+  if (!res.ok) throw new Error("GitHub search " + res.status);
+  return ((await res.json()).items || []).map(i => {
+    const repo = String(i.repository_url || "").split("/repos/")[1] || "";
+    const n = (i.reactions && i.reactions.total_count) || 0;
+    return { id: "gh:" + i.id, src: "GITHUB", url: i.html_url, kind: "WON'T FIX", text: String(i.title || ""),
+      full: String(i.title || "") + " \u2014 " + String(i.body || "").replace(/\s+/g, " ").slice(0, 900), author: (i.user && i.user.login) || "someone",
+      story: repo ? "closed as not planned in " + repo : "closed as not planned", at: Math.floor(new Date(i.created_at).getTime() / 1000) || 0,
+      signal: n, signalLabel: n + " reactions" };
+  }).filter(x => x.text.length > 10);
+}
+function buildListHtml() {
+  const items = Object.values(loadBuildList()).sort((a, b) => b.claimedAt - a.claimedAt);
+  if (!items.length) return `<p class="mono" style="font-size:12px; color:#8a8a92;">Nothing claimed yet.</p>`;
+  return items.map(m => `<div style="margin:0 0 10px; padding:8px 10px; border:1px solid #2a2a30; border-radius:6px;">`
+    + `<select data-build-status="${escapeHtml(m.id)}" class="mono" style="font-size:11px; background:#111; color:#eee; border:1px solid #333;">`
+    + ["Exploring", "Validating", "Building", "Shipped", "Dropped"].map(st => `<option${st === m.status ? " selected" : ""}>${st}</option>`).join("")
+    + `</select> <a href="${escapeHtml(m.url || "https://news.ycombinator.com/item?id=" + m.id)}" target="_blank" rel="noopener noreferrer" style="font-size:12px;">source ↗</a>`
+    + `<p style="margin:6px 0 0; font-size:13px;">${escapeHtml(m.text)}</p></div>`).join("")
+    + `<p style="font-size:13px;"><a href="#" data-build-export="1">Export my build list as Markdown ↓</a></p>`;
+}
+document.addEventListener("click", e => {
+  const claim = e.target.closest && e.target.closest("[data-build-claim]");
+  const exp = e.target.closest && e.target.closest("[data-build-export]");
+  if (claim) {
+    e.preventDefault();
+    const idea = JSON.parse(decodeURIComponent(claim.getAttribute("data-build-claim")));
+    const m = loadBuildList();
+    if (m[idea.id]) delete m[idea.id]; else m[idea.id] = { id: idea.id, url: idea.url, text: idea.text, status: "Exploring", claimedAt: Date.now() };
+    saveBuildList(m);
+    claim.textContent = m[idea.id] ? "✓ On your build list (tap to remove)" : "🙋 I'm building this";
+    const box = document.getElementById("build-list-box"); if (box) box.innerHTML = buildListHtml();
+  } else if (exp) {
+    e.preventDefault();
+    const md = "# My UNBUILT build list\n\n" + Object.values(loadBuildList()).map(m => `- [${m.status}] ${m.text}\n  ${m.url || "https://news.ycombinator.com/item?id=" + m.id}`).join("\n") + "\n";
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([md], { type: "text/markdown" })); a.download = "build-list.md"; a.click();
+  }
+});
+document.addEventListener("change", e => {
+  const id = e.target.getAttribute && e.target.getAttribute("data-build-status");
+  if (!id) return;
+  const m = loadBuildList(); if (m[id]) { m[id].status = e.target.value; saveBuildList(m); }
+});
+
 /* SPOTLIGHT channel: community projects, safe markdown, README loading, share links. */
 // COMMUNITY SPOTLIGHT: developer projects curated by hand. The entries live
 // in spotlight.json next to index.html, so GitHub Pages serves them from the
@@ -2574,6 +2720,7 @@ const BULLETIN_PLAN = [
   { id: "cve", take: 1, kicker: "Security" },
   { id: "hnpicks", take: 1, kicker: "HN picks" },
   { id: "hackertools", take: 1, kicker: "Tool of the day" },
+  { id: "buildthis", take: 1, kicker: "Idea of the day" },
   { id: "spotlight", take: 1, kicker: "Spotlight" },
 ];
 
@@ -2920,6 +3067,7 @@ const ALL_CHANNELS = [
   { id: "faceoff", name: "MODEL FACE-OFF", short: "FACE-OFF", color: "#cbd5e1", key: "", fetcher: fetchFaceoffStories, tag: "VS" },
   { id: "local", name: "LOCAL MODELS", short: "LOCAL", color: "#2dd4bf", key: "", fetcher: fetchLocalModelsStories, tag: "LOC" },
   { id: "hackertools", name: "HACKERTOOLS", short: "HACKER TOOLS", color: "#4ade80", key: "", fetcher: fetchHackerToolsStories, tag: "TLS" },
+  { id: "buildthis", name: "UNBUILT", short: "UNBUILT", color: "#ff4d2e", key: "", fetcher: fetchBuildThisStories, tag: "BLD" },
   { id: "spotlight", name: "SPOTLIGHT", color: "#fde68a", key: "", fetcher: fetchSpotlightStories, tag: "SPOT" },
   { id: "bulletin", name: "DEV BULLETIN", short: "BULLETIN", color: "#f2a93b", key: "", fetcher: fetchBulletinStories, tag: "BUL" },
 ];
@@ -3588,6 +3736,14 @@ async function openReader(channel, story) {
       html = mdLite(story.fullText || story.line2);
     } else if (channel.id === "models" || channel.id === "faceoff" || channel.id === "local") {
       html = mdLite(story.fullText || story.line2);
+    } else if (channel.id === "buildthis") {
+      const x = story.buildIdea, claimed = !!loadBuildList()[x.id];
+      html = `<div class="spot-readme-head mono">THE PAIN · ${escapeHtml(x.kind)}</div>`
+        + `<blockquote style="margin:0 0 14px; padding-left:12px; border-left:2px solid #ff4d2e;"><p style="margin:0 0 4px;">“${escapeHtml(x.src !== "HN" ? x.full : x.kind === "ASK HN" ? (x.text + (x.full ? " — " + x.full.slice(0, 600) : "")) : x.full.slice(0, 900))}”</p>`
+        + `<p class="mono" style="margin:0; font-size:11px; color:#8a8a92;">${escapeHtml(x.author)}${x.story ? " · on “" + escapeHtml(x.story) + "”" : ""}</p></blockquote>`
+        + `<p><a href="#" data-build-claim="${encodeURIComponent(JSON.stringify({ id: x.id, url: x.url, text: story.title }))}" style="display:inline-block; padding:8px 14px; border-radius:6px; background:#ff4d2e; color:#000; font-weight:700; text-decoration:none;">${claimed ? "✓ On your build list (tap to remove)" : "🙋 I'm building this"}</a></p>`
+        + `<p style="font-size:13px;"><a href="${escapeHtml(story.url)}" target="_blank" rel="noopener noreferrer">${x.src === "HN" ? "Read the thread on Hacker News" : x.src === "GITHUB" ? "Open the issue on GitHub" : "Open the question on Stack Exchange"} ↗</a></p>`
+        + `<div class="spot-readme-head mono" style="margin-top:18px;">MY BUILD LIST</div><div id="build-list-box">${buildListHtml()}</div>`;
     } else if (channel.id === "hackertools") {
       // Text comes from HN comments via tools.json, so escape it like Spotlight.
       html = (story.quotes && story.quotes.length
@@ -4523,7 +4679,7 @@ function renderGuide() {
 /* render(): paints the screen, buttons and settings from current state. */
 /* Per-channel background: effect per channel id, colour comes from the channel itself. */
 const CHANNEL_FX = { github: "grid", hn: "sweep", devto: "aurora", huggingface: "dots", releases: "stripes", aipapers: "rings",
-  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", hnpicks: "vhs", devtube: "vhs", hackertools: "grid", aivideo: "checker", models: "rain", skills: "twinkle", faceoff: "versus", spotlight: "beam", bulletin: "rings" };
+  latestpapers: "ruled", cve: "radar", hnvideo: "vhs", hnpicks: "vhs", devtube: "vhs", hackertools: "grid", buildthis: "sweep", aivideo: "checker", models: "rain", skills: "twinkle", faceoff: "versus", spotlight: "beam", bulletin: "rings" };
 function setChannelFx(color, fx) {
   const r = document.documentElement;
   if (!color) { r.removeAttribute("data-fx"); return; }
