@@ -1,6 +1,6 @@
 {
   "source": "https://ollama.com/search?o=newest",
-  "generated": "2026-11-15T12:07:19Z",
+  "generated": "2026-11-16T13:00:17Z",
   "models": [
     {
       "name": "ripple-preview",
@@ -12,7 +12,7 @@
       "sizes": [
         "65b"
       ],
-      "pulls": "38.8K",
+      "pulls": "49.1K",
       "updated": "Nov 9, 2026"
     },
     {
@@ -25,7 +25,7 @@
         "9b",
         "35b"
       ],
-      "pulls": "43.5K",
+      "pulls": "47.6K",
       "updated": "Nov 4, 2026"
     },
     {
@@ -37,7 +37,7 @@
       "sizes": [
         "4b"
       ],
-      "pulls": "35.6K",
+      "pulls": "38.5K",
       "updated": "Nov 3, 2026"
     },
     {
@@ -51,7 +51,7 @@
       "sizes": [
         "9b"
       ],
-      "pulls": "91.3K",
+      "pulls": "101.3K",
       "updated": "Nov 3, 2026"
     },
     {
@@ -64,7 +64,7 @@
       "sizes": [
         "1.7b"
       ],
-      "pulls": "87.3K",
+      "pulls": "93.6K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -78,7 +78,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "41.9K",
+      "pulls": "44.4K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -92,7 +92,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "65.7K",
+      "pulls": "68.6K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -106,7 +106,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "49K",
+      "pulls": "51.8K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -121,7 +121,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "94.1K",
+      "pulls": "98.8K",
       "updated": "Oct 30, 2026"
     },
     {
@@ -129,7 +129,7 @@
       "description": "Phonon is Gradium’s text-to-speech family. It turns written text into spoken audio as it generates, making it useful for reading assistant replies, narrating passages, and adding a voice to local apps.",
       "capabilities": [],
       "sizes": [],
-      "pulls": "151.5K",
+      "pulls": "153.9K",
       "updated": "Oct 24, 2026"
     },
     {
@@ -142,7 +142,7 @@
       "sizes": [
         "40b"
       ],
-      "pulls": "93.2K",
+      "pulls": "96.7K",
       "updated": "Oct 22, 2026"
     },
     {
@@ -156,7 +156,7 @@
         "600m",
         "2b"
       ],
-      "pulls": "57.7K",
+      "pulls": "60.6K",
       "updated": "Oct 27, 2026"
     },
     {
@@ -173,7 +173,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "174.2K",
+      "pulls": "179.4K",
       "updated": "Oct 16, 2026"
     },
     {
@@ -185,7 +185,7 @@
       "sizes": [
         "27b"
       ],
-      "pulls": "43K",
+      "pulls": "45K",
       "updated": "Oct 17, 2026"
     },
     {
@@ -198,7 +198,7 @@
         "2b",
         "3b"
       ],
-      "pulls": "72K",
+      "pulls": "74.7K",
       "updated": "Oct 27, 2026"
     }
   ]
