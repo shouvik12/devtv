@@ -1,7 +1,19 @@
 {
   "source": "https://ollama.com/search?o=newest",
-  "generated": "2026-11-20T13:23:04Z",
+  "generated": "2026-11-21T12:52:41Z",
   "models": [
+    {
+      "name": "inkling-2-mini",
+      "description": "Thinking Machines' small open-weights model that can run on a Mac: 26B parameters, 5.4B active, with looped layers for more computation per token.",
+      "capabilities": [
+        "tools",
+        "vision",
+        "thinking"
+      ],
+      "sizes": [],
+      "pulls": "8,215",
+      "updated": "Nov 20, 2026"
+    },
     {
       "name": "ripple-preview",
       "description": "65B dense model built for agentic coding, with up to 1M tokens of context.",
@@ -12,7 +24,7 @@
       "sizes": [
         "65b"
       ],
-      "pulls": "87.2K",
+      "pulls": "96.7K",
       "updated": "Nov 9, 2026"
     },
     {
@@ -25,7 +37,7 @@
         "9b",
         "35b"
       ],
-      "pulls": "62.9K",
+      "pulls": "65.1K",
       "updated": "Nov 4, 2026"
     },
     {
@@ -37,7 +49,7 @@
       "sizes": [
         "4b"
       ],
-      "pulls": "50K",
+      "pulls": "51.3K",
       "updated": "Nov 3, 2026"
     },
     {
@@ -51,7 +63,7 @@
       "sizes": [
         "9b"
       ],
-      "pulls": "129.5K",
+      "pulls": "134.2K",
       "updated": "Nov 3, 2026"
     },
     {
@@ -64,7 +76,7 @@
       "sizes": [
         "1.7b"
       ],
-      "pulls": "108K",
+      "pulls": "110.7K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -78,7 +90,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "53.5K",
+      "pulls": "54.7K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -92,7 +104,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "79.3K",
+      "pulls": "81K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -106,7 +118,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "62.2K",
+      "pulls": "63.9K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -121,7 +133,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "115.9K",
+      "pulls": "119.2K",
       "updated": "Oct 30, 2026"
     },
     {
@@ -129,7 +141,7 @@
       "description": "Phonon is Gradium’s text-to-speech family. It turns written text into spoken audio as it generates, making it useful for reading assistant replies, narrating passages, and adding a voice to local apps.",
       "capabilities": [],
       "sizes": [],
-      "pulls": "161.8K",
+      "pulls": "163.4K",
       "updated": "Oct 24, 2026"
     },
     {
@@ -142,7 +154,7 @@
       "sizes": [
         "40b"
       ],
-      "pulls": "109.3K",
+      "pulls": "111.5K",
       "updated": "Oct 22, 2026"
     },
     {
@@ -156,7 +168,7 @@
         "600m",
         "2b"
       ],
-      "pulls": "70.7K",
+      "pulls": "72.3K",
       "updated": "Oct 27, 2026"
     },
     {
@@ -173,7 +185,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "198.5K",
+      "pulls": "202K",
       "updated": "Oct 16, 2026"
     },
     {
@@ -185,21 +197,8 @@
       "sizes": [
         "27b"
       ],
-      "pulls": "52.4K",
+      "pulls": "53.3K",
       "updated": "Oct 17, 2026"
-    },
-    {
-      "name": "d1",
-      "description": "d1 is a 3B decision model from Liquid AI, built on LFM2.5-VL-3B",
-      "capabilities": [
-        "vision"
-      ],
-      "sizes": [
-        "2b",
-        "3b"
-      ],
-      "pulls": "85K",
-      "updated": "Oct 27, 2026"
     }
   ]
 }
