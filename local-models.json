@@ -1,6 +1,6 @@
 {
   "source": "https://ollama.com/search?o=newest",
-  "generated": "2026-11-22T12:44:56Z",
+  "generated": "2026-11-23T15:06:14Z",
   "models": [
     {
       "name": "inkling-2-mini",
@@ -11,7 +11,7 @@
         "thinking"
       ],
       "sizes": [],
-      "pulls": "27.9K",
+      "pulls": "47.5K",
       "updated": "Nov 20, 2026"
     },
     {
@@ -24,7 +24,7 @@
       "sizes": [
         "65b"
       ],
-      "pulls": "105.5K",
+      "pulls": "116.2K",
       "updated": "Nov 9, 2026"
     },
     {
@@ -37,7 +37,7 @@
         "9b",
         "35b"
       ],
-      "pulls": "67.9K",
+      "pulls": "71K",
       "updated": "Nov 4, 2026"
     },
     {
@@ -49,7 +49,7 @@
       "sizes": [
         "4b"
       ],
-      "pulls": "53K",
+      "pulls": "54.9K",
       "updated": "Nov 3, 2026"
     },
     {
@@ -63,7 +63,7 @@
       "sizes": [
         "9b"
       ],
-      "pulls": "138.6K",
+      "pulls": "142.6K",
       "updated": "Nov 3, 2026"
     },
     {
@@ -76,7 +76,7 @@
       "sizes": [
         "1.7b"
       ],
-      "pulls": "114.2K",
+      "pulls": "117.7K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -90,7 +90,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "56.2K",
+      "pulls": "57.7K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -104,7 +104,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "83.4K",
+      "pulls": "85.6K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -118,7 +118,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "66K",
+      "pulls": "67.8K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -133,7 +133,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "123K",
+      "pulls": "126.5K",
       "updated": "Oct 30, 2026"
     },
     {
@@ -141,7 +141,7 @@
       "description": "Phonon is Gradium’s text-to-speech family. It turns written text into spoken audio as it generates, making it useful for reading assistant replies, narrating passages, and adding a voice to local apps.",
       "capabilities": [],
       "sizes": [],
-      "pulls": "165.5K",
+      "pulls": "167.8K",
       "updated": "Oct 24, 2026"
     },
     {
@@ -154,7 +154,7 @@
       "sizes": [
         "40b"
       ],
-      "pulls": "113.8K",
+      "pulls": "115.7K",
       "updated": "Oct 22, 2026"
     },
     {
@@ -168,7 +168,7 @@
         "600m",
         "2b"
       ],
-      "pulls": "74K",
+      "pulls": "75.7K",
       "updated": "Oct 27, 2026"
     },
     {
@@ -185,7 +185,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "206.4K",
+      "pulls": "210.8K",
       "updated": "Oct 16, 2026"
     }
   ]
