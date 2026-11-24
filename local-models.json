@@ -1,6 +1,6 @@
 {
   "source": "https://ollama.com/search?o=newest",
-  "generated": "2026-11-23T15:06:14Z",
+  "generated": "2026-11-24T15:04:08Z",
   "models": [
     {
       "name": "inkling-2-mini",
@@ -11,8 +11,8 @@
         "thinking"
       ],
       "sizes": [],
-      "pulls": "47.5K",
-      "updated": "Nov 20, 2026"
+      "pulls": "66.5K",
+      "updated": "Nov 24, 2026"
     },
     {
       "name": "ripple-preview",
@@ -24,7 +24,7 @@
       "sizes": [
         "65b"
       ],
-      "pulls": "116.2K",
+      "pulls": "125.8K",
       "updated": "Nov 9, 2026"
     },
     {
@@ -37,7 +37,7 @@
         "9b",
         "35b"
       ],
-      "pulls": "71K",
+      "pulls": "73.7K",
       "updated": "Nov 4, 2026"
     },
     {
@@ -49,7 +49,7 @@
       "sizes": [
         "4b"
       ],
-      "pulls": "54.9K",
+      "pulls": "57.5K",
       "updated": "Nov 3, 2026"
     },
     {
@@ -63,7 +63,7 @@
       "sizes": [
         "9b"
       ],
-      "pulls": "142.6K",
+      "pulls": "147.6K",
       "updated": "Nov 3, 2026"
     },
     {
@@ -76,7 +76,7 @@
       "sizes": [
         "1.7b"
       ],
-      "pulls": "117.7K",
+      "pulls": "120.5K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -90,7 +90,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "57.7K",
+      "pulls": "59K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -104,7 +104,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "85.6K",
+      "pulls": "87.5K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -118,7 +118,7 @@
       "sizes": [
         "2b"
       ],
-      "pulls": "67.8K",
+      "pulls": "69.5K",
       "updated": "Oct 29, 2026"
     },
     {
@@ -133,7 +133,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "126.5K",
+      "pulls": "129.7K",
       "updated": "Oct 30, 2026"
     },
     {
@@ -141,7 +141,7 @@
       "description": "Phonon is Gradium’s text-to-speech family. It turns written text into spoken audio as it generates, making it useful for reading assistant replies, narrating passages, and adding a voice to local apps.",
       "capabilities": [],
       "sizes": [],
-      "pulls": "167.8K",
+      "pulls": "170K",
       "updated": "Oct 24, 2026"
     },
     {
@@ -154,7 +154,7 @@
       "sizes": [
         "40b"
       ],
-      "pulls": "115.7K",
+      "pulls": "117.6K",
       "updated": "Oct 22, 2026"
     },
     {
@@ -168,7 +168,7 @@
         "600m",
         "2b"
       ],
-      "pulls": "75.7K",
+      "pulls": "77.1K",
       "updated": "Oct 27, 2026"
     },
     {
@@ -185,7 +185,7 @@
         "9b",
         "27b"
       ],
-      "pulls": "210.8K",
+      "pulls": "214.5K",
       "updated": "Oct 16, 2026"
     }
   ]
